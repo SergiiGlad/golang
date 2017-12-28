@@ -12,11 +12,6 @@
 
 		fmt.Println("Multiply ", array, " = ", multiply(array))
 
-
-
-
-
-
 	}
 
 
@@ -38,6 +33,8 @@
 		return
 	}
 
+
+	// multiplies all the number in a slice of number and return result
 	func multiply(array2 []int) int {
 
 		multi := 1
