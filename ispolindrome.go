@@ -1,8 +1,8 @@
 package main
 
 import (
-	"basicfunc"
 	"fmt"
+	basicfunc "github.com/SergiiGlad/golang/basicfunc"
 	"strings"
 )
 
@@ -11,7 +11,7 @@ func main() {
 	str := "Radar"
 
 	fmt.Printf("Word %q is polindrom : ", str)
-	fmt.Println( isPalindromeCompare( str ) )
+	fmt.Println(isPalindromeCompare(str))
 
 }
 

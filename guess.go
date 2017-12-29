@@ -6,8 +6,8 @@
 package main
 
 import (
-	"basicfunc"
 	"fmt"
+	basicfunc "github.com/SergiiGlad/golang/basicfunc"
 	"math/rand"
 	"time"
 )

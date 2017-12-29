@@ -1,14 +1,14 @@
 package main
 
 import (
-	"basicfunc"
 	"fmt"
+	basicfunc "github.com/SergiiGlad/golang/basicfunc"
 )
 
 func main() {
 
-	fmt.Println( basicfunc.Reverse("Hello, new gopher") )
+	fmt.Println(basicfunc.Reverse("Hello, new gopher"))
 
-	fmt.Println( basicfunc.ReverseMethodSecond("rehpog wen ,olleH") )
+	fmt.Println(basicfunc.ReverseMethodSecond("rehpog wen ,olleH"))
 
 }
