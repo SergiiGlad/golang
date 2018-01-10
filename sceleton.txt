@@ -1,0 +1,29 @@
+Sceleton and basic packages
+
+
+├── conf
+│   └── app.conf			// Configuration files
+├── controllers
+│   ├── admin.go		    // moderator panel
+│   ├── login.go	        // The welcome screen that allows the user to login and pick up a room
+│   ├── app.go			    // Handlers for new events like or post , message
+│   ├── refresh.go		    // Handlers for the Refresh room then get/send new messages
+│   ├── scrolling.go	    // render output of moving displayed messages or post up or down
+│   └── websocket.go        // session control, subscribe new events, join room, leave room			
+├── routers
+│	└── main.go	            // This is the entry point. Listening port 8080 and router requests		
+├── models
+│   └── db.go		        // database connection
+├── static				    // static files for templates
+│   ├── css
+│   ├── ico
+│   ├── img
+│   ├── js
+└── views                   // html templates
+    ├── admin
+    ├── welcome	
+    ├── application	
+    ├── refresh
+    ├── scrolling
+    ├── websocket
+    └── index               // footer, header, index
