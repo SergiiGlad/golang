@@ -1,0 +1,11 @@
+{ 
+    "version": 0,
+    
+    "dir_structure": {
+            "conf":"",
+            "views":"",
+            "static":"",
+            
+    }
+    
+}
