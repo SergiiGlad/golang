@@ -9,7 +9,7 @@ Sceleton and basic packages
 │   └──  db.go		        // database connection
 │
 ├── routers
-│   └── routers.go	        // Listening port 8080 and router requests
+│   └── router.go	        // Listening port 8080 and router requests
 │
 ├── controllers
 │   ├── admin.go		    // moderator panel
