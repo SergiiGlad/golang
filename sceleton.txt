@@ -1,13 +1,15 @@
 Sceleton and basic packages
 
-├── goose.go                 // package main, func main(), initial config		
+├── main.go                 // package main, func main(), initial config , routers.Run()		
 │
 ├── conf
 │   └── app.conf			// Configuration files
 │	
 ├── models
-│   ├── db.go		        // database connection
-│   └── routers.go	        // Listening port 8080 and router requests	
+│   └──  db.go		        // database connection
+│
+├── routers
+│   └── routers.go	        // Listening port 8080 and router requests
 │
 ├── controllers
 │   ├── admin.go		    // moderator panel
