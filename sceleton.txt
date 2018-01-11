@@ -7,7 +7,7 @@ Sceleton and basic packages
 │	
 ├── models
 │   ├── db.go		        // database connection
-│	└── routers.go	        // Listening port 8080 and router requests	
+│   └── routers.go	        // Listening port 8080 and router requests	
 │
 ├── controllers
 │   ├── admin.go		    // moderator panel
@@ -20,7 +20,7 @@ Sceleton and basic packages
 └── client				    // static files and html templates
     ├── css
     ├── ico
- 	├── img
+    ├── img
     ├── js
     ├── admin.html           
     ├── welcome.html	
