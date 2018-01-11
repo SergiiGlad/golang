@@ -30,4 +30,28 @@ Sceleton and basic packages
     ├── refresh.html
     ├── scrolling.html
     ├── websocket.html
-    └── index.html              
+    └── index.html     
+    
+    
+    
+    
+    
+    
+    
+
+
+           
+
+                    ---> Routering with Params ---> Params/filter------        
+                    |                                                  |            <---> Render output             
+                    |                                                  |                      
+                    |                                                  |            <---> Session Control
+main.go
+Listening port  :8080                                                   Controller  <---> Logging
+Receive requests
+Pass params to router                                                 |             <---> Cache
+                    |                                                 |            
+                    |                                                 |             <---> Model <---> Database
+                    |                                                 |    
+                    <--- Action filter  <--- Client action -----------|  
+                            
