@@ -3,7 +3,7 @@ Sceleton and basic packages
 ├── main.go                 // package main, func main(), initial config, starting web server		
 │
 ├── conf
-│   └── app.conf			// Configuration files
+│   └── app.conf            // Configuration files
 │	
 ├── models	web				
 │   └── db.go		        // representing database concepts and populate db query
