@@ -1,15 +1,15 @@
 Sceleton and basic packages
 
-├── main.go                 // package main, func main(), initial config , routers.Run()		
+├── main.go                 // package main, func main(), initial config, starting web server		
 │
 ├── conf
 │   └── app.conf			// Configuration files
 │	
-├── models
-│   └──  db.go		        // database connection
-│
-├── routers
-│   └── router.go	        // Listening port 8080 and router requests
+├── models	web				
+│   └── db.go		        // representing database concepts and populate db query
+│ 
+├──	server					// some web middleware logic
+│	└──routers.go	        // Listening port 8080 and router requests	
 │
 ├── controllers
 │   ├── admin.go		    // moderator panel
@@ -19,18 +19,18 @@ Sceleton and basic packages
 │   ├── scrolling.go	    // render output of moving displayed messages or post up or down
 │   └── websocket.go  
 │
-└── client				    // static files and html templates
-    ├── css
-    ├── ico
-    ├── img
-    ├── js
-    ├── admin.html           
-    ├── welcome.html	
-    ├── application.html	
-    ├── refresh.html
-    ├── scrolling.html
-    ├── websocket.html
-    └── index.html     
+└── client				    
+    ├── css					// public directories with all files
+    ├── ico					// public directories with all files
+ 	├── img					// public directories with all files
+    ├── js					// public directories with all files
+    ├── admin.html           // views and  templates
+	├── welcome.html		// views and  templates
+    ├── application.html	// views and  templates
+    ├── refresh.html		// views and  templates
+    ├── scrolling.html		// views and  templates
+    ├── websocket.html		// views and  templates
+    └── index.html          // views and  templates    
     
     
     
