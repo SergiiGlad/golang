@@ -7,7 +7,7 @@
 	2. Scope
 	3. Purpose
 
-2. Overall Derscription
+2. Overall Description
 	1. Product function
 	2. Product Perspective
 
@@ -18,17 +18,17 @@
 
 ### Introduction
 The purpose of this Software Requirements Specification (SRS)
-document is to provide a detailed description of the functionalities of
-the software product.
+document is to provide a detailed description of
+the software product functionality.
 
 #### Overview
 
-Software is cloud-based  service that provides communication
-for group of people  to create, socialaze , message, post and
-share messages and files.
+Software is cloud-based service that provides communication
+for group of people  to create, socialize, message, post and
+share pictures, photos and files.
 
 #### Scope
-The project helps people to collaboration with each other and keep in touch.
+The project helps people to collaborate with each other and keep in touch.
 * create
 * joining
 * invite people
@@ -37,13 +37,13 @@ The project helps people to collaboration with each other and keep in touch.
 
 #### Purpose
 
-The main purpose increase productivity and improve people agility.
-The purpose for  messaging is to be able to communicate to other people
+The main purposes: increase productivity and improve people agility.
+The purpose for messaging is to be able to communicate to other people
 anywhere around the world easily. This allows you to send information through
-posting without having to wait , the software sends the messages to and from
+posting without having to wait, the software sends the messages to and from
 your computer quickly.
 
-### Overall Derscription
+### Overall Description
 
 #### Product function
 App client is a messaging agent that allows users to get connected
