@@ -1,71 +1,71 @@
-Software requirements specification
+# GoHum
+
+## Software requirements specification
 
 1. Introduction
-	1.1 Overview
-	1.2 Scope
-	1.3 Purpose
-	
+	1. Overview
+	2. Scope
+	3. Purpose
+
 2. Overall Derscription
-	2.1 Product function
-	2.2 Product Perspective
+	1. Product function
+	2. Product Perspective
 
 3. Specific requirements
-	3.1 Database requirement
-	3.2 Functional requirements
+	1. Database requirement
+	2. Functional requirements
 
 
-1. Introduction
-The purpose of this Software Requirements Specification (SRS) 
-document is to provide a detailed description of the functionalities of 
-the software product. 
+### Introduction
+The purpose of this Software Requirements Specification (SRS)
+document is to provide a detailed description of the functionalities of
+the software product.
 
-1.1 Overview
- 
-Software is cloud-based  service that provides communication 
-for group of people  to create, socialaze , message, post and 
-share messages and files. 
+#### Overview
 
-1.2 Scope
-The project helps people to collaboration with each other and keep in touch.  
-	- create 
-	- joining  
-	- invite people
-	- posting 
-	- chatting
+Software is cloud-based  service that provides communication
+for group of people  to create, socialaze , message, post and
+share messages and files.
 
-1.3 Purpose
+#### Scope
+The project helps people to collaboration with each other and keep in touch.
+* create
+* joining
+* invite people
+* posting
+* chatting
 
-The main purpose increase productivity and improve people agility. 
-The purpose for  messaging is to be able to communicate to other people 
-anywhere around the world easily. This allows you to send information through 
-posting without having to wait , the software sends the messages to and from 
-your computer quickly. 
-	
+#### Purpose
 
-2. Overall Derscription
+The main purpose increase productivity and improve people agility.
+The purpose for  messaging is to be able to communicate to other people
+anywhere around the world easily. This allows you to send information through
+posting without having to wait , the software sends the messages to and from
+your computer quickly.
 
-2.1 Product function
-App client is a messaging agent that allows users to get connected 
-in virtual space and use different means of communication 
+### Overall Derscription
+
+#### Product function
+App client is a messaging agent that allows users to get connected
+in virtual space and use different means of communication
 ( messaging, content sharing, chatting )
 
-2.2 Product Perspective
-Application is including web client and backend services 
+#### Product Perspective
+Application is including web client and backend services
 with integrated Go specific features.
 
-3. Specific requirements
+### Specific requirements
 
 This document presents a description of software architecture and its main
 software requirements.
 
-3.1 Database requirement
+#### Database requirement
  The databases need to save and store data and load every time when necessary.
-	
-	- MySQL
-	- Amazon DynamoDB
-	
 
-3.2 Functional requirements
+* MySQL
+* Amazon DynamoDB
+
+#### Functional requirements
 
 The application can handle the 10k requests and the efficient 
 concurrence of goroutine. 
