@@ -5,7 +5,7 @@ Sceleton and basic packages
 ├── conf
 │   └── app.conf            // Configuration files
 │	
-├── models	web				
+├── models				
 │   └── db.go               // representing database concepts and populate db query
 │ 
 ├── server                  // some web middleware logic
