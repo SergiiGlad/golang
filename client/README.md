@@ -1,27 +1,22 @@
 # gohum
 
-скачиваем npm
+## Build Setup
+
+``` bash
+download npm package
 https://nodejs.org/uk/
 
-$ npm version
-проверка версий npm и node
+# to check npm and node version 
+npm version
 
+# install dependencies
+npm install
 
-устанавливаем vue-cli
-$ npm install --global vue-cli
+# serve with hot reload at localhost:8080
+npm run dev
 
-создаём новый проект из шаблона "webpack"
-$ vue init webpack-simple my-project
-
-$ cd my-project
-
-устанавливаем зависимости
-$ npm install
-
-запускаем сервер localhost:8080
-$ npm run dev
-
-build for production with minification
-$ npm run build
+# build for production with minification
+npm run build
+```
 
 For detailed explanation on how things work, consult the [docs for vue-loader](http://vuejs.github.io/vue-loader).
