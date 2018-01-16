@@ -1,6 +1,6 @@
 # gohum
 
-# скачиваем npm
+скачиваем npm
 https://nodejs.org/uk/
 
 # проверка версий npm и node
