@@ -3,7 +3,7 @@
 ## Build Setup
 
 ``` bash
-download npm package
+# download npm package
 https://nodejs.org/uk/
 
 # to check npm and node version 
