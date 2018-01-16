@@ -3,8 +3,9 @@
 скачиваем npm
 https://nodejs.org/uk/
 
-проверка версий npm и node
 $ npm version
+проверка версий npm и node
+
 
 устанавливаем vue-cli
 $ npm install --global vue-cli
