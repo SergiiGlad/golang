@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
   "html/template"
+  "go-team-room/conf"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +19,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", handler)
+  http.HandleFunc("/", handler)
   http.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("client/dist"))))
-	http.ListenAndServe(":8080", nil)
+  http.ListenAndServe(conf.Ip + ":" + conf.Port, nil)
+
 }
