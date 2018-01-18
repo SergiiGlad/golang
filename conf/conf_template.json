@@ -34,12 +34,12 @@
       "type": "string",
       "description": "port that will be used to run our server"
     },
-    "workDir": {
+    "work_dir": {
       "default": "$GOPATH/src/go-team-room",
       "type": "string, path to directory",
       "description": "Absolute path to directory with main.go."
     },
-    "staticDir": {
+    "static_dir": {
       "default": "$GOPATH/src/go-team-room/client/dist",
       "type": "string, path to directory",
       "description": "Absolute path to directory with static files."

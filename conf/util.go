@@ -15,6 +15,7 @@ func ReadConfig() map[string]interface{} {
 
 // Determine path to work dir and add it to Viper.
 // Path is determined as $GOPATH/src/go-team-room
+// Can be override in conf.json
 func setupWorkDir() {
   readVar("go_path", "GOPATH")
   fmt.Println("GOPATH is: " + viper.GetString("work_dir"))
@@ -27,7 +28,7 @@ func addDefaults() {
   setupWorkDir()
   viper.SetDefault("ip", "127.0.0.1")
   viper.SetDefault("port", 8080)
-  viper.SetDefault("static_dir", viper.GetString("workDir") + "/client/dist")
+  viper.SetDefault("static_dir", viper.GetString("work_dir")+"/client/dist")
 }
 
 //Read configs from conf json, if cant read error occurred.
