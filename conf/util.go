@@ -7,7 +7,6 @@ import (
 
 // Read all needed configs if no errors occurred return them as map, do not change the order unless you 100% sure
 func ReadConfig() map[string]interface{} {
-  setupWorkDir()
   addDefaults()
   readConfJson()
   readEnvVariables()
@@ -17,14 +16,15 @@ func ReadConfig() map[string]interface{} {
 // Determine path to work dir and add it to Viper.
 // Path is determined as $GOPATH/src/go-team-room
 func setupWorkDir() {
-  readVar("work_dir", "GOPATH")
+  readVar("go_path", "GOPATH")
   fmt.Println("GOPATH is: " + viper.GetString("work_dir"))
-  viper.Set("work_dir", viper.GetString("work_dir")+"/src/go-team-room")
+  viper.SetDefault("work_dir", viper.GetString("go_path")+"/src/go-team-room")
   fmt.Println("WorkDir is: " + viper.GetString("work_dir"))
 }
 
 // Add default when possible
 func addDefaults() {
+  setupWorkDir()
   viper.SetDefault("ip", "127.0.0.1")
   viper.SetDefault("port", 8080)
   viper.SetDefault("static_dir", viper.GetString("workDir") + "/client/dist")
