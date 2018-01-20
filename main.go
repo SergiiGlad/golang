@@ -13,7 +13,6 @@ func main() {
   r.PathPrefix("/api-docs/").Handler(http.StripPrefix("/api-docs/", http.FileServer(http.Dir("swagger"))))
   r.PathPrefix("/dist/").Handler(http.StripPrefix("/dist/", http.FileServer(http.Dir("client/dist"))))
   http.Handle("/", r)
-
   var err = http.ListenAndServe(conf.Ip + ":" + conf.Port, nil)
   if err != nil {
     fmt.Println("Error")
