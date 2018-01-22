@@ -21,6 +21,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func main() {
   http.HandleFunc("/", handler)
   http.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("client/dist"))))
+  http.Handle("/api-docs/", http.StripPrefix("/api-docs/", http.FileServer(http.Dir("swagger"))))
   http.ListenAndServe(conf.Ip + ":" + conf.Port, nil)
 
 }
