@@ -3,9 +3,10 @@ info:
   description: Social network for file sharing
   version: 1.0.0
   title: File Sharing Socila Network
-host: placeholder.com
+host: 'localhost:8080'
+basePath: /
 schemes:
-  - https
+  - http
 paths:
   /admin:
     post:
