@@ -10,3 +10,4 @@ vendor/
 *.ntvs*
 *.njsproj
 *.sln
+playground.go
