@@ -1,21 +1,21 @@
 package mysql
 
 import (
-  "database/sql"
-  _ "github.com/go-sql-driver/mysql"
   "log"
-  "fmt"
-  "go-team-room/conf"
+  "go-team-room/models/dao/interfaces"
 )
 
-func get() *sql.DB {
-  dsn := fmt.Sprintf("%s", conf.MysqlDsn)
-  db, err := sql.Open("mysql", dsn)
+var (
+  DB interfaces.Database
+)
+
+func init() {
+
+  var err error
+
+  DB, err = newMySQLDatabase()
 
   if err != nil {
-    log.Fatalln(err)
-    return nil
+    log.Fatal("Could not connect DB.")
   }
-
-  return db
 }

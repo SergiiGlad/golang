@@ -2,198 +2,159 @@ package mysql
 
 import (
   "go-team-room/models/dao"
-  "log"
   "fmt"
+  "database/sql"
+  _ "github.com/go-sql-driver/mysql"
+  "go-team-room/models/dao/interfaces"
 )
 
-type UserDaoImpl struct {
+type mysqlUserDB struct {
+  conn *sql.DB
+
+  insert  *sql.Stmt
+  update  *sql.Stmt
+  delete  *sql.Stmt
+  byid    *sql.Stmt
+  byemail *sql.Stmt
+  byphone *sql.Stmt
 }
 
-func (dao UserDaoImpl) Create(user *dao.User) error {
-  query := "INSERT INTO " +
-    "users_data (email, first_name, second_name, phone, current_password, role_in_network, account_status, avatar_ref) " +
-    "VALUE (?, ?, ?, ?, ?, ?, ?, ?)"
+var _ interfaces.UserDatabase = &mysqlUserDB{}
 
-  db := get()
-  defer db.Close()
+func newMySqlUserDB(conn *sql.DB) (interfaces.UserDatabase, error) {
 
-  statement, err := db.Prepare(query)
+  // Check database and table exists. If not, create it.
+  err := ensureTableExists()
 
   if err != nil {
-      log.Fatal(err)
-      return err
+    return nil, err
   }
 
-  defer statement.Close()
-
-  result, err := statement.Exec(user.Email, user.FirstName, user.SecondName, user.Phone, user.CurrentPass, user.Role, user.AccStatus, user.AvatarRef)
-
-  if err != nil {
-    log.Fatal(err)
-    return err
+  if err := conn.Ping(); err != nil {
+    conn.Close()
+    return nil, fmt.Errorf("mysql: could not establish a good connection: %v", err)
   }
 
-  id, err := result.LastInsertId()
-
-  if err != nil {
-    log.Fatal(err)
-    return err
+  db := &mysqlUserDB{
+    conn: conn,
   }
 
-  user.ID = int(id)
+  if db.insert, err = conn.Prepare(insertStatement); err != nil {
+    return nil, fmt.Errorf("mysql: prepare list: %v", err)
+  }
+  if db.update, err = conn.Prepare(updateStatement); err != nil {
+    return nil, fmt.Errorf("mysql: prepare list: %v", err)
+  }
+  if db.delete, err = conn.Prepare(deleteStatement); err != nil {
+    return nil, fmt.Errorf("mysql: prepare list: %v", err)
+  }
+  if db.byid, err = conn.Prepare(findByIdStatement); err != nil {
+    return nil, fmt.Errorf("mysql: prepare list: %v", err)
+  }
+  if db.byemail, err = conn.Prepare(findByEmailStatement); err != nil {
+    return nil, fmt.Errorf("mysql: prepare list: %v", err)
+  }
+  if db.byphone, err = conn.Prepare(findByPhoneStatement); err != nil {
+    return nil, fmt.Errorf("mysql: prepare list: %v", err)
+  }
 
-  return nil
+  return db, nil
 }
 
-func (dao UserDaoImpl) Delete(id int) error {
-  query := "UPDATE users_data SET account_status = 'deleted' WHERE user_id = ?"
-
-  db := get()
-  defer db.Close()
-
-  statement, err := db.Prepare(query)
-
-  if err != nil {
-    log.Fatal(err)
-    return err
-  }
-
-  defer statement.Close()
-
-  _, err = statement.Exec(id)
-
-  if err != nil {
-    log.Fatal(err)
-    return err
-  }
-
-  return nil
+// Close closes the database, freeing up any resources.
+func (db *mysqlUserDB) Close() {
+  db.conn.Close()
 }
 
-func (dao UserDaoImpl) Update(id int, user *dao.User) error {
-  query := "UPDATE users_data SET " +
-    "email = ?, first_name = ?, second_name = ?, phone = ?, current_password = ?, role_in_network = ?, account_status = ?, avatar_ref = ? " +
-      "WHERE user_id = ?"
+const insertStatement = `INSERT INTO
+  users_data (email, first_name, second_name, phone, current_password, role_in_network, account_status, avatar_ref)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
-  db := get()
-  defer db.Close()
-
-  statement, err := db.Prepare(query)
+func (db *mysqlUserDB) AddUser(user *dao.User) (int64, error) {
+  r, err := execAffectingOneRow(db.insert, user.Email, user.FirstName, user.SecondName, user.CurrentPass, user.Role,
+    user.AccStatus, user.AvatarRef)
 
   if err != nil {
-    log.Fatal(err)
-    return err
+    return 0, err
   }
 
-  defer statement.Close()
+  lastInsertID, err := r.LastInsertId()
 
-  _, err = statement.Exec(user.Email, user.FirstName, user.SecondName, user.Phone, user.CurrentPass, user.Role,
+  if err != nil {
+    return 0, fmt.Errorf("mysql: could not get last insert ID: %v", err)
+  }
+  return lastInsertID, nil
+}
+
+
+const updateStatement = `UPDATE users_data SET
+  email = ?, first_name = ?, second_name = ?, phone = ?, current_password = ?, role_in_network = ?, account_status = ?, avatar_ref = ?
+  WHERE user_id = ?`
+
+func (db *mysqlUserDB) UpdateUser(id int, user *dao.User) error {
+  _, err := execAffectingOneRow(db.update, user.Email, user.FirstName, user.SecondName, user.CurrentPass, user.Role,
     user.AccStatus, user.AvatarRef, id)
 
-  if err != nil {
-    log.Fatal(err)
-    return err
-  }
-
-  return nil
+  return err
 }
 
-func (dao UserDaoImpl)FindById(id int) (dao.User, error) {
-  user, err := findByUniqueParameter("id", id)
+//It just changes account_status without actual deleting table row
+const deleteStatement = `UPDATE users_data SET account_status = 'deleted' WHERE user_id = ?`
+
+func (db *mysqlUserDB) DeleteUser(id int) error {
+  _, err := execAffectingOneRow(db.delete, id)
+
+  return err
+}
+
+
+const findByIdStatement = `SELECT * FROM users_data WHERE id = ?`
+
+func (db *mysqlUserDB) FindUserById(id int) (*dao.User, error) {
+  user, err := scanUser(db.byid.QueryRow(id))
 
   if err != nil {
-    log.Fatal(err)
-    return user, err
+    return nil, err
   }
 
   return user, nil
 }
 
-func (dao UserDaoImpl)FindByEmail(email string) (dao.User, error) {
-  user, err := findByUniqueParameter("email", email)
+
+const findByEmailStatement = `SELECT * FROM users_data WHERE email = ?`
+
+func (db *mysqlUserDB) FindUserByEmail(email string) (*dao.User, error) {
+  user, err := scanUser(db.byemail.QueryRow(email))
 
   if err != nil {
-    log.Fatal(err)
-    return user, err
+    return nil, err
   }
 
   return user, nil
 }
 
-func (dao UserDaoImpl)FindByPhone(phone string) (dao.User, error) {
-  user, err := findByUniqueParameter("phone", phone)
+
+const findByPhoneStatement = `SELECT * FROM users_data WHERE phone = ?`
+
+func (db *mysqlUserDB) FindUserByPhone(phone string) (*dao.User, error) {
+  user, err := scanUser(db.byphone.QueryRow(phone))
 
   if err != nil {
-    log.Fatal(err)
-    return user, err
+    return nil, err
   }
 
   return user, nil
 }
 
-func (dao UserDaoImpl) InitUsersTable() error {
-  query := "CREATE TABLE IF NOT EXISTS users_data (" +
-    "user_id SERIAL PRIMARY KEY, " +
-      "first_name VARCHAR(50) NOT NULL, " +
-        "second_name VARCHAR(50) NOT NULL, " +
-          "email VARCHAR(100) NOT NULL, " +
-            "phone VARCHAR(20)," +
-              "current_password VARCHAR(200) NOT NULL," +
-                "role_in_network ENUM('admin', 'user') NOT NULL," +
-                  "account_status ENUM('active', 'deleted') NOT NULL," +
-                    "avatar_ref MEDIUMTEXT);"
+//scanUser reads a user from a sql.Row or sql.Rows
+func scanUser(s rowScanner) (*dao.User, error) {
 
-  db := get()
-  defer db.Close()
-
-  statement, err := db.Prepare(query)
-
-  if err != nil {
-    log.Fatal(err)
-    return err
-  }
-
-  _, err = statement.Exec()
-  if err != nil {
-    log.Fatal(err)
-    return err
-  }
-
-  return nil
-}
-
-func findByUniqueParameter(parameterName string, parameterValue interface{}) (dao.User, error) {
-  query := fmt.Sprintf("SELECT * FROM users_data WHERE %s = ?", parameterName)
-
-  db := get()
-  defer db.Close()
-
-  statement, err := db.Prepare(query)
   user := dao.User{}
 
-  if err != nil {
-    log.Fatal(err)
-    return user, err
+  if err := s.Scan(&user.ID, &user.Email, &user.FirstName, &user.SecondName, &user.Phone,
+    &user.CurrentPass, &user.Role, &user.AccStatus, &user.AvatarRef); err != nil {
+      return nil, err
   }
 
-  defer statement.Close()
-
-  result := statement.QueryRow(parameterValue)
-
-  err = result.Scan(
-    &user.ID,
-    &user.Email,
-    &user.FirstName,
-    &user.SecondName,
-    &user.CurrentPass,
-    &user.Role,
-    &user.AccStatus,
-    &user.AvatarRef,
-  )
-
-  if err != nil {
-    return user, err
-  }
-
-  return user, nil
+  return &user, nil
 }

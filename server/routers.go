@@ -3,8 +3,6 @@ package server
 import (
   "github.com/gorilla/mux"
   "net/http"
-  "go-team-room/controllers"
-  "go-team-room/models/dao/mysql"
 )
 
 type Route struct {
@@ -36,15 +34,13 @@ func NewRouter() *mux.Router {
   return router
 }
 
-var userService = controllers.UserService{ UserDao: mysql.UserDaoImpl{}}
-
 var routes = Routes{
 
   Route {
     "NewProfileByAdmin",
     "POST",
     "/admin/profile",
-    createUserByAdmin(userService),
+    createUserByAdmin,
   },
 
   // and so on, just add new Route structs to this array

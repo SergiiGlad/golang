@@ -6,45 +6,44 @@ import (
   "log"
   "fmt"
   "encoding/json"
-  "go-team-room/controllers"
-  //"go-team-room/models/dao"
   "go-team-room/models/dto"
+  //"go-team-room/controllers"
+  //"go-team-room/models"
 )
 
-func createUserByAdmin(uservice controllers.UserService) http.HandlerFunc {
-  return func(w http.ResponseWriter, r *http.Request) {
-    fmt.Println("/admin/profile")
+func createUserByAdmin(w http.ResponseWriter, r *http.Request) {
 
-    body, err := ioutil.ReadAll(r.Body)
+  body, err := ioutil.ReadAll(r.Body)
 
-    if err != nil {
-      log.Fatal(err)
-      fmt.Fprint(w, err)
-    }
+  if err != nil {
+    log.Fatal(err)
+    fmt.Fprint(w, err)
+  }
 
-    user := dto.UserDto{}
-    err = json.Unmarshal(body, &user)
+  user := dto.RequestUserDto{}
+  err = json.Unmarshal(body, &user)
 
-    fmt.Printf("%s", user)
+  fmt.Printf("%s", user)
 
-    if err != nil {
-      log.Fatal(err)
-      fmt.Fprint(w, err)
-    }
+  if err != nil {
+    log.Fatal(err)
+    fmt.Fprint(w, err)
+  }
 
-    //err = uservice.CreateUser(&user)
+  //userDao := models.RequestUserDtoToDao(user)
+  //
+  //err = controllers.CreateUser(&userDao)
 
-    if err != nil {
-      log.Fatal(err)
-      fmt.Fprint(w, err)
-    }
+  if err != nil {
+    log.Fatal(err)
+    fmt.Fprint(w, err)
+  }
 
-    body, err = json.Marshal(user)
-    _, err = w.Write(body)
+  body, err = json.Marshal(user)
+  _, err = w.Write(body)
 
-    if err != nil {
-      log.Fatal(err)
-      fmt.Fprint(w, err)
-    }
+  if err != nil {
+    log.Fatal(err)
+    fmt.Fprint(w, err)
   }
 }

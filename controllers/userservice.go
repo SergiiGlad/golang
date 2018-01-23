@@ -1,28 +1,24 @@
 package controllers
 
 import (
-  "go-team-room/models/dao/interfaces"
   "go-team-room/models/dao"
   "regexp"
   "errors"
   "gopkg.in/hlandau/passlib.v1/hash/bcrypt"
   "log"
   "database/sql"
+  "go-team-room/models/dao/mysql"
 )
 
-type UserService struct {
-  UserDao interfaces.UserDao
-}
-
-func (us UserService) CreateUser(user *dao.User) error {
-  err := us.checkEmail(user.Email)
+func CreateUser(user *dao.User) error {
+  err := checkEmail(user.Email)
 
   if err != nil {
     log.Fatal(err)
     return err
   }
 
-  err = us.checkPhone(user.Phone)
+  err = checkPhone(user.Phone)
 
   if err != nil {
     log.Fatal(err)
@@ -43,19 +39,28 @@ func (us UserService) CreateUser(user *dao.User) error {
 
   user.CurrentPass = hashPass
 
-  return us.UserDao.Create(user)
+  id, err := mysql.DB.AddUser(user)
+
+  if err != nil {
+    log.Fatal(err)
+    return err
+  }
+
+  user.ID = id
+
+  return nil
 }
 
-func (us UserService) UpdateUser(id int, user *dao.User) error {
-  return us.UserDao.Update(id, user)
+func UpdateUser(id int, user *dao.User) error {
+  return mysql.DB.UpdateUser(id, user)
 }
 
-func (us UserService) DeleteUser(id int, user *dao.User) error {
-  return us.UserDao.Delete(id)
+func DeleteUser(id int, user *dao.User) error {
+  return mysql.DB.DeleteUser(id)
 }
 
-func (us UserService) checkEmail(email string) error {
-  _, err := us.UserDao.FindByEmail(email)
+func checkEmail(email string) error {
+  _, err := mysql.DB.FindUserByEmail(email)
 
   switch err {
   case sql.ErrNoRows:
@@ -76,9 +81,9 @@ func (us UserService) checkEmail(email string) error {
   return nil
 }
 
-func (us UserService) checkPhone(phone string) error {
+func checkPhone(phone string) error {
   if len(phone) > 0 {
-    _, err := us.UserDao.FindByPhone(phone)
+    _, err := mysql.DB.FindUserByPhone(phone)
 
     switch err {
     case sql.ErrNoRows:
