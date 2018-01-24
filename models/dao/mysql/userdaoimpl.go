@@ -17,6 +17,7 @@ type mysqlUserDB struct {
   byid    *sql.Stmt
   byemail *sql.Stmt
   byphone *sql.Stmt
+  friends *sql.Stmt
 }
 
 var _ interfaces.UserDatabase = &mysqlUserDB{}
@@ -31,6 +32,8 @@ func newMySqlUserDB(conn *sql.DB) (interfaces.UserDatabase, error) {
   db := &mysqlUserDB{
     conn: conn,
   }
+
+  var err error
 
   if db.insert, err = conn.Prepare(insertStatement); err != nil {
     return nil, fmt.Errorf("mysql: prepare list: %v", err)
@@ -50,7 +53,9 @@ func newMySqlUserDB(conn *sql.DB) (interfaces.UserDatabase, error) {
   if db.byphone, err = conn.Prepare(findByPhoneStatement); err != nil {
     return nil, fmt.Errorf("mysql: prepare list: %v", err)
   }
-
+  if db.friends, err = conn.Prepare(findFriendsByUserId); err != nil {
+    return nil, fmt.Errorf("mysql: prepare list: %v", err)
+  }
   return db, nil
 }
 
@@ -137,6 +142,30 @@ func (db *mysqlUserDB) FindUserByPhone(phone string) (*dao.User, error) {
   }
 
   return user, nil
+}
+
+const findFriendsByUserId = `SELECT friend_id FROM friend_list WHERE user_id = ?;`
+
+func (db *mysqlUserDB) FriendsByUserID(id int64) ([]int64, error) {
+  rows, err := db.friends.Query()
+
+  if err != nil {
+    return nil, err
+  }
+  defer rows.Close()
+
+  friendIds := []int64{}
+  var friendId int64
+  for rows.Next() {
+    err = rows.Scan(&friendId)
+    if err != nil {
+      return nil, fmt.Errorf("mysql: could not read row: %v", err)
+    }
+
+    friendIds = append(friendIds, friendId)
+  }
+
+  return friendIds, nil
 }
 
 //scanUser reads a user from a sql.Row or sql.Rows

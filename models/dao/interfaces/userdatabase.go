@@ -10,4 +10,5 @@ type UserDatabase interface {
   FindUserById(id int64) (*dao.User, error)
   FindUserByEmail(email string) (*dao.User, error)
   FindUserByPhone(phone string) (*dao.User, error)
+  FriendsByUserID(id int64) ([]int64, error)
 }

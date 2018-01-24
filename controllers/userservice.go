@@ -9,104 +9,150 @@ import (
   "database/sql"
   "go-team-room/models/dao/mysql"
   "strings"
+  "go-team-room/models/dto"
 )
 
-func CreateUser(user *dao.User) error {
+func CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
+
+  user := dto.RequestUserDtoToDao(userDto)
+  var responseUser dto.ResponseUserDto
+
   err := checkUniqueEmail(user.Email)
 
   if err != nil && err != sql.ErrNoRows {
     log.Println(err)
-    return err
+    return responseUser, err
   }
 
   err = checkUniquePhone(user.Phone)
 
   if err != nil && err != sql.ErrNoRows {
-    return err
+    return responseUser, err
   }
 
   if validPasswordLength(user.CurrentPass) == false {
-    return errors.New("Password too short.")
+    return responseUser, errors.New("Password too short.")
   }
 
   hashPass, err := bcrypt.Crypter.Hash(user.CurrentPass)
 
   if err != nil {
     log.Println(err)
-    return err
+    return responseUser, err
   }
 
   user.CurrentPass = hashPass
-  nameLetterToUppep(user)
+  nameLetterToUppep(&user)
 
-  id, err := mysql.DB.AddUser(user)
+  id, err := mysql.DB.AddUser(&user)
 
   if err != nil {
     log.Println(err)
-    return err
+    return responseUser, err
   }
 
   user.ID = id
+  responseUser = dto.UserDaoToResponseDto(&user)
 
-  return nil
+  return responseUser, nil
 }
 
-func UpdateUser(id int64, user *dao.User) error {
+func UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
-  _, err := mysql.DB.FindUserById(id)
+  userNew := dto.RequestUserDtoToDao(userDto)
+  userOld, err := mysql.DB.FindUserById(id)
+  var responseUser dto.ResponseUserDto
 
   if err != nil {
-    return err
+    return responseUser, err
   }
 
-  err = checkUniqueEmail(user.Email)
-
-  if err != nil && err != sql.ErrNoRows {
-    return err
+  if len(userNew.FirstName) == 0 {
+    userNew.FirstName = userOld.FirstName
   }
 
-  err = checkUniquePhone(user.Phone)
-
-  if err != nil && err != sql.ErrNoRows {
-    return err
+  if len(userNew.SecondName) == 0 {
+    userNew.SecondName = userOld.SecondName
   }
 
-  if validPasswordLength(user.CurrentPass) == false {
-    return errors.New("Password too short.")
+  if len(userNew.Email) != 0 {
+    err = checkUniqueEmail(userNew.Email)
+
+    if err != nil && err != sql.ErrNoRows {
+      return responseUser, err
+    }
+  } else {
+    userNew.Email = userOld.Email
   }
 
-  hashPass, err := bcrypt.Crypter.Hash(user.CurrentPass)
+  if len(userNew.Phone) != 0 {
+    err = checkUniquePhone(userNew.Phone)
 
+    if err != nil && err != sql.ErrNoRows {
+      return responseUser, err
+    }
+  } else {
+    userNew.Phone = userOld.Phone
+  }
+
+  if len(userNew.CurrentPass) != 0 {
+    if validPasswordLength(userNew.CurrentPass) == false {
+      return responseUser, errors.New("Password too short.")
+    }
+
+    hashPass, err := bcrypt.Crypter.Hash(userNew.CurrentPass)
+
+    if err != nil {
+      log.Println(err)
+      return responseUser, err
+    }
+
+    userNew.CurrentPass = hashPass
+  } else {
+    userNew.CurrentPass = userOld.CurrentPass
+  }
+
+  nameLetterToUppep(&userNew)
+
+  err = mysql.DB.UpdateUser(id, &userNew)
   if err != nil {
     log.Println(err)
-    return err
+    return responseUser, err
   }
 
-  user.CurrentPass = hashPass
-  nameLetterToUppep(user)
+  userNew.ID = id
+  responseUser = dto.UserDaoToResponseDto(&userNew)
 
-  err = mysql.DB.UpdateUser(id, user)
-
-  if err != nil {
-    log.Println(err)
-    return err
-  }
-
-  return nil
+  return responseUser, nil
 }
 
-func DeleteUser(id int64) (*dao.User, error) {
+func DeleteUser(id int64) (dto.ResponseUserDto, error) {
+
+  var responseUserDto dto.ResponseUserDto
+
   user, err := mysql.DB.FindUserById(id)
 
   if err != nil {
-    return user, err
+    return responseUserDto, err
   }
 
-  return user, mysql.DB.DeleteUser(id)
+  responseUserDto = dto.UserDaoToResponseDto(user)
+  responseUserDto.Friends, _ = getUserFriends(id)
+
+  return responseUserDto, mysql.DB.DeleteUser(id)
+}
+
+func getUserFriends(id int64) ([]int64, error) {
+  _, err := mysql.DB.FindUserById(id)
+
+  if err != nil {
+    return nil, err
+  }
+
+  return mysql.DB.FriendsByUserID(id)
 }
 
 func checkUniqueEmail(email string) error {
-
 
   if validEmail(email) == false {
     return errors.New("Invalid email format.")

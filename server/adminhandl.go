@@ -7,7 +7,6 @@ import (
   "fmt"
   "encoding/json"
   "go-team-room/models/dto"
-  "go-team-room/models"
   "go-team-room/controllers"
   "github.com/gorilla/mux"
   "strconv"
@@ -31,17 +30,13 @@ func createProfile(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  userDao := models.RequestUserDtoToDao(user)
-
-  err = controllers.CreateUser(&userDao)
+  respUserDto, err := controllers.CreateUser(&user)
 
   if err != nil {
     log.Println(err)
     responseError(w, err)
     return
   }
-
-  respUserDto := models.UserDaoToResponseDto(userDao)
 
   body, err = json.Marshal(respUserDto)
   _, err = w.Write(body)
@@ -62,8 +57,8 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  user := dto.RequestUserDto{}
-  err = json.Unmarshal(body, &user)
+  userDto := dto.RequestUserDto{}
+  err = json.Unmarshal(body, &userDto)
 
   if err != nil {
     log.Println(err)
@@ -71,7 +66,6 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  userDao := models.RequestUserDtoToDao(user)
   idStr := mux.Vars(r)["id"]
   id, err := strconv.Atoi(idStr)
 
@@ -81,15 +75,13 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  err = controllers.UpdateUser(int64(id), &userDao)
+  respUserDto, err := controllers.UpdateUser(int64(id), &userDto)
 
   if err != nil {
     log.Println(err)
     responseError(w, err)
     return
   }
-
-  respUserDto := models.UserDaoToResponseDto(userDao)
 
   body, err = json.Marshal(respUserDto)
   _, err = w.Write(body)
@@ -111,7 +103,7 @@ func deleteProfile(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  userDao, err := controllers.DeleteUser(int64(id))
+  respUserDto, err := controllers.DeleteUser(int64(id))
 
   if err != nil {
     log.Println(err)
@@ -119,7 +111,11 @@ func deleteProfile(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  respUserDto := models.UserDaoToResponseDto(*userDao)
+  if err != nil {
+    log.Println(err)
+    responseError(w, err)
+    return
+  }
 
   body, err := json.Marshal(respUserDto)
   _, err = w.Write(body)
