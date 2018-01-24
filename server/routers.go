@@ -40,7 +40,21 @@ var routes = Routes{
     "NewProfileByAdmin",
     "POST",
     "/admin/profile",
-    createUserByAdmin,
+    createProfile,
+  },
+
+  Route {
+    "UpdateProfileByAdmin",
+    "PUT",
+    "/admin/profile/{id:[0-9]+}",
+    updateProfile,
+  },
+
+  Route {
+    "DeleteProfileByAdmin",
+    "DELETE",
+    "/admin/profile/{id:[0-9]+}",
+    deleteProfile,
   },
 
   // and so on, just add new Route structs to this array

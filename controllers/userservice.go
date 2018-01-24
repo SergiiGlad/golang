@@ -8,41 +8,41 @@ import (
   "log"
   "database/sql"
   "go-team-room/models/dao/mysql"
+  "strings"
 )
 
 func CreateUser(user *dao.User) error {
-  err := checkEmail(user.Email)
+  err := checkUniqueEmail(user.Email)
 
-  if err != nil {
-    log.Fatal(err)
+  if err != nil && err != sql.ErrNoRows {
+    log.Println(err)
     return err
   }
 
-  err = checkPhone(user.Phone)
+  err = checkUniquePhone(user.Phone)
 
-  if err != nil {
-    log.Fatal(err)
+  if err != nil && err != sql.ErrNoRows {
     return err
   }
 
   if validPasswordLength(user.CurrentPass) == false {
-    log.Fatal("Invalid password size")
     return errors.New("Password too short.")
   }
 
   hashPass, err := bcrypt.Crypter.Hash(user.CurrentPass)
 
   if err != nil {
-    log.Fatal(err)
+    log.Println(err)
     return err
   }
 
   user.CurrentPass = hashPass
+  nameLetterToUppep(user)
 
   id, err := mysql.DB.AddUser(user)
 
   if err != nil {
-    log.Fatal(err)
+    log.Println(err)
     return err
   }
 
@@ -51,54 +51,105 @@ func CreateUser(user *dao.User) error {
   return nil
 }
 
-func UpdateUser(id int, user *dao.User) error {
-  return mysql.DB.UpdateUser(id, user)
-}
+func UpdateUser(id int64, user *dao.User) error {
 
-func DeleteUser(id int, user *dao.User) error {
-  return mysql.DB.DeleteUser(id)
-}
+  _, err := mysql.DB.FindUserById(id)
 
-func checkEmail(email string) error {
-  _, err := mysql.DB.FindUserByEmail(email)
+  if err != nil {
+    return err
+  }
 
-  switch err {
-  case sql.ErrNoRows:
-    if validEmail(email) == false {
-      log.Fatal("Invalid email format.")
-      return errors.New("Invalid email format.")
-    }
+  err = checkUniqueEmail(user.Email)
 
-  case nil:
-    log.Fatal("There is user with such email.")
-    return errors.New("There is user with such email.")
+  if err != nil && err != sql.ErrNoRows {
+    return err
+  }
 
-  default:
-    log.Fatal(err)
+  err = checkUniquePhone(user.Phone)
+
+  if err != nil && err != sql.ErrNoRows {
+    return err
+  }
+
+  if validPasswordLength(user.CurrentPass) == false {
+    return errors.New("Password too short.")
+  }
+
+  hashPass, err := bcrypt.Crypter.Hash(user.CurrentPass)
+
+  if err != nil {
+    log.Println(err)
+    return err
+  }
+
+  user.CurrentPass = hashPass
+  nameLetterToUppep(user)
+
+  err = mysql.DB.UpdateUser(id, user)
+
+  if err != nil {
+    log.Println(err)
     return err
   }
 
   return nil
 }
 
-func checkPhone(phone string) error {
-  if len(phone) > 0 {
-    _, err := mysql.DB.FindUserByPhone(phone)
+func DeleteUser(id int64) (*dao.User, error) {
+  user, err := mysql.DB.FindUserById(id)
+
+  if err != nil {
+    return user, err
+  }
+
+  return user, mysql.DB.DeleteUser(id)
+}
+
+func checkUniqueEmail(email string) error {
+
+
+  if validEmail(email) == false {
+    return errors.New("Invalid email format.")
+  } else {
+
+    _, err := mysql.DB.FindUserByEmail(email)
 
     switch err {
     case sql.ErrNoRows:
-      if validPhone(phone) == false {
-        log.Fatal("Invalid phone number format.")
-        return errors.New("Invalid phone number format.")
-      }
+      return err
 
     case nil:
-      log.Fatal("There is user with such phone.")
-      return errors.New("There is user with such phone.")
+      return errors.New("There is user with such email.")
 
     default:
-      log.Fatal(err)
+      log.Println(err)
       return err
+    }
+  }
+
+  return nil
+}
+
+func checkUniquePhone(phone string) error {
+  if len(phone) > 0 {
+
+    if validPhone(phone) == false {
+      return errors.New("Invalid phone number format.")
+    } else {
+
+      _, err := mysql.DB.FindUserByPhone(phone)
+
+      switch err {
+      case sql.ErrNoRows:
+        return err
+
+      case nil:
+        return errors.New("There is user with such phone.")
+
+      default:
+        log.Println(err)
+        return err
+      }
     }
   }
 
@@ -138,3 +189,9 @@ func validPasswordLength(password string) bool {
 
   return true
 }
+
+func nameLetterToUppep(user *dao.User) {
+  user.FirstName = strings.ToUpper(string([]rune(user.FirstName)[0])) + string([]rune(user.FirstName)[1:])
+  user.SecondName = strings.ToUpper(string([]rune(user.SecondName)[0])) + string([]rune(user.SecondName)[1:])
+}
+

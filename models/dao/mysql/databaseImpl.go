@@ -61,7 +61,7 @@ var createTableStatements = []string{
   `USE goteamroom;`,
 
   `CREATE TABLE IF NOT EXISTS users_data (
-    user_id PRIMARY KEY AUTO_INCREMENT,
+    user_id SERIAL PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
     second_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
@@ -73,7 +73,7 @@ var createTableStatements = []string{
   );`,
 
   `CREATE TABLE IF NOT EXISTS users_passwords (
-    password_id PRIMARY KEY AUTO_INCREMENT,
+    password_id SERIAL PRIMARY KEY,
     password VARCHAR(200) NOT NULL,
     password_created TIMESTAMP NOT NULL,
     user_id INTEGER REFERENCES users_data(user_id)
@@ -111,9 +111,10 @@ func ensureTableExists() error {
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1146 {
       return createAllTables(conn)
     }
+
+    return fmt.Errorf("mysql: could not connect to the database: %v", err)
   }
 
-  return fmt.Errorf("mysql: could not connect to the database: %v", err)
 
   return nil
 }

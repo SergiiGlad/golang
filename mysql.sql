@@ -1,5 +1,5 @@
 CREATE TABLE users_data (
-  user_id PRIMARY KEY AUTO_INCREMENT,
+  user_id SERIAL PRIMARY KEY,
   first_name VARCHAR(50) NOT NULL,
   second_name VARCHAR(50) NOT NULL,
   email VARCHAR(100) NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE users_data (
 );
 
 CREATE TABLE users_passwords (
-  password_id PRIMARY KEY AUTO_INCREMENT,
+  password_id SERIAL PRIMARY KEY,
   password VARCHAR(200) NOT NULL,
   password_created TIMESTAMP NOT NULL,
   user_id INTEGER REFERENCES users_data(user_id)

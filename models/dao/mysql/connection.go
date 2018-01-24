@@ -16,6 +16,6 @@ func init() {
   DB, err = newMySQLDatabase()
 
   if err != nil {
-    log.Fatal("Could not connect DB.")
+    log.Fatalf("Could not connect DB: %s", err)
   }
 }
