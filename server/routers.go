@@ -72,7 +72,7 @@ var routes = Routes{
   Route {
     "DeletePost",
     "DELETE",
-    "/post/{id}",
+    "/post/{post_id}",
     DeletePost,
   },
 
@@ -88,6 +88,13 @@ var routes = Routes{
     "GET",
     "/post/user/{user_id}",
     GetPostByUserID,
+  },
+
+  Route {
+    "UpdatePost",
+    "PUT",
+    "/post/{id}",
+    UpdatePost,
   },
 
   Route {

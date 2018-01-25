@@ -22,7 +22,7 @@ type Post struct{
   UserID string `json:"user_id"`
 }
 
-//To create new post in DynamoDB Table "Post"
+//To CREATE new post in DynamoDB Table "Post"
 func CreateNewPost(w http.ResponseWriter, r *http.Request) {
   var newPost Post
 
@@ -82,14 +82,13 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
   fmt.Println(result)
 }
 
-//To delete existing post by "post_id" from DynamoDB Table "Post"
+//To DELETE existing post by "post_id" from DynamoDB Table "Post"
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 
   var post Post
   vars := mux.Vars(r)
   post.PostID = vars["post_id"]
 
-  _ = json.NewDecoder(r.Body).Decode(&post)
   fmt.Println(post.PostID)
 
   sess, err := session.NewSession(&aws.Config{
@@ -135,10 +134,9 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
   fmt.Println(result)
 }
 
-//To get post by "post_id" from DynamoDB Table "Post"
+//To GET post by "post_id" from DynamoDB Table "Post"
 func GetPost(w http.ResponseWriter, r *http.Request) {
   var post Post
-  //_ = json.NewDecoder(r.Body).Decode(&post)
 
   vars := mux.Vars(r)
   post.PostID = vars["post_id"]
@@ -186,7 +184,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
   _ = json.NewEncoder(w).Encode(&post)
 }
 
-//To get posts from table "Post" in DynamoDB by UserID
+//To GET posts from DynamoDB Table "Post" by UserID
 func GetPostByUserID(w http.ResponseWriter, r *http.Request){
   var post Post
 
@@ -234,6 +232,68 @@ func GetPostByUserID(w http.ResponseWriter, r *http.Request){
     fmt.Println("Post Text:", post.Text)
     fmt.Println()
   }
+}
+
+//To UPDATE post in DynamoDB Table "Post"
+func UpdatePost(w http.ResponseWriter, r *http.Request){
+  var post Post
+
+  vars := mux.Vars(r)
+  post.PostID = vars["post_id"]
+  fmt.Println(post.PostID)
+  _ = json.NewDecoder(r.Body).Decode(&post)
+
+
+  sess, err := session.NewSession(&aws.Config{
+    Region: aws.String("eu-west-2"),
+  })
+
+  svc := dynamodb.New(sess)
+  input := &dynamodb.PutItemInput{
+    Item: map[string]*dynamodb.AttributeValue{
+      "post_id": {
+        S: &post.PostID,
+      },
+      "post_title": {
+        S: &post.Title,
+      },
+      "post_text": {
+        S: &post.Text,
+      },
+      "user_id": {
+        S: &post.UserID,
+      },
+    },
+    ReturnConsumedCapacity: aws.String("TOTAL"),
+    TableName:              aws.String("Post"),
+  }
+
+  result, err := svc.PutItem(input)
+  if err != nil {
+    if aerr, ok := err.(awserr.Error); ok {
+      switch aerr.Code() {
+      case dynamodb.ErrCodeConditionalCheckFailedException:
+        fmt.Println(dynamodb.ErrCodeConditionalCheckFailedException, aerr.Error())
+      case dynamodb.ErrCodeProvisionedThroughputExceededException:
+        fmt.Println(dynamodb.ErrCodeProvisionedThroughputExceededException, aerr.Error())
+      case dynamodb.ErrCodeResourceNotFoundException:
+        fmt.Println(dynamodb.ErrCodeResourceNotFoundException, aerr.Error())
+      case dynamodb.ErrCodeItemCollectionSizeLimitExceededException:
+        fmt.Println(dynamodb.ErrCodeItemCollectionSizeLimitExceededException, aerr.Error())
+      case dynamodb.ErrCodeInternalServerError:
+        fmt.Println(dynamodb.ErrCodeInternalServerError, aerr.Error())
+      default:
+        fmt.Println(aerr.Error())
+      }
+    } else {
+      // Print the error, cast err to awserr.Error to get the Code and
+      // Message from an error.
+      fmt.Println(err.Error())
+    }
+    return
+  }
+  _ = json.NewEncoder(w).Encode(&post)
+  fmt.Println(result)
 }
 
 //To describe table "Post" in DynamoDB
