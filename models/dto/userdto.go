@@ -32,7 +32,7 @@ func (user RequestUserDto) String() string {
     user.Email, user.FirstName, user.LastName, user.Phone, user.CurrentPass)
 }
 
-func RequestUserDtoToDao(userDto *RequestUserDto) dao.User {
+func RequestUserDtoToEntity(userDto *RequestUserDto) dao.User {
   userDao := dao.User {
     0,
     userDto.Email,
@@ -49,7 +49,7 @@ func RequestUserDtoToDao(userDto *RequestUserDto) dao.User {
 }
 
 //without friends
-func UserDaoToResponseDto(userDao *dao.User) ResponseUserDto {
+func UserEntityToResponseDto(userDao *dao.User) ResponseUserDto {
   userDto := ResponseUserDto{
     userDao.ID,
     userDao.Email,

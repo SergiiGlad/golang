@@ -14,114 +14,111 @@ import (
 
 func CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
-  user := dto.RequestUserDtoToDao(userDto)
-  var responseUser dto.ResponseUserDto
+  userEntity := dto.RequestUserDtoToEntity(userDto)
+  var respUserDto dto.ResponseUserDto
 
-  err := checkUniqueEmail(user.Email)
-
-  if err != nil && err != sql.ErrNoRows {
-    log.Println(err)
-    return responseUser, err
-  }
-
-  err = checkUniquePhone(user.Phone)
+  err := checkUniqueEmail(userEntity.Email)
 
   if err != nil && err != sql.ErrNoRows {
-    return responseUser, err
+    return respUserDto, err
   }
 
-  if validPasswordLength(user.CurrentPass) == false {
-    return responseUser, errors.New("Password too short.")
+  err = checkUniquePhone(userEntity.Phone)
+
+  if err != nil && err != sql.ErrNoRows {
+    return respUserDto, err
   }
 
-  hashPass, err := bcrypt.Crypter.Hash(user.CurrentPass)
+  if validPasswordLength(userEntity.CurrentPass) == false {
+    return respUserDto, errors.New("Password too short.")
+  }
+
+  hashPass, err := bcrypt.Crypter.Hash(userEntity.CurrentPass)
+
+  if err != nil {
+    return respUserDto, err
+  }
+
+  userEntity.CurrentPass = hashPass
+  nameLetterToUppep(&userEntity)
+
+  _, err = mysql.DB.AddUser(&userEntity)
 
   if err != nil {
     log.Println(err)
-    return responseUser, err
+    return respUserDto, err
   }
 
-  user.CurrentPass = hashPass
-  nameLetterToUppep(&user)
+  respUserDto = dto.UserEntityToResponseDto(&userEntity)
 
-  id, err := mysql.DB.AddUser(&user)
-
-  if err != nil {
-    log.Println(err)
-    return responseUser, err
-  }
-
-  user.ID = id
-  responseUser = dto.UserDaoToResponseDto(&user)
-
-  return responseUser, nil
+  return respUserDto, nil
 }
 
 func UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
-  userNew := dto.RequestUserDtoToDao(userDto)
-  userOld, err := mysql.DB.FindUserById(id)
+  newUserData := dto.RequestUserDtoToEntity(userDto)
+  oldUserData, err := mysql.DB.FindUserById(id)
   var responseUser dto.ResponseUserDto
 
   if err != nil {
     return responseUser, err
   }
 
-  if len(userNew.FirstName) == 0 {
-    userNew.FirstName = userOld.FirstName
+  if len(newUserData.FirstName) == 0 {
+    newUserData.FirstName = oldUserData.FirstName
   }
 
-  if len(userNew.SecondName) == 0 {
-    userNew.SecondName = userOld.SecondName
+  if len(newUserData.SecondName) == 0 {
+    newUserData.SecondName = oldUserData.SecondName
   }
 
-  if len(userNew.Email) != 0 {
-    err = checkUniqueEmail(userNew.Email)
+  if len(newUserData.Email) != 0 {
+    err = checkUniqueEmail(newUserData.Email)
 
     if err != nil && err != sql.ErrNoRows {
       return responseUser, err
     }
   } else {
-    userNew.Email = userOld.Email
+    newUserData.Email = oldUserData.Email
   }
 
-  if len(userNew.Phone) != 0 {
-    err = checkUniquePhone(userNew.Phone)
+  if len(newUserData.Phone) != 0 {
+    err = checkUniquePhone(newUserData.Phone)
 
     if err != nil && err != sql.ErrNoRows {
       return responseUser, err
     }
   } else {
-    userNew.Phone = userOld.Phone
+    newUserData.Phone = oldUserData.Phone
   }
 
-  if len(userNew.CurrentPass) != 0 {
-    if validPasswordLength(userNew.CurrentPass) == false {
+  if len(newUserData.CurrentPass) != 0 {
+    if validPasswordLength(newUserData.CurrentPass) == false {
       return responseUser, errors.New("Password too short.")
     }
 
-    hashPass, err := bcrypt.Crypter.Hash(userNew.CurrentPass)
+    hashPass, err := bcrypt.Crypter.Hash(newUserData.CurrentPass)
 
     if err != nil {
       log.Println(err)
       return responseUser, err
     }
 
-    userNew.CurrentPass = hashPass
+    newUserData.CurrentPass = hashPass
   } else {
-    userNew.CurrentPass = userOld.CurrentPass
+    newUserData.CurrentPass = oldUserData.CurrentPass
   }
 
-  nameLetterToUppep(&userNew)
+  nameLetterToUppep(&newUserData)
 
-  err = mysql.DB.UpdateUser(id, &userNew)
+  err = mysql.DB.UpdateUser(id, &newUserData)
   if err != nil {
     log.Println(err)
     return responseUser, err
   }
 
-  userNew.ID = id
-  responseUser = dto.UserDaoToResponseDto(&userNew)
+  newUserData.ID = id
+  responseUser = dto.UserEntityToResponseDto(&newUserData)
 
   return responseUser, nil
 }
@@ -130,13 +127,13 @@ func DeleteUser(id int64) (dto.ResponseUserDto, error) {
 
   var responseUserDto dto.ResponseUserDto
 
-  user, err := mysql.DB.FindUserById(id)
+  userEntity, err := mysql.DB.FindUserById(id)
 
   if err != nil {
     return responseUserDto, err
   }
 
-  responseUserDto = dto.UserDaoToResponseDto(user)
+  responseUserDto = dto.UserEntityToResponseDto(userEntity)
   responseUserDto.Friends, _ = getUserFriends(id)
 
   return responseUserDto, mysql.DB.DeleteUser(id)

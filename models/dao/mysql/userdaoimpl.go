@@ -81,6 +81,9 @@ func (db *mysqlUserDB) AddUser(user *dao.User) (int64, error) {
   if err != nil {
     return 0, fmt.Errorf("mysql: could not get last insert ID: %v", err)
   }
+
+  user.ID = lastInsertID
+
   return lastInsertID, nil
 }
 
