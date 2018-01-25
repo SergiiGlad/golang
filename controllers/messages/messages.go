@@ -1,10 +1,18 @@
 package messages
 
 import (
+	//"github.com/derekparker/delve/pkg/config"
 	"encoding/json"
 	"fmt"
+	"go-team-room/conf"
 	"io/ioutil"
 	"net/http"
+	"os"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 // Create structs to hold info about new item of HumMessage
@@ -32,7 +40,7 @@ type HumMessageSocialStatus struct {
 
 type HumMessage struct {
 	MessageId           string                 `json:"message_id"`
-	MessagechatRoomId   string                 `json:"message_chat_room_id`
+	MessageChatRoomId   string                 `json:"message_chat_room_id`
 	MessageData         HumMessageData         `json:"message_data"`
 	MessageParentId     string                 `json:"message_parent_id"`
 	MessageSocialStatus HumMessageSocialStatus `json:"message_social_status"`
@@ -75,6 +83,43 @@ func ValideteDataFromUser(m *HumMessage) {
 	//go home
 }
 
+func PutMessageToDynamo(m *HumMessage) {
+	sess, err := session.NewSession(&aws.Config{
+
+		Region: aws.String(conf.DynamoRegion)},
+	)
+	if err != nil {
+		fmt.Println("Got error creating session")
+		fmt.Println(err.Error())
+		os.Exit(1) ///???
+	}
+	// Create DynamoDB client
+	svc := dynamodb.New(sess)
+	av, err := dynamodbattribute.MarshalMap(m)
+	//av, err := dynamodbattribute.MarshalMap(item)
+
+	if err != nil {
+		fmt.Println("Got error marshalling map:")
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	// Create item in table messages
+	input := &dynamodb.PutItemInput{
+		Item:      av,
+		TableName: aws.String("messages"),
+	}
+
+	_, err = svc.PutItem(input)
+
+	if err != nil {
+		fmt.Println("Got error calling PutItem:")
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	fmt.Println("Successfully added 'The Big someNewMessage' to  table")
+}
+
 //HandlerOfMessages This func should process any messages end point
 func HandlerOfMessages(w http.ResponseWriter, r *http.Request) {
 	currentUserID := GetActionUserId(r)
@@ -111,23 +156,27 @@ func HandlerOfMessages(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("===========")
 		//
 		//// https://gist.github.com/alyssaq/75d6678d00572d103106
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
+		body, err1 := ioutil.ReadAll(r.Body)
+		if err1 != nil {
 			http.Error(w, "Error reading request body",
 				http.StatusInternalServerError)
 		}
 		//var postDataFromRequest string
 		//postDataFromRequest = postDataFromRequest + string(body)
 		fmt.Println(string(body))
+		fmt.Println("===========")
 		var inputMessage HumMessage
-		decoder := json.NewDecoder(r.Body)
-		err = decoder.Decode(&inputMessage)
-
-		if err != nil {
-			panic(err)
+		// decoder := json.NewDecoder(r.Body)
+		// err2 := decoder.Decode(&inputMessage)
+		err2 := json.Unmarshal(body, &inputMessage)
+		if err2 != nil {
+			//panic(err)
+			fmt.Println(err2)
 		}
 		ValideteDataFromUser(&inputMessage)
 		fmt.Println(inputMessage.MessageData)
+		//assume data validated
+		//and it is safe to put it into a Dunamo
 
 		////////////////////////////////////
 		//fmt.Fprint(w, "POST done")
