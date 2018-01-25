@@ -65,28 +65,35 @@ var routes = Routes{
   Route {
     "CreateNewPost",
     "POST",
-    "/create",
+    "/post/new",
     CreateNewPost,
   },
 
   Route {
     "DeletePost",
     "DELETE",
-    "/delete",
+    "/post/{id}",
     DeletePost,
   },
 
   Route {
     "GetPostByPostID",
     "GET",
-    "/get",
+    "/post/{post_id}",
     GetPost,
+  },
+
+  Route {
+    "GetPostByUserID",
+    "GET",
+    "/post/user/{user_id}",
+    GetPostByUserID,
   },
 
   Route {
     "DescribeTablePost",
     "GET",
-    "/describe",
+    "/describeTablePost",
     DescribeTablePost,
   },
 

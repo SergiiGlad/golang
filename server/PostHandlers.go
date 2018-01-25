@@ -10,12 +10,16 @@ import (
   "time"
   "github.com/aws/aws-sdk-go/aws/awserr"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+  "github.com/gorilla/mux"
+  "github.com/aws/aws-sdk-go/service/dynamodb/expression"
+  "os"
 )
 
 type Post struct{
   Title string `json:"post_title"`
   Text string	`json:"post_text"`
   PostID string `json:"post_id"`
+  UserID string `json:"user_id"`
 }
 
 //To create new post in DynamoDB Table "Post"
@@ -41,6 +45,9 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
       },
       "post_text": {
         S: &newPost.Text,
+      },
+      "user_id": {
+        S: &newPost.UserID,
       },
     },
     ReturnConsumedCapacity: aws.String("TOTAL"),
@@ -79,6 +86,8 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 
   var post Post
+  vars := mux.Vars(r)
+  post.PostID = vars["post_id"]
 
   _ = json.NewDecoder(r.Body).Decode(&post)
   fmt.Println(post.PostID)
@@ -129,7 +138,10 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 //To get post by "post_id" from DynamoDB Table "Post"
 func GetPost(w http.ResponseWriter, r *http.Request) {
   var post Post
-  _ = json.NewDecoder(r.Body).Decode(&post)
+  //_ = json.NewDecoder(r.Body).Decode(&post)
+
+  vars := mux.Vars(r)
+  post.PostID = vars["post_id"]
 
   sess, err := session.NewSession(&aws.Config{
     Region:      aws.String("eu-west-2"),
@@ -170,11 +182,61 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 
   fmt.Println(result)
 
-  fmt.Println("ID: ", post.PostID, "Title: ", post.Title, "Text: ", post.Text)
+  fmt.Println("ID: ", post.PostID,"User ID: ", post.UserID, "Title: ", post.Title, "Text: ", post.Text)
   _ = json.NewEncoder(w).Encode(&post)
 }
 
-//To decribe table "Post" in DynamoDB
+//To get posts from table "Post" in DynamoDB by UserID
+func GetPostByUserID(w http.ResponseWriter, r *http.Request){
+  var post Post
+
+  vars := mux.Vars(r)
+  post.UserID = vars["user_id"]
+
+  sess, err := session.NewSession(&aws.Config{
+    Region:      aws.String("eu-west-2"),
+  })
+  svc := dynamodb.New(sess)
+
+  filt := expression.Name("user_id").Equal(expression.Value(post.UserID))
+
+  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"))
+
+  expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
+
+  params := &dynamodb.ScanInput{
+    ExpressionAttributeNames:  expr.Names(),
+    ExpressionAttributeValues: expr.Values(),
+    FilterExpression:          expr.Filter(),
+    ProjectionExpression:      expr.Projection(),
+    TableName:                 aws.String("Post"),
+  }
+
+
+  // Make the DynamoDB Query API call
+  result, err := svc.Scan(params)
+
+  for _, i := range result.Items {
+    post := Post{}
+
+    err = dynamodbattribute.UnmarshalMap(i, &post)
+
+    if err != nil {
+      fmt.Println("Got error unmarshalling:")
+      fmt.Println(err.Error())
+      os.Exit(1)
+    }
+
+    _ = json.NewEncoder(w).Encode(&post)
+
+    fmt.Println("Post ID: ", post.PostID)
+    fmt.Println("Post Title:", post.Title)
+    fmt.Println("Post Text:", post.Text)
+    fmt.Println()
+  }
+}
+
+//To describe table "Post" in DynamoDB
 func DescribeTablePost(w http.ResponseWriter, r *http.Request) {
 
   sess, err := session.NewSession(&aws.Config{
@@ -204,5 +266,6 @@ func DescribeTablePost(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  _ = json.NewEncoder(w).Encode(result)
   fmt.Println(result)
 }
