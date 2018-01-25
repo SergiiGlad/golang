@@ -5,6 +5,8 @@ import (
 	"go-team-room/conf"
 	"html/template"
 	"net/http"
+
+	"go-team-room/controllers/messages"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +22,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/", handler)
-	http.HandleFunc("/messages", handlerOfMessages)
+	http.HandleFunc("/messages", messages.HandlerOfMessages)
 	http.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("client/dist"))))
 	http.Handle("/api-docs/", http.StripPrefix("/api-docs/", http.FileServer(http.Dir("swagger"))))
 	http.ListenAndServe(conf.Ip+":"+conf.Port, nil)
