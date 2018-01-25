@@ -65,7 +65,7 @@ var routes = Routes{
   Route {
     "CreateNewPost",
     "POST",
-    "/post/new",
+    "/post",
     CreateNewPost,
   },
 

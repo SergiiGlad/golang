@@ -13,6 +13,7 @@ func main() {
   r := server.NewRouter()
 
   http.Handle("/", r)
+  http.Handle("/api-docs/", http.StripPrefix("/api-docs/", http.FileServer(http.Dir("swagger"))))
 
   http.ListenAndServe(conf.Ip + ":" + conf.Port, nil)
 }
