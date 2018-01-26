@@ -163,6 +163,11 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 
   err = dynamodbattribute.UnmarshalMap(result.Item, &post)
 
+  if post.Text == "" && post.Title == "" {
+    _ = json.NewEncoder(w).Encode("Post does not exist")
+    return
+  }
+
   if err != nil {
     if aerr, ok := err.(awserr.Error); ok {
       switch aerr.Code() {
