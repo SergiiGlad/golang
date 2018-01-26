@@ -96,12 +96,4 @@ var routes = Routes{
     "/post/{post_id}",
     UpdatePost,
   },
-
-  Route {
-    "DescribeTablePost",
-    "GET",
-    "/describeTablePost",
-    DescribeTablePost,
-  },
-
 }
