@@ -93,7 +93,7 @@ var routes = Routes{
   Route {
     "UpdatePost",
     "PUT",
-    "/post/{id}",
+    "/post/{post_id}",
     UpdatePost,
   },
 

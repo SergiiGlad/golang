@@ -20,6 +20,7 @@ type Post struct{
   Text string	`json:"post_text"`
   PostID string `json:"post_id"`
   UserID string `json:"user_id"`
+  Like string `json:"post_like"`
 }
 
 //To CREATE new post in DynamoDB Table "Post"
@@ -79,6 +80,8 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  _ = json.NewEncoder(w).Encode(&newPost)
+
   fmt.Println(result)
 }
 
@@ -130,6 +133,8 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
     }
     return
   }
+
+  _ = json.NewEncoder(w).Encode(&post.PostID)
 
   fmt.Println(result)
 }
@@ -238,37 +243,44 @@ func GetPostByUserID(w http.ResponseWriter, r *http.Request){
 func UpdatePost(w http.ResponseWriter, r *http.Request){
   var post Post
 
+
+  _ = json.NewDecoder(r.Body).Decode(&post)
+
   vars := mux.Vars(r)
   post.PostID = vars["post_id"]
   fmt.Println(post.PostID)
-  _ = json.NewDecoder(r.Body).Decode(&post)
-
 
   sess, err := session.NewSession(&aws.Config{
     Region: aws.String("eu-west-2"),
   })
 
   svc := dynamodb.New(sess)
-  input := &dynamodb.PutItemInput{
-    Item: map[string]*dynamodb.AttributeValue{
+  input := &dynamodb.UpdateItemInput{
+    ExpressionAttributeNames: map[string]*string{
+      "#PTitle": aws.String("post_title"),
+      "#PText": aws.String("post_text"),
+    },
+    ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+      ":t": {
+        S: &post.Title,
+      },
+      ":e": {
+        S: &post.Text,
+      },
+    },
+    Key: map[string]*dynamodb.AttributeValue{
       "post_id": {
         S: &post.PostID,
       },
-      "post_title": {
-        S: &post.Title,
-      },
-      "post_text": {
-        S: &post.Text,
-      },
-      "user_id": {
-        S: &post.UserID,
-      },
     },
-    ReturnConsumedCapacity: aws.String("TOTAL"),
-    TableName:              aws.String("Post"),
+    ReturnValues:     aws.String("UPDATED_NEW"),
+    TableName: aws.String("Post"),
+    UpdateExpression: aws.String("set #PTitle = :t, #PText = :e"),
   }
 
-  result, err := svc.PutItem(input)
+  result, err := svc.UpdateItem(input)
+
+
   if err != nil {
     if aerr, ok := err.(awserr.Error); ok {
       switch aerr.Code() {
@@ -292,8 +304,11 @@ func UpdatePost(w http.ResponseWriter, r *http.Request){
     }
     return
   }
-  _ = json.NewEncoder(w).Encode(&post)
+
   fmt.Println(result)
+
+  _ = json.NewEncoder(w).Encode(&post)
+
 }
 
 //To describe table "Post" in DynamoDB
@@ -329,3 +344,4 @@ func DescribeTablePost(w http.ResponseWriter, r *http.Request) {
   _ = json.NewEncoder(w).Encode(result)
   fmt.Println(result)
 }
+
