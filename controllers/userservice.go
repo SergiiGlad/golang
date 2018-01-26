@@ -7,23 +7,29 @@ import (
   "gopkg.in/hlandau/passlib.v1/hash/bcrypt"
   "log"
   "database/sql"
-  "go-team-room/models/dao/mysql"
   "strings"
   "go-team-room/models/dto"
+  "go-team-room/models/dao/interfaces"
 )
 
-func CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
+type UserService struct {
+  Dao interfaces.UserDao
+}
+
+var _ UserServiceInterface = &UserService{}
+
+func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
   userEntity := dto.RequestUserDtoToEntity(userDto)
   var respUserDto dto.ResponseUserDto
 
-  err := checkUniqueEmail(userEntity.Email)
+  err := checkUniqueEmail(userEntity.Email, us.Dao)
 
   if err != nil && err != sql.ErrNoRows {
     return respUserDto, err
   }
 
-  err = checkUniquePhone(userEntity.Phone)
+  err = checkUniquePhone(userEntity.Phone, us.Dao)
 
   if err != nil && err != sql.ErrNoRows {
     return respUserDto, err
@@ -42,7 +48,7 @@ func CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
   userEntity.CurrentPass = hashPass
   nameLetterToUppep(&userEntity)
 
-  _, err = mysql.DB.AddUser(&userEntity)
+  _, err = us.Dao.AddUser(&userEntity)
 
   if err != nil {
     log.Println(err)
@@ -54,14 +60,14 @@ func CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
   return respUserDto, nil
 }
 
-func UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
+func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
   newUserData := dto.RequestUserDtoToEntity(userDto)
-  oldUserData, err := mysql.DB.FindUserById(id)
-  var responseUser dto.ResponseUserDto
+  oldUserData, err := us.Dao.FindUserById(id)
+  var responseUserDto dto.ResponseUserDto
 
   if err != nil {
-    return responseUser, err
+    return responseUserDto, err
   }
 
   if len(newUserData.FirstName) == 0 {
@@ -73,20 +79,20 @@ func UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, err
   }
 
   if len(newUserData.Email) != 0 {
-    err = checkUniqueEmail(newUserData.Email)
+    err = checkUniqueEmail(newUserData.Email, us.Dao)
 
     if err != nil && err != sql.ErrNoRows {
-      return responseUser, err
+      return responseUserDto, err
     }
   } else {
     newUserData.Email = oldUserData.Email
   }
 
   if len(newUserData.Phone) != 0 {
-    err = checkUniquePhone(newUserData.Phone)
+    err = checkUniquePhone(newUserData.Phone, us.Dao)
 
     if err != nil && err != sql.ErrNoRows {
-      return responseUser, err
+      return responseUserDto, err
     }
   } else {
     newUserData.Phone = oldUserData.Phone
@@ -94,14 +100,14 @@ func UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, err
 
   if len(newUserData.CurrentPass) != 0 {
     if validPasswordLength(newUserData.CurrentPass) == false {
-      return responseUser, errors.New("Password too short.")
+      return responseUserDto, errors.New("Password too short.")
     }
 
     hashPass, err := bcrypt.Crypter.Hash(newUserData.CurrentPass)
 
     if err != nil {
       log.Println(err)
-      return responseUser, err
+      return responseUserDto, err
     }
 
     newUserData.CurrentPass = hashPass
@@ -111,51 +117,52 @@ func UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, err
 
   nameLetterToUppep(&newUserData)
 
-  err = mysql.DB.UpdateUser(id, &newUserData)
+  err = us.Dao.UpdateUser(id, &newUserData)
   if err != nil {
     log.Println(err)
-    return responseUser, err
+    return responseUserDto, err
   }
 
   newUserData.ID = id
-  responseUser = dto.UserEntityToResponseDto(&newUserData)
+  responseUserDto = dto.UserEntityToResponseDto(&newUserData)
+  responseUserDto.Friends, _ = us.GetUserFriends(id)
 
-  return responseUser, nil
+  return responseUserDto, nil
 }
 
-func DeleteUser(id int64) (dto.ResponseUserDto, error) {
+func (us *UserService) DeleteUser(id int64) (dto.ResponseUserDto, error) {
 
   var responseUserDto dto.ResponseUserDto
 
-  userEntity, err := mysql.DB.FindUserById(id)
+  userEntity, err := us.Dao.FindUserById(id)
 
   if err != nil {
     return responseUserDto, err
   }
 
   responseUserDto = dto.UserEntityToResponseDto(userEntity)
-  responseUserDto.Friends, _ = getUserFriends(id)
+  responseUserDto.Friends, _ = us.GetUserFriends(id)
 
-  return responseUserDto, mysql.DB.DeleteUser(id)
+  return responseUserDto, us.Dao.DeleteUser(id)
 }
 
-func getUserFriends(id int64) ([]int64, error) {
-  _, err := mysql.DB.FindUserById(id)
+func (us *UserService) GetUserFriends(id int64) ([]int64, error) {
+  _, err := us.Dao.FindUserById(id)
 
   if err != nil {
     return nil, err
   }
 
-  return mysql.DB.FriendsByUserID(id)
+  return us.Dao.FriendsByUserID(id)
 }
 
-func checkUniqueEmail(email string) error {
+func checkUniqueEmail(email string, dao interfaces.UserDao) error {
 
   if validEmail(email) == false {
     return errors.New("Invalid email format.")
   } else {
 
-    _, err := mysql.DB.FindUserByEmail(email)
+    _, err := dao.FindUserByEmail(email)
 
     switch err {
     case sql.ErrNoRows:
@@ -173,14 +180,14 @@ func checkUniqueEmail(email string) error {
   return nil
 }
 
-func checkUniquePhone(phone string) error {
+func checkUniquePhone(phone string, dao interfaces.UserDao) error {
   if len(phone) > 0 {
 
     if validPhone(phone) == false {
       return errors.New("Invalid phone number format.")
     } else {
 
-      _, err := mysql.DB.FindUserByPhone(phone)
+      _, err := dao.FindUserByPhone(phone)
 
       switch err {
       case sql.ErrNoRows:

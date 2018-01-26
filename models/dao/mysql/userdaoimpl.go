@@ -8,7 +8,7 @@ import (
   "go-team-room/models/dao/interfaces"
 )
 
-type mysqlUserDB struct {
+type mysqlUserDao struct {
   conn *sql.DB
 
   insert  *sql.Stmt
@@ -20,16 +20,16 @@ type mysqlUserDB struct {
   friends *sql.Stmt
 }
 
-var _ interfaces.UserDatabase = &mysqlUserDB{}
+var _ interfaces.UserDao = &mysqlUserDao{}
 
-func newMySqlUserDB(conn *sql.DB) (interfaces.UserDatabase, error) {
+func newMySqlUserDao(conn *sql.DB) (interfaces.UserDao, error) {
 
   if err := conn.Ping(); err != nil {
     conn.Close()
     return nil, fmt.Errorf("mysql: could not establish a good connection: %v", err)
   }
 
-  db := &mysqlUserDB{
+  db := &mysqlUserDao{
     conn: conn,
   }
 
@@ -60,16 +60,16 @@ func newMySqlUserDB(conn *sql.DB) (interfaces.UserDatabase, error) {
 }
 
 // Close closes the database, freeing up any resources.
-func (db *mysqlUserDB) Close() {
-  db.conn.Close()
+func (d *mysqlUserDao) Close() {
+  d.conn.Close()
 }
 
 const insertStatement = `INSERT INTO
   users_data (email, first_name, second_name, phone, current_password, role_in_network, account_status, avatar_ref)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
-func (db *mysqlUserDB) AddUser(user *dao.User) (int64, error) {
-  r, err := execAffectingOneRow(db.insert, user.Email, user.FirstName, user.SecondName, user.Phone, user.CurrentPass, user.Role,
+func (d *mysqlUserDao) AddUser(user *dao.User) (int64, error) {
+  r, err := execAffectingOneRow(d.insert, user.Email, user.FirstName, user.SecondName, user.Phone, user.CurrentPass, user.Role,
     user.AccStatus, user.AvatarRef)
 
   if err != nil {
@@ -92,8 +92,8 @@ const updateStatement = `UPDATE users_data SET
   email = ?, first_name = ?, second_name = ?, phone = ?, current_password = ?, role_in_network = ?, account_status = ?, avatar_ref = ?
   WHERE user_id = ?`
 
-func (db *mysqlUserDB) UpdateUser(id int64, user *dao.User) error {
-  _, err := execAffectingOneRow(db.update, user.Email, user.FirstName, user.SecondName, user.Phone, user.CurrentPass, user.Role,
+func (d *mysqlUserDao) UpdateUser(id int64, user *dao.User) error {
+  _, err := execAffectingOneRow(d.update, user.Email, user.FirstName, user.SecondName, user.Phone, user.CurrentPass, user.Role,
     user.AccStatus, user.AvatarRef, id)
 
   return err
@@ -102,8 +102,8 @@ func (db *mysqlUserDB) UpdateUser(id int64, user *dao.User) error {
 //It just changes account_status without actual deleting table row
 const deleteStatement = `UPDATE users_data SET account_status = 'deleted' WHERE user_id = ?`
 
-func (db *mysqlUserDB) DeleteUser(id int64) error {
-  _, err := execAffectingOneRow(db.delete, id)
+func (d *mysqlUserDao) DeleteUser(id int64) error {
+  _, err := execAffectingOneRow(d.delete, id)
 
   return err
 }
@@ -111,8 +111,8 @@ func (db *mysqlUserDB) DeleteUser(id int64) error {
 
 const findByIdStatement = `SELECT * FROM users_data WHERE user_id = ?`
 
-func (db *mysqlUserDB) FindUserById(id int64) (*dao.User, error) {
-  user, err := scanUser(db.byid.QueryRow(id))
+func (d *mysqlUserDao) FindUserById(id int64) (*dao.User, error) {
+  user, err := scanUser(d.byid.QueryRow(id))
 
   if err != nil {
     return nil, err
@@ -124,8 +124,8 @@ func (db *mysqlUserDB) FindUserById(id int64) (*dao.User, error) {
 
 const findByEmailStatement = `SELECT * FROM users_data WHERE email = ?`
 
-func (db *mysqlUserDB) FindUserByEmail(email string) (*dao.User, error) {
-  user, err := scanUser(db.byemail.QueryRow(email))
+func (d *mysqlUserDao) FindUserByEmail(email string) (*dao.User, error) {
+  user, err := scanUser(d.byemail.QueryRow(email))
 
   if err != nil {
     return nil, err
@@ -137,8 +137,8 @@ func (db *mysqlUserDB) FindUserByEmail(email string) (*dao.User, error) {
 
 const findByPhoneStatement = `SELECT * FROM users_data WHERE phone = ?`
 
-func (db *mysqlUserDB) FindUserByPhone(phone string) (*dao.User, error) {
-  user, err := scanUser(db.byphone.QueryRow(phone))
+func (d *mysqlUserDao) FindUserByPhone(phone string) (*dao.User, error) {
+  user, err := scanUser(d.byphone.QueryRow(phone))
 
   if err != nil {
     return nil, err
@@ -149,8 +149,8 @@ func (db *mysqlUserDB) FindUserByPhone(phone string) (*dao.User, error) {
 
 const findFriendsByUserId = `SELECT friend_id FROM friend_list WHERE user_id = ?;`
 
-func (db *mysqlUserDB) FriendsByUserID(id int64) ([]int64, error) {
-  rows, err := db.friends.Query()
+func (d *mysqlUserDao) FriendsByUserID(id int64) ([]int64, error) {
+  rows, err := d.friends.Query()
 
   if err != nil {
     return nil, err

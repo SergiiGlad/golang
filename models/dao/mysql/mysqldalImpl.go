@@ -9,13 +9,14 @@ import (
   "github.com/go-sql-driver/mysql"
 )
 
-type MySqlDatabaseImpl struct {
+type mySqlDatabaseImpl struct {
   conn *sql.DB
 
-  interfaces.UserDatabase
+  interfaces.UserDao
+  interfaces.PasswordDao
 }
 
-func newMySQLDatabase() (interfaces.Database, error) {
+func newMySQLDatabase() (interfaces.MySqlDal, error) {
 
   // Check database and table exists. If not, create it.
   if err := ensureTableExists(); err != nil {
@@ -33,27 +34,35 @@ func newMySQLDatabase() (interfaces.Database, error) {
     return nil, fmt.Errorf("mysql: could not establish a good connection: %v", err)
   }
 
-  userdb, err := newMySqlUserDB(conn)
+  userDao, err := newMySqlUserDao(conn)
 
   if err != nil {
-    fmt.Errorf("mysql: could not establish connection with userdb: %s", err)
+    fmt.Errorf("mysql: could not establish connection with userDao: %s", err)
     return nil, err
   }
 
-  db := MySqlDatabaseImpl{
+  passwordDao, err := newMySqlPassDao(conn)
+
+  if err != nil {
+    fmt.Errorf("mysql: could not establish connection with userDao: %s", err)
+    return nil, err
+  }
+
+  db := mySqlDatabaseImpl{
     conn,
-    userdb,
+    userDao,
+    passwordDao,
   }
 
   return db, nil
 }
 
 // Close closes the database, freeing up any resources.
-func (db *MySqlDatabaseImpl) Close() {
+func (db *mySqlDatabaseImpl) Close() {
   db.conn.Close()
 }
 
-var _ interfaces.Database = &MySqlDatabaseImpl{}
+var _ interfaces.MySqlDal = &mySqlDatabaseImpl{}
 
 var createTableStatements = []string{
   `CREATE DATABASE IF NOT EXISTS goteamroom DEFAULT CHARACTER SET = 'utf8' DEFAULT COLLATE 'utf8_general_ci';`,

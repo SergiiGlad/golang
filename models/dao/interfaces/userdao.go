@@ -2,7 +2,7 @@ package interfaces
 
 import "go-team-room/models/dao"
 
-type UserDatabase interface {
+type UserDao interface {
   AddUser(user *dao.User) (int64, error)
   DeleteUser(id int64) error
   UpdateUser(id int64, user *dao.User) error

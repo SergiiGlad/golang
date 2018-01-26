@@ -3,6 +3,10 @@ package server
 import (
   "github.com/gorilla/mux"
   "net/http"
+  "fmt"
+  "html/template"
+  "go-team-room/controllers"
+  "go-team-room/models/dao/mysql"
 )
 
 type Route struct {
@@ -34,28 +38,49 @@ func NewRouter() *mux.Router {
   return router
 }
 
+func handl(w http.ResponseWriter, r *http.Request) {
+  tmpl, err := template.ParseFiles("client/index.html")
+  if err != nil {
+    fmt.Fprintf(w, "%s", "Error")
+  } else {
+    tmpl.Execute(w, r)
+  }
+  //fmt.Fprintf(w, "Hello Home! %s", r.URL.Path[1:]) )
+
+}
+
 var routes = Routes{
+
+  Route {
+    "Index",
+    "GET",
+    "/",
+    handl,
+  },
 
   Route {
     "NewProfileByAdmin",
     "POST",
     "/admin/profile",
-    createProfile,
+    createProfile(userService),
   },
 
   Route {
     "UpdateProfileByAdmin",
     "PUT",
-    "/admin/profile/{id:[0-9]+}",
-    updateProfile,
+    "/admin/profile/{user_id:[0-9]+}",
+    updateProfile(userService),
   },
 
   Route {
     "DeleteProfileByAdmin",
     "DELETE",
-    "/admin/profile/{id:[0-9]+}",
-    deleteProfile,
+    "/admin/profile/{user_id:[0-9]+}",
+    deleteProfile(userService),
   },
 
   // and so on, just add new Route structs to this array
 }
+
+//Initialise services here
+var userService = &controllers.UserService{mysql.DB}
