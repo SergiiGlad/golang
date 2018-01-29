@@ -31,6 +31,10 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
   //Decode request JSON
   _ = json.NewDecoder(r.Body).Decode(&newPost)
 
+  //Set "post_id" and "post_like"
+  newPost.PostID = time.Now().String()
+  newPost.Like = "0"
+
   //Create new Session for DynamoDB
   sess, err := session.NewSession(&aws.Config{
     Region: aws.String("eu-west-2"),
@@ -41,7 +45,7 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
   input := &dynamodb.PutItemInput{
     Item: map[string]*dynamodb.AttributeValue{
       "post_id": {
-        S: aws.String(time.Now().String()),
+        S: &newPost.PostID,
       },
       "post_title": {
         S: &newPost.Title,
@@ -51,6 +55,9 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
       },
       "user_id": {
         S: &newPost.UserID,
+      },
+      "post_like": {
+        N: &newPost.Like,
       },
     },
     ReturnConsumedCapacity: aws.String("TOTAL"),
