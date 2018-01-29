@@ -115,7 +115,7 @@ func (d *mysqlUserDao) DeleteUser(id int64) error {
 const forceDeleteStatement = `DELETE FROM users_data WHERE user_id = ?`
 
 func (d *mysqlUserDao) ForceDeleteUser(id int64) error {
-  _, err := execAffectingOneRow(d.delete, id)
+  _, err := execAffectingOneRow(d.forceDelete, id)
 
   return err
 }

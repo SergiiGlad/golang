@@ -7,6 +7,9 @@ import (
   "html/template"
   "go-team-room/controllers"
   "go-team-room/models/dao/mysql"
+  "io/ioutil"
+  "go-team-room/models/dto"
+  "encoding/json"
 )
 
 type Route struct {
@@ -49,6 +52,23 @@ func handl(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func loginer(w http.ResponseWriter, r *http.Request) {
+  body, err := ioutil.ReadAll(r.Body)
+
+  if err != nil {
+    responseError(w, err)
+  }
+
+  var userReq dto.RequestUserDto
+  err = json.Unmarshal(body, &userReq)
+
+  if err != nil {
+    responseError(w, err)
+  }
+
+  controllers.Login()
+}
+
 var routes = Routes{
 
   Route {
@@ -76,6 +96,13 @@ var routes = Routes{
     "DeleteProfileByAdmin",
     "DELETE",
     "/admin/profile/{user_id:[0-9]+}",
+    deleteProfile(userService),
+  },
+
+  Route {
+    "Login",
+    "GET",
+    "/login",
     deleteProfile(userService),
   },
 
