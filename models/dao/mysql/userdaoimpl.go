@@ -65,11 +65,11 @@ func (d *mysqlUserDao) Close() {
 }
 
 const insertStatement = `INSERT INTO
-  users_data (email, first_name, second_name, phone, current_password, role_in_network, account_status, avatar_ref)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  users_data (email, first_name, last_name, phone, role_in_network, account_status, avatar_ref)
+  VALUES (?, ?, ?, ?, ?, ?, ?)`
 
 func (d *mysqlUserDao) AddUser(user *dao.User) (int64, error) {
-  r, err := execAffectingOneRow(d.insert, user.Email, user.FirstName, user.SecondName, user.Phone, user.CurrentPass, user.Role,
+  r, err := execAffectingOneRow(d.insert, user.Email, user.FirstName, user.LastName, user.Phone, user.Role,
     user.AccStatus, user.AvatarRef)
 
   if err != nil {
@@ -89,11 +89,11 @@ func (d *mysqlUserDao) AddUser(user *dao.User) (int64, error) {
 
 
 const updateStatement = `UPDATE users_data SET
-  email = ?, first_name = ?, second_name = ?, phone = ?, current_password = ?, role_in_network = ?, account_status = ?, avatar_ref = ?
+  email = ?, first_name = ?, last_name = ?, phone = ?, role_in_network = ?, account_status = ?, avatar_ref = ?
   WHERE user_id = ?`
 
 func (d *mysqlUserDao) UpdateUser(id int64, user *dao.User) error {
-  _, err := execAffectingOneRow(d.update, user.Email, user.FirstName, user.SecondName, user.Phone, user.CurrentPass, user.Role,
+  _, err := execAffectingOneRow(d.update, user.Email, user.FirstName, user.LastName, user.Phone, user.Role,
     user.AccStatus, user.AvatarRef, id)
 
   return err
@@ -111,11 +111,11 @@ func (d *mysqlUserDao) DeleteUser(id int64) error {
 
 const findByIdStatement = `SELECT * FROM users_data WHERE user_id = ?`
 
-func (d *mysqlUserDao) FindUserById(id int64) (*dao.User, error) {
+func (d *mysqlUserDao) FindUserById(id int64) (dao.User, error) {
   user, err := scanUser(d.byid.QueryRow(id))
 
   if err != nil {
-    return nil, err
+    return user, err
   }
 
   return user, nil
@@ -124,11 +124,11 @@ func (d *mysqlUserDao) FindUserById(id int64) (*dao.User, error) {
 
 const findByEmailStatement = `SELECT * FROM users_data WHERE email = ?`
 
-func (d *mysqlUserDao) FindUserByEmail(email string) (*dao.User, error) {
+func (d *mysqlUserDao) FindUserByEmail(email string) (dao.User, error) {
   user, err := scanUser(d.byemail.QueryRow(email))
 
   if err != nil {
-    return nil, err
+    return user, err
   }
 
   return user, nil
@@ -137,11 +137,11 @@ func (d *mysqlUserDao) FindUserByEmail(email string) (*dao.User, error) {
 
 const findByPhoneStatement = `SELECT * FROM users_data WHERE phone = ?`
 
-func (d *mysqlUserDao) FindUserByPhone(phone string) (*dao.User, error) {
+func (d *mysqlUserDao) FindUserByPhone(phone string) (dao.User, error) {
   user, err := scanUser(d.byphone.QueryRow(phone))
 
   if err != nil {
-    return nil, err
+    return user, err
   }
 
   return user, nil
@@ -179,30 +179,29 @@ var (
   firstName  sql.NullString
   secondName sql.NullString
   phone      sql.NullString
-  pass       sql.NullString
   role       sql.NullString
   accStat    sql.NullString
   avRef      sql.NullString
 )
 
-func scanUser(s rowScanner) (*dao.User, error) {
+func scanUser(s rowScanner) (dao.User, error) {
 
-  if err := s.Scan(&user_id, &email, &firstName, &secondName, &phone,
-    &pass, &role, &accStat, &avRef); err != nil {
-      return nil, err
+  user := dao.User{}
+
+  if err := s.Scan(&user_id, &email, &firstName, &secondName, &phone, &role, &accStat, &avRef); err != nil {
+      return user, err
   }
 
-  user := dao.User{
+  user = dao.User{
     user_id,
     email.String,
     firstName.String,
     secondName.String,
     phone.String,
-    pass.String,
     dao.Role(role.String),
     dao.AccountStatus(accStat.String),
     avRef.String,
   }
 
-  return &user, nil
+  return user, nil
 }

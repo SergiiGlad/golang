@@ -9,46 +9,48 @@ import (
   "github.com/go-sql-driver/mysql"
 )
 
-type mySqlDatabaseImpl struct {
+type MySqlDatabase struct {
   conn *sql.DB
 
   interfaces.UserDao
   interfaces.PasswordDao
 }
 
-func newMySQLDatabase() (interfaces.MySqlDal, error) {
+func newMySQLDatabase() (MySqlDatabase, error) {
+
+  db := MySqlDatabase{}
 
   // Check database and table exists. If not, create it.
   if err := ensureTableExists(); err != nil {
-    return nil, err
+    return db, err
   }
 
   conn, err := sql.Open("mysql", conf.MysqlDsn)
 
   if err != nil {
-    return nil, fmt.Errorf("mysql: could not get a connection: %v", err)
+    return db, fmt.Errorf("mysql: could not get a connection: %v", err)
   }
 
   if err := conn.Ping(); err != nil {
     conn.Close()
-    return nil, fmt.Errorf("mysql: could not establish a good connection: %v", err)
+    return db, fmt.Errorf("mysql: could not establish a good connection: %v", err)
   }
 
   userDao, err := newMySqlUserDao(conn)
 
   if err != nil {
     fmt.Errorf("mysql: could not establish connection with userDao: %s", err)
-    return nil, err
+    return db, err
   }
 
   passwordDao, err := newMySqlPassDao(conn)
 
   if err != nil {
     fmt.Errorf("mysql: could not establish connection with userDao: %s", err)
-    return nil, err
+    return db, err
   }
 
-  db := mySqlDatabaseImpl{
+  db = MySqlDatabase{
     conn,
     userDao,
     passwordDao,
@@ -58,24 +60,21 @@ func newMySQLDatabase() (interfaces.MySqlDal, error) {
 }
 
 // Close closes the database, freeing up any resources.
-func (db *mySqlDatabaseImpl) Close() {
+func (db *MySqlDatabase) Close() {
   db.conn.Close()
 }
 
-var _ interfaces.MySqlDal = &mySqlDatabaseImpl{}
-
 var createTableStatements = []string{
-  `CREATE DATABASE IF NOT EXISTS goteamroom DEFAULT CHARACTER SET = 'utf8' DEFAULT COLLATE 'utf8_general_ci';`,
+  fmt.Sprintf(`CREATE DATABASE IF NOT EXISTS %s DEFAULT CHARACTER SET = 'utf8' DEFAULT COLLATE 'utf8_general_ci';`, conf.MysqlDBName),
 
-  `USE goteamroom;`,
+  fmt.Sprintf(`USE %s;`, conf.MysqlDBName),
 
   `CREATE TABLE IF NOT EXISTS users_data (
     user_id SERIAL PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
-    second_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
-    current_password VARCHAR(255) NOT NULL,
     role_in_network ENUM('admin', 'user') NOT NULL,
     account_status ENUM('active', 'deleted') NOT NULL,
     avatar_ref MEDIUMTEXT

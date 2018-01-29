@@ -72,25 +72,25 @@ func TestUserDtoFromReq(t *testing.T) {
       description: "Should perform successfully",
       reqBody:  `{
         "email": "string",
-        "firstName": "string",
-        "lastName": "string",
+        "first_name": "string",
+        "last_name": "string",
         "phone": "string",
         "password": "0"
         }`,
         expectDto: dto.RequestUserDto{
-          Email: "string",
+          Email:     "string",
           FirstName: "string",
-          LastName: "string",
-          Phone: "string",
-          CurrentPass: "0",
+          LastName:  "string",
+          Phone:     "string",
+          Password:  "0",
         },
     },
     {
       description: "Should return empty struct",
       reqBody:  `{
         "email": "string",
-        "firstName": "string",
-        "lastName": "string",
+        "first_name": "string",
+        "last_name": "string",
         "phone": "string",
         "password": "0"`,
       expectDto: dto.RequestUserDto{},
@@ -99,8 +99,8 @@ func TestUserDtoFromReq(t *testing.T) {
     description: "Should return empty pass field",
     reqBody:  `{
         "email": "string",
-        "firstName": "string",
-        "lastName": "string",
+        "first_name": "string",
+        "last_name": "string",
         "phone": "string",
         "password": 0
     }`,
@@ -110,7 +110,7 @@ func TestUserDtoFromReq(t *testing.T) {
         LastName: "string",
         Phone: "string",
       },
-  },
+    },
   }
 
   for _, tc := range tests {
@@ -145,13 +145,13 @@ func TestNewProfileHandler(t *testing.T) {
         expectedStatusCode: http.StatusOK,
         reqBody: `{
         "email": "string",
-        "firstName": "string",
-        "lastName": "string",
+        "first_name": "string",
+        "last_name": "string",
         "phone": "string",
         "password": "0"
         }`,
         expectRespBody:
-          `{"id":0,"email":"string","firstName":"string","lastName":"string","phone":"string","friends":[]}`,
+          `{"id":0,"email":"string","first_name":"string","last_name":"string","phone":"string","friends":[]}`,
 
       },
     }
@@ -198,7 +198,7 @@ func TestDeleteProfileHandler(t *testing.T) {
       handlerFunc: deleteProfile(&UserServiceMock {}),
       expectedStatusCode: http.StatusOK,
       expectRespBody:
-      `{"id":0,"email":"","firstName":"","lastName":"","phone":"","friends":[]}`,
+      `{"id":0,"email":"","first_name":"","last_name":"","phone":"","friends":[]}`,
     },
   }
 

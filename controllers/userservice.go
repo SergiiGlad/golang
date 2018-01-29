@@ -10,114 +10,99 @@ import (
   "strings"
   "go-team-room/models/dto"
   "go-team-room/models/dao/interfaces"
+  "time"
 )
 
 type UserService struct {
-  Dao interfaces.UserDao
+  DB interfaces.Dal
 }
 
 var _ UserServiceInterface = &UserService{}
 
 func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
+  var responseUserDto dto.ResponseUserDto
+
+  err := checkUniqueEmail(userDto.Email, us.DB)
+
+  if err != nil && err != sql.ErrNoRows {
+    return responseUserDto, err
+  }
+
+  err = checkUniquePhone(userDto.Phone, us.DB)
+
+  if err != nil && err != sql.ErrNoRows {
+    return responseUserDto, err
+  }
+
   userEntity := dto.RequestUserDtoToEntity(userDto)
-  var respUserDto dto.ResponseUserDto
-
-  err := checkUniqueEmail(userEntity.Email, us.Dao)
-
-  if err != nil && err != sql.ErrNoRows {
-    return respUserDto, err
-  }
-
-  err = checkUniquePhone(userEntity.Phone, us.Dao)
-
-  if err != nil && err != sql.ErrNoRows {
-    return respUserDto, err
-  }
-
-  if validPasswordLength(userEntity.CurrentPass) == false {
-    return respUserDto, errors.New("Password too short.")
-  }
-
-  hashPass, err := bcrypt.Crypter.Hash(userEntity.CurrentPass)
-
-  if err != nil {
-    return respUserDto, err
-  }
-
-  userEntity.CurrentPass = hashPass
   nameLetterToUppep(&userEntity)
 
-  _, err = us.Dao.AddUser(&userEntity)
+  id, err := us.DB.AddUser(&userEntity)
 
   if err != nil {
-    log.Println(err)
-    return respUserDto, err
+    return responseUserDto, err
   }
 
-  respUserDto = dto.UserEntityToResponseDto(&userEntity)
+  err = us.newPassIfValid(id, userDto.Password)
 
-  return respUserDto, nil
+  if err != nil {
+    us.DB.DeleteUser(id)
+    return responseUserDto, err
+  }
+
+  responseUserDto = dto.UserEntityToResponseDto(&userEntity)
+
+  return responseUserDto, nil
 }
 
 func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
-  newUserData := dto.RequestUserDtoToEntity(userDto)
-  oldUserData, err := us.Dao.FindUserById(id)
+  oldUserData, err := us.DB.FindUserById(id)
   var responseUserDto dto.ResponseUserDto
 
   if err != nil {
     return responseUserDto, err
   }
 
-  if len(newUserData.FirstName) == 0 {
-    newUserData.FirstName = oldUserData.FirstName
+  if len(userDto.FirstName) == 0 {
+    userDto.FirstName = oldUserData.FirstName
   }
 
-  if len(newUserData.SecondName) == 0 {
-    newUserData.SecondName = oldUserData.SecondName
+  if len(userDto.LastName) == 0 {
+    userDto.LastName = oldUserData.LastName
   }
 
-  if len(newUserData.Email) != 0 {
-    err = checkUniqueEmail(newUserData.Email, us.Dao)
+  if len(userDto.Email) != 0 {
+    err = checkUniqueEmail(userDto.Email, us.DB)
 
     if err != nil && err != sql.ErrNoRows {
       return responseUserDto, err
     }
   } else {
-    newUserData.Email = oldUserData.Email
+    userDto.Email = oldUserData.Email
   }
 
-  if len(newUserData.Phone) != 0 {
-    err = checkUniquePhone(newUserData.Phone, us.Dao)
+  if len(userDto.Phone) != 0 {
+    err = checkUniquePhone(userDto.Phone, us.DB)
 
     if err != nil && err != sql.ErrNoRows {
       return responseUserDto, err
     }
   } else {
-    newUserData.Phone = oldUserData.Phone
+    userDto.Phone = oldUserData.Phone
   }
 
-  if len(newUserData.CurrentPass) != 0 {
-    if validPasswordLength(newUserData.CurrentPass) == false {
-      return responseUserDto, errors.New("Password too short.")
-    }
+  err = us.newPassIfValid(id, userDto.Password)
 
-    hashPass, err := bcrypt.Crypter.Hash(newUserData.CurrentPass)
-
-    if err != nil {
-      log.Println(err)
-      return responseUserDto, err
-    }
-
-    newUserData.CurrentPass = hashPass
-  } else {
-    newUserData.CurrentPass = oldUserData.CurrentPass
+  if err != nil {
+    return responseUserDto, err
   }
 
+  newUserData := dto.RequestUserDtoToEntity(userDto)
   nameLetterToUppep(&newUserData)
 
-  err = us.Dao.UpdateUser(id, &newUserData)
+  err = us.DB.UpdateUser(id, &newUserData)
   if err != nil {
     log.Println(err)
     return responseUserDto, err
@@ -134,26 +119,26 @@ func (us *UserService) DeleteUser(id int64) (dto.ResponseUserDto, error) {
 
   var responseUserDto dto.ResponseUserDto
 
-  userEntity, err := us.Dao.FindUserById(id)
+  userEntity, err := us.DB.FindUserById(id)
 
   if err != nil {
     return responseUserDto, err
   }
 
-  responseUserDto = dto.UserEntityToResponseDto(userEntity)
+  responseUserDto = dto.UserEntityToResponseDto(&userEntity)
   responseUserDto.Friends, _ = us.GetUserFriends(id)
 
-  return responseUserDto, us.Dao.DeleteUser(id)
+  return responseUserDto, us.DB.DeleteUser(id)
 }
 
 func (us *UserService) GetUserFriends(id int64) ([]int64, error) {
-  _, err := us.Dao.FindUserById(id)
+  _, err := us.DB.FindUserById(id)
 
   if err != nil {
     return nil, err
   }
 
-  return us.Dao.FriendsByUserID(id)
+  return us.DB.FriendsByUserID(id)
 }
 
 func checkUniqueEmail(email string, dao interfaces.UserDao) error {
@@ -240,8 +225,36 @@ func validPasswordLength(password string) bool {
   return true
 }
 
+func (us *UserService) newPassIfValid(userId int64, password string) error {
+
+  if validPasswordLength(password) == false {
+    return errors.New("Password too short.")
+  }
+
+  hashPass, err := bcrypt.Crypter.Hash(password)
+
+  if err != nil {
+    return err
+  }
+
+  newPass := dao.Password{
+    0,
+    hashPass,
+    time.Now().String(),
+    userId,
+  }
+
+  _, err = us.DB.InsertPass(&newPass)
+
+  if err != nil {
+    return err
+  }
+
+  return nil
+}
+
 func nameLetterToUppep(user *dao.User) {
   user.FirstName = strings.ToUpper(string([]rune(user.FirstName)[0])) + string([]rune(user.FirstName)[1:])
-  user.SecondName = strings.ToUpper(string([]rune(user.SecondName)[0])) + string([]rune(user.SecondName)[1:])
+  user.LastName = strings.ToUpper(string([]rune(user.LastName)[0])) + string([]rune(user.LastName)[1:])
 }
 

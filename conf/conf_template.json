@@ -43,6 +43,11 @@
       "default": "$GOPATH/src/go-team-room/client/dist",
       "type": "string, path to directory",
       "description": "Absolute path to directory with static files."
-    }
+    },
+    "mysql_db_name": {
+      "default": "goteamroom",
+      "type": "string",
+      "description": "mysql database name where mysql tables is located"
+    },
   }
 }

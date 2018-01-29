@@ -7,8 +7,8 @@ type UserDao interface {
   DeleteUser(id int64) error
   UpdateUser(id int64, user *dao.User) error
 
-  FindUserById(id int64) (*dao.User, error)
-  FindUserByEmail(email string) (*dao.User, error)
-  FindUserByPhone(phone string) (*dao.User, error)
+  FindUserById(id int64) (dao.User, error)
+  FindUserByEmail(email string) (dao.User, error)
+  FindUserByPhone(phone string) (dao.User, error)
   FriendsByUserID(id int64) ([]int64, error)
 }

@@ -1,6 +1,6 @@
 package interfaces
 
-type MySqlDal interface {
+type Dal interface {
   UserDao
   PasswordDao
 }

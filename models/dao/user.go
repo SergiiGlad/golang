@@ -9,9 +9,8 @@ type User struct {
   ID          int64
   Email       string
   FirstName   string
-  SecondName  string
+  LastName    string
   Phone       string
-  CurrentPass string
   Role        Role
   AccStatus   AccountStatus
   AvatarRef   string
@@ -25,7 +24,7 @@ func (r *Role) Scan(value interface{}) error {
 }
 
 func (r Role) Value() (driver.Value, error) {
-  return string(r), nil
+  return driver.Value(string(r)), nil
 }
 
 const (
@@ -50,6 +49,6 @@ func (a AccountStatus) Value() (driver.Value, error) {
 }
 
 func (user User) String() string {
-  return fmt.Sprintf("User object:\n\tID = %d\n\tEmail = %s\n\tFirstName = %s\n\tSecondName = %s\n\tPhone = %s\n\tCurrentPass = %s\n\tRole %s\n\tAccStatus = %s\n\tAvatarRef = %s\n",
-    user.ID, user.FirstName, user.SecondName, user.Email, user.Phone, user.CurrentPass, user.Role, user.AccStatus, user.AvatarRef)
+  return fmt.Sprintf("User object:\n\tID = %d\n\tEmail = %s\n\tFirstName = %s\n\tLastName = %s\n\tPhone = %s\n\tRole %s\n\tAccStatus = %s\n\tAvatarRef = %s\n",
+    user.ID, user.FirstName, user.LastName, user.Email, user.Phone, user.Role, user.AccStatus, user.AvatarRef)
 }
