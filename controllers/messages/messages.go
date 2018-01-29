@@ -1,10 +1,9 @@
 package messages
 
 import (
-	"go-team-room/conf"
-	//"github.com/derekparker/delve/pkg/config"
 	"encoding/json"
 	"fmt"
+	"go-team-room/conf"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -91,8 +90,6 @@ func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
 		// 	http.StatusInternalServerError)
 		return
 	}
-	//var postDataFromRequest string
-	//postDataFromRequest = postDataFromRequest + string(body)
 
 	//fmt.Println(string(body)) //DEBUG output
 
@@ -104,7 +101,9 @@ func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
 
 }
 
-func PutMessageToDynamo(w http.ResponseWriter, m *HumMessage) {
+//PutMessageToDynamo get prepeared HummMessage obj and write it to Dynamo
+//result of operation writed into writeRespon
+func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(conf.DynamoRegion),
@@ -114,7 +113,7 @@ func PutMessageToDynamo(w http.ResponseWriter, m *HumMessage) {
 	if err != nil {
 		fmt.Println("Got error creating session")
 		fmt.Println(err.Error())
-		os.Exit(1) ///???
+		os.Exit(1)
 	}
 
 	// Create DynamoDB client
@@ -139,10 +138,10 @@ func PutMessageToDynamo(w http.ResponseWriter, m *HumMessage) {
 		fmt.Println("Got error calling PutItem:")
 		fmt.Println(err.Error())
 		//os.Exit(1)
-		fmt.Fprint(w, "400 Some errors")
+		fmt.Fprint(writeRespon, "400 Some errors")
 	} else {
 
-		fmt.Fprint(w, "200 Post done")
+		fmt.Fprint(writeRespon, "200 Post done")
 
 	}
 
@@ -151,33 +150,55 @@ func PutMessageToDynamo(w http.ResponseWriter, m *HumMessage) {
 
 //HandlerOfMessages This func should process any messages end point
 func HandlerOfMessages(w http.ResponseWriter, r *http.Request) {
-	currentUserID := GetActionUserId(r)
-	fmt.Println(currentUserID)
-	//UserIDfromGET := r.Form.Get("id") // id will be "" if parameter is not set
+
+	//DEBUG
+	//currentUserID := GetActionUserId(r)
+	//fmt.Println(currentUserID)
+
 	if r.Method == "GET" {
 		r.ParseForm() // Parses the request body
 
 		//Assume it is an GET
 		//Shuold return an  last messages
 		//for user ID=currentUserID
+		currentUserID := GetActionUserId(r)
 
 	} else if r.Method == "POST" || r.Method == "OPTIONS" {
 		//CORS!!! "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-web-security --user-data-dir="D:/Chrome"
 		//Assume it is an POST
-		//Shuold  expect a user messagein
+		//Shuold  expect a user message in form of
+		/*
+			 curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"message_chat_room_id": "997",
+			   "message_data": {
+				 "binary_parts": [{
+			 "bin_data": null,
+			  "bin_name": null }],
+				 "text": "A lot of text and stupid smiles :)))))",
+			  "type": "TypeOfHumMessage-UNDEFINED FOR NOW"},
+			   "message_id": "20180110155343152",
+			   "message_parent_id": "20180110155533289",
+			   "message_social_status": {
+				 "Dislike": 11,
+				 "Like": 22,
+				 "Views": 33 },
+			   "message_timestamp": "20180110155533111",
+			   "message_user": {
+				 "id_sql": 23,
+				 "name_sql": "Vasya" }
+			 }' 'http://localhost:8080/messages'
+		*/
 		//fmt.Println(r.Body)
-		//////////fmt.Println("===========")
-		//
 		//// https://gist.github.com/alyssaq/75d6678d00572d103106
 		var inputMessage HumMessage
+
 		ReadReqBodyPOST(r, &inputMessage)
 
 		ValidateDataFromUser(&inputMessage) //Its FAKE
 
 		//assume data validated
 		//and it is safe to put it into a Dynamo
+
 		PutMessageToDynamo(w, &inputMessage)
-		////////////////////////////////////
 
 	}
 }
