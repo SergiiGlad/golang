@@ -115,7 +115,7 @@ var userService = UserService{}
 func TestUserServiceCreate(t *testing.T) {
   tests := [] struct {
     description  string
-    db           interfaces.Dal
+    db           interfaces.MySqlDal
     newUser      dto.RequestUserDto
     expectReturn dto.ResponseUserDto
   }{
@@ -187,7 +187,75 @@ func TestUserServiceCreate(t *testing.T) {
 func TestUserServiceUpdate(t *testing.T) {
   tests := [] struct {
     description  string
-    db           interfaces.Dal
+    db           interfaces.MySqlDal
+    newUser      dto.RequestUserDto
+    expectReturn dto.ResponseUserDto
+  }{
+    {
+      description: "Update user [Should perform successfully]",
+      db: mockDb{[]dao.User{
+        dao.User{
+          ID:        0,
+          Email:     "email@gmail.com",
+          FirstName: "Name",
+          LastName:  "surname",
+          Phone:     "+380509684212",
+        },
+      },
+      },
+      newUser: dto.RequestUserDto{
+        Email:     "newemail@gmail.com",
+        FirstName: "Name",
+        LastName:  "surname",
+        Phone:     "+380509684211",
+        Password:  "123456",
+      },
+      expectReturn: dto.ResponseUserDto{
+        ID:        0,
+        Email:     "newemail@gmail.com",
+        FirstName: "Name",
+        LastName:  "Surname",
+        Phone:     "+380509684211",
+        Friends: []int64{},
+      },
+    },
+    {
+      description: "Update user [Should return unique error]",
+      db: mockDb{[]dao.User{
+        dao.User{
+          ID:        0,
+          Email:     "email@gmail.com",
+          FirstName: "Name",
+          LastName:  "surname",
+          Phone:     "+380509684212",
+        },
+      },
+      },
+      newUser: dto.RequestUserDto{
+        Email:     "email@gmail.com",
+        FirstName: "Name",
+        LastName:  "surname",
+        Phone:     "+380509684212",
+        Password:  "123456",
+      },
+    },
+  }
+
+  for _, tc := range tests {
+    userService.DB = tc.db
+
+    respDto, _ := userService.UpdateUser(0, &tc.newUser)
+
+    if respDto.String() != tc.expectReturn.String() {
+      t.Errorf("\nExpected: %s\nGot: %s", tc.expectReturn, respDto)
+    }
+  }
+}
+
+func TestUserServiceDelete(t *testing.T) {
+  tests := [] struct {
+    description  string
+    db           interfaces.MySqlDal
     newUser      dto.RequestUserDto
     expectReturn dto.ResponseUserDto
   }{

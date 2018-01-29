@@ -6,7 +6,7 @@ import (
 )
 
 var (
-  DB interfaces.Dal
+  DB interfaces.MySqlDal
 )
 
 func init() {

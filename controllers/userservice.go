@@ -14,7 +14,7 @@ import (
 )
 
 type UserService struct {
-  DB interfaces.Dal
+  DB interfaces.MySqlDal
 }
 
 var _ UserServiceInterface = &UserService{}
@@ -47,7 +47,7 @@ func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUser
   err = us.newPassIfValid(id, userDto.Password)
 
   if err != nil {
-    us.DB.DeleteUser(id)
+    us.DB.ForceDeleteUser(id)
     return responseUserDto, err
   }
 
@@ -240,7 +240,7 @@ func (us *UserService) newPassIfValid(userId int64, password string) error {
   newPass := dao.Password{
     0,
     hashPass,
-    time.Now().String(),
+    time.Now().Format("2006-01-02 15:04:05"),
     userId,
   }
 

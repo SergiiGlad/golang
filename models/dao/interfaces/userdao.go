@@ -11,4 +11,5 @@ type UserDao interface {
   FindUserByEmail(email string) (dao.User, error)
   FindUserByPhone(phone string) (dao.User, error)
   FriendsByUserID(id int64) ([]int64, error)
+  ForceDeleteUser(id int64) error
 }

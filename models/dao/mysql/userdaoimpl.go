@@ -11,13 +11,14 @@ import (
 type mysqlUserDao struct {
   conn *sql.DB
 
-  insert  *sql.Stmt
-  update  *sql.Stmt
-  delete  *sql.Stmt
-  byid    *sql.Stmt
-  byemail *sql.Stmt
-  byphone *sql.Stmt
-  friends *sql.Stmt
+  insert      *sql.Stmt
+  update      *sql.Stmt
+  delete      *sql.Stmt
+  forceDelete *sql.Stmt
+  byid        *sql.Stmt
+  byemail     *sql.Stmt
+  byphone     *sql.Stmt
+  friends     *sql.Stmt
 }
 
 var _ interfaces.UserDao = &mysqlUserDao{}
@@ -43,6 +44,9 @@ func newMySqlUserDao(conn *sql.DB) (interfaces.UserDao, error) {
   }
   if db.delete, err = conn.Prepare(deleteStatement); err != nil {
     return nil, fmt.Errorf("mysql: prepare list: %v", err)
+  }
+  if db.forceDelete, err = conn.Prepare(forceDeleteStatement); err != nil {
+    return nil, fmt.Errorf("mysql:prepare list: %v", err)
   }
   if db.byid, err = conn.Prepare(findByIdStatement); err != nil {
     return nil, fmt.Errorf("mysql: prepare list: %v", err)
@@ -108,6 +112,13 @@ func (d *mysqlUserDao) DeleteUser(id int64) error {
   return err
 }
 
+const forceDeleteStatement = `DELETE FROM users_data WHERE user_id = ?`
+
+func (d *mysqlUserDao) ForceDeleteUser(id int64) error {
+  _, err := execAffectingOneRow(d.delete, id)
+
+  return err
+}
 
 const findByIdStatement = `SELECT * FROM users_data WHERE user_id = ?`
 
