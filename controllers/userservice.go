@@ -2,7 +2,6 @@ package controllers
 
 import (
   "go-team-room/models/dao"
-  "regexp"
   "errors"
   "gopkg.in/hlandau/passlib.v1/hash/bcrypt"
   "log"
@@ -35,7 +34,7 @@ func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUser
     return respUserDto, err
   }
 
-  if validPasswordLength(userEntity.CurrentPass) == false {
+  if ValidPasswordLength(userEntity.CurrentPass) == false {
     return respUserDto, errors.New("Password too short.")
   }
 
@@ -99,7 +98,7 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
   }
 
   if len(newUserData.CurrentPass) != 0 {
-    if validPasswordLength(newUserData.CurrentPass) == false {
+    if ValidPasswordLength(newUserData.CurrentPass) == false {
       return responseUserDto, errors.New("Password too short.")
     }
 
@@ -158,7 +157,7 @@ func (us *UserService) GetUserFriends(id int64) ([]int64, error) {
 
 func checkUniqueEmail(email string, dao interfaces.UserDao) error {
 
-  if validEmail(email) == false {
+  if ValidEmail(email) == false {
     return errors.New("Invalid email format.")
   } else {
 
@@ -183,7 +182,7 @@ func checkUniqueEmail(email string, dao interfaces.UserDao) error {
 func checkUniquePhone(phone string, dao interfaces.UserDao) error {
   if len(phone) > 0 {
 
-    if validPhone(phone) == false {
+    if ValidPhone(phone) == false {
       return errors.New("Invalid phone number format.")
     } else {
 
@@ -206,42 +205,7 @@ func checkUniquePhone(phone string, dao interfaces.UserDao) error {
   return nil
 }
 
-func validRegexItem(item string, pattern string) bool {
-  itemRegex := regexp.MustCompile(pattern)
-
-  if isItemOk := itemRegex.MatchString(item); isItemOk == false {
-    return false
-  }
-
-  return true
-}
-
-func validEmail(email string) bool {
-  return validRegexItem(email, "^[a-z0-9]+@[a-z]+[.][a-z]+$")
-}
-
-func validPhone(phone string) bool {
-  return validRegexItem(phone, "^[+][0-9]{12}")
-}
-
-func validCyrillicName(name string) bool {
-  return validRegexItem(name, "^[А-Я][а-я]{1,49}")
-}
-
-func validLatinName(name string) bool {
-  return validRegexItem(name, "^[A-Z][a-z]{1,49}")
-}
-
-func validPasswordLength(password string) bool {
-  if len(password) < 6 {
-    return false
-  }
-
-  return true
-}
-
 func nameLetterToUppep(user *dao.User) {
   user.FirstName = strings.ToUpper(string([]rune(user.FirstName)[0])) + string([]rune(user.FirstName)[1:])
   user.SecondName = strings.ToUpper(string([]rune(user.SecondName)[0])) + string([]rune(user.SecondName)[1:])
 }
-
