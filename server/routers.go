@@ -57,16 +57,40 @@ func loginer(w http.ResponseWriter, r *http.Request) {
 
   if err != nil {
     responseError(w, err)
+    return
   }
 
   var userReq dto.RequestUserDto
+
   err = json.Unmarshal(body, &userReq)
 
   if err != nil {
     responseError(w, err)
+    return
   }
 
-  controllers.Login()
+  user, err := json.Marshal(userReq)
+
+  w.Write(user)
+
+  //user, err :=  controllers.Login(userReq.Email, userReq.Password)
+  //
+  //if err != nil {
+  //  responseError(w, err)
+  //  return
+  //}
+  //
+  //var userRes dto.ResponseUserDto
+  //
+  //userRes = dto.UserEntityToResponseDto(user)
+  //userResMarsh, err := json.Marshal(userRes)
+  //
+  //if err != nil {
+  //  responseError(w, err)
+  //  return
+  //}
+  //
+  //w.Write(userResMarsh)
 }
 
 var routes = Routes{
@@ -101,9 +125,9 @@ var routes = Routes{
 
   Route {
     "Login",
-    "GET",
+    "POST",
     "/login",
-    deleteProfile(userService),
+    loginer,
   },
 
   // and so on, just add new Route structs to this array

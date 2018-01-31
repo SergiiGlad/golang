@@ -464,8 +464,7 @@ definitions:
       phoneOrEmail:
         type: string
       password:
-        type: integer
-        format: int32
+        type: string
   Message:
     type: object
     properties:
