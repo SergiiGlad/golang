@@ -7,9 +7,6 @@ import (
   "html/template"
   "go-team-room/controllers"
   "go-team-room/models/dao/mysql"
-  "io/ioutil"
-  "go-team-room/models/dto"
-  "encoding/json"
 )
 
 type Route struct {
@@ -52,47 +49,6 @@ func handl(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func loginer(w http.ResponseWriter, r *http.Request) {
-  body, err := ioutil.ReadAll(r.Body)
-
-  if err != nil {
-    responseError(w, err)
-    return
-  }
-
-  var userReq dto.RequestUserDto
-
-  err = json.Unmarshal(body, &userReq)
-
-  if err != nil {
-    responseError(w, err)
-    return
-  }
-
-  user, err := json.Marshal(userReq)
-
-  w.Write(user)
-
-  //user, err :=  controllers.Login(userReq.Email, userReq.Password)
-  //
-  //if err != nil {
-  //  responseError(w, err)
-  //  return
-  //}
-  //
-  //var userRes dto.ResponseUserDto
-  //
-  //userRes = dto.UserEntityToResponseDto(user)
-  //userResMarsh, err := json.Marshal(userRes)
-  //
-  //if err != nil {
-  //  responseError(w, err)
-  //  return
-  //}
-  //
-  //w.Write(userResMarsh)
-}
-
 var routes = Routes{
 
   Route {
@@ -127,7 +83,7 @@ var routes = Routes{
     "Login",
     "POST",
     "/login",
-    loginer,
+    loginhandler,
   },
 
   // and so on, just add new Route structs to this array

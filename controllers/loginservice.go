@@ -3,15 +3,22 @@ package controllers
 import (
   "go-team-room/models/dao"
   "go-team-room/models/dao/mysql"
-  "golang.org/x/crypto/bcrypt"
+  "gopkg.in/hlandau/passlib.v1/hash/bcrypt"
   "errors"
 )
 
-func Login(email string, password string) (*dao.User, error) {
-  user, err := mysql.DB.FindUserByEmail(email)
+func Login(phoneOrEmail string, password string) (*dao.User, error) {
+  var user dao.User
+  var err error
+
+  if validPhone(phoneOrEmail) {
+    user, err = mysql.DB.FindUserByPhone(phoneOrEmail)
+  } else {
+    user, err = mysql.DB.FindUserByEmail(phoneOrEmail)
+  }
 
   if err != nil {
-    return nil, err
+    return nil, errors.New("wrong credentials")
   }
 
   pass, err := mysql.DB.LastPassByUserId(user.ID)
@@ -20,8 +27,8 @@ func Login(email string, password string) (*dao.User, error) {
     return nil, err
   }
 
-  if bcrypt.CompareHashAndPassword([]byte(pass.Password), []byte(password)) != nil {
-    return nil, errors.New("wrong password")
+  if bcrypt.Crypter.Verify(password, pass.Password) != nil {
+    return nil, errors.New("wrong credentials")
   }
 
   return &user, nil

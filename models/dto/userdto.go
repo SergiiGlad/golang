@@ -5,6 +5,15 @@ import (
   "go-team-room/models/dao"
 )
 
+type LoginDto struct {
+  PhoneOrEmail string `json:"phoneOrEmail"`
+  Password     string `json:"password"`
+}
+
+func (login LoginDto) String() string {
+  return fmt.Sprint("Login object:\n\tLogin = %s\n\tPassword = %s\n\t", login.PhoneOrEmail, login.Password)
+}
+
 type ResponseUserDto struct {
   ID        int64   `json:"id"`
   Email     string  `json:"email"`
