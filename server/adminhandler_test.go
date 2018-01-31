@@ -129,8 +129,6 @@ func TestUserDtoFromReq(t *testing.T) {
   }
 }
 
-
-
 func TestNewProfileHandler(t *testing.T) {
     tests := []struct {
       description        string
@@ -184,6 +182,48 @@ func newGorilaServerMock(hf http.HandlerFunc) http.Handler {
 }
 
 func TestUpdateProfileHandler(t *testing.T) {
+  tests := []struct {
+    description        string
+    handlerFunc        http.HandlerFunc
+    expectedStatusCode int
+    reqBody            string
+    expectRespBody     string
+  }{
+    {
+      description:        "Update user [Should return 200 OK]",
+      handlerFunc:        updateProfile(&UserServiceMock{}),
+      expectedStatusCode: http.StatusOK,
+      reqBody: `{
+        "email": "string",
+        "first_name": "string",
+        "last_name": "string",
+        "phone": "string",
+        "password": "0"
+        }`,
+      expectRespBody:
+      `{"id":1,"email":"string","first_name":"string","last_name":"string","phone":"string","friends":[]}`,
+    },
+  }
+
+  for _, tc := range tests {
+
+    //method and path can have any valid values. We test handlers, not routers.
+    req, err := http.NewRequest("PUT", "/admin/profile/1", strings.NewReader(tc.reqBody))
+
+    if err != nil {
+      t.Fatal(err)
+    }
+
+    rr := httptest.NewRecorder()
+    handler := newGorilaServerMock(tc.handlerFunc)
+    handler.ServeHTTP(rr, req)
+
+    if respBody := rr.Body.String();
+      rr.Code != tc.expectedStatusCode || respBody != tc.expectRespBody {
+      t.Errorf("\nDecsription: %s\nExpected response code %v with body %s.\nGot code %v with body %s",
+        tc.description, tc.expectedStatusCode, tc.expectRespBody, rr.Code, respBody)
+    }
+  }
 }
 
 func TestDeleteProfileHandler(t *testing.T) {

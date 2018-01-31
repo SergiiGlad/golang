@@ -16,10 +16,10 @@ type mockDb struct {
 //user instance to be returned with errors
 var errorUser dao.User
 
-func (md mockDb) AddUser(user *dao.User) (int64, error) {
+func (md mockDb) AddUser(user *dao.User) (dao.User, error) {
   md.DB = append(md.DB, *user)
   user.ID = int64(len(md.DB) - 1)
-  return user.ID, nil
+  return *user, nil
 }
 
 func (md mockDb) DeleteUser(id int64) error {
@@ -37,20 +37,28 @@ func (md mockDb) DeleteUser(id int64) error {
   return errors.New("user could not be found")
 }
 
-func (md mockDb) UpdateUser(id int64, user *dao.User) error {
+func (md mockDb) ForceDeleteUser(id int64) error {
   if id < 0 {
     return errors.New("invalid id")
+  }
+
+  return errors.New("user could not be found")
+}
+
+func (md mockDb) UpdateUser(id int64, user *dao.User) (dao.User, error) {
+  if id < 0 {
+    return *user, errors.New("invalid id")
   }
 
   for indx, user := range md.DB {
     if user.ID == id {
       md.DB[indx] = user
       user.ID = id
-      return nil
+      return user, nil
     }
   }
 
-  return errors.New("user could not be found")
+  return *user, errors.New("user could not be found")
 }
 
 func (md mockDb) FindUserById(id int64) (dao.User, error) {
@@ -256,7 +264,7 @@ func TestUserServiceDelete(t *testing.T) {
   tests := [] struct {
     description  string
     db           interfaces.MySqlDal
-    newUser      dto.RequestUserDto
+    id           int64
     expectReturn dto.ResponseUserDto
   }{
     {
@@ -271,40 +279,14 @@ func TestUserServiceDelete(t *testing.T) {
         },
       },
       },
-      newUser: dto.RequestUserDto{
-        Email:     "newemail@gmail.com",
-        FirstName: "Name",
-        LastName:  "surname",
-        Phone:     "+380509684211",
-        Password:  "123456",
-      },
+      id: 0,
       expectReturn: dto.ResponseUserDto{
         ID:        0,
-        Email:     "newemail@gmail.com",
-        FirstName: "Name",
-        LastName:  "Surname",
-        Phone:     "+380509684211",
-        Friends: []int64{},
-      },
-    },
-    {
-      description: "Update user [Should return unique error]",
-      db: mockDb{[]dao.User{
-        dao.User{
-          ID:        0,
-          Email:     "email@gmail.com",
-          FirstName: "Name",
-          LastName:  "surname",
-          Phone:     "+380509684212",
-        },
-      },
-      },
-      newUser: dto.RequestUserDto{
         Email:     "email@gmail.com",
         FirstName: "Name",
         LastName:  "surname",
         Phone:     "+380509684212",
-        Password:  "123456",
+        Friends: []int64{},
       },
     },
   }
@@ -312,10 +294,11 @@ func TestUserServiceDelete(t *testing.T) {
   for _, tc := range tests {
     userService.DB = tc.db
 
-    respDto, _ := userService.UpdateUser(0, &tc.newUser)
+    respDto, _ := userService.DeleteUser(0)
 
     if respDto.String() != tc.expectReturn.String() {
       t.Errorf("\nExpected: %s\nGot: %s", tc.expectReturn, respDto)
     }
   }
 }
+

@@ -5,8 +5,9 @@ import (
   "go-team-room/models/dao/interfaces"
   "go-team-room/conf"
   "fmt"
-  "database/sql/driver"
+  //"database/sql/driver"
   "github.com/go-sql-driver/mysql"
+  "database/sql/driver"
 )
 
 type MySqlDatabase struct {
@@ -25,7 +26,7 @@ func newMySQLDatabase() (MySqlDatabase, error) {
     return db, err
   }
 
-  conn, err := sql.Open("mysql", conf.MysqlDsn)
+  conn, err := sql.Open("mysql", conf.MysqlDsn + conf.MysqlDBName)
 
   if err != nil {
     return db, fmt.Errorf("mysql: could not get a connection: %v", err)
@@ -107,7 +108,7 @@ func ensureTableExists() error {
       "could be bad address, or this address is not whitelisted for access.")
   }
 
-  if  _, err := conn.Exec("USE goteamroom"); err != nil {
+  if  _, err := conn.Exec(fmt.Sprintf("USE %s", conf.MysqlDBName)); err != nil {
     // MySQL error 1049 is "database does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1049 {
       return createAllTables(conn)

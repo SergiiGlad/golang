@@ -72,23 +72,23 @@ const insertStatement = `INSERT INTO
   users_data (email, first_name, last_name, phone, role_in_network, account_status, avatar_ref)
   VALUES (?, ?, ?, ?, ?, ?, ?)`
 
-func (d *mysqlUserDao) AddUser(user *dao.User) (int64, error) {
+func (d *mysqlUserDao) AddUser(user *dao.User) (dao.User, error) {
   r, err := execAffectingOneRow(d.insert, user.Email, user.FirstName, user.LastName, user.Phone, user.Role,
     user.AccStatus, user.AvatarRef)
 
   if err != nil {
-    return 0, err
+    return *user, err
   }
 
   lastInsertID, err := r.LastInsertId()
 
   if err != nil {
-    return 0, fmt.Errorf("mysql: could not get last insert ID: %v", err)
+    return *user, fmt.Errorf("mysql: could not get last insert ID: %v", err)
   }
 
   user.ID = lastInsertID
 
-  return lastInsertID, nil
+  return *user, nil
 }
 
 
@@ -96,11 +96,15 @@ const updateStatement = `UPDATE users_data SET
   email = ?, first_name = ?, last_name = ?, phone = ?, role_in_network = ?, account_status = ?, avatar_ref = ?
   WHERE user_id = ?`
 
-func (d *mysqlUserDao) UpdateUser(id int64, user *dao.User) error {
+func (d *mysqlUserDao) UpdateUser(id int64, user *dao.User) (dao.User, error) {
   _, err := execAffectingOneRow(d.update, user.Email, user.FirstName, user.LastName, user.Phone, user.Role,
     user.AccStatus, user.AvatarRef, id)
 
-  return err
+  if err != nil {
+    return *user, err
+  }
+
+  return *user, nil
 }
 
 //It just changes account_status without actual deleting table row
@@ -115,7 +119,7 @@ func (d *mysqlUserDao) DeleteUser(id int64) error {
 const forceDeleteStatement = `DELETE FROM users_data WHERE user_id = ?`
 
 func (d *mysqlUserDao) ForceDeleteUser(id int64) error {
-  _, err := execAffectingOneRow(d.delete, id)
+  _, err := execAffectingOneRow(d.forceDelete, id)
 
   return err
 }
@@ -158,7 +162,7 @@ func (d *mysqlUserDao) FindUserByPhone(phone string) (dao.User, error) {
   return user, nil
 }
 
-const findFriendsByUserId = `SELECT friend_id FROM friend_list WHERE user_id = ?;`
+const findFriendsByUserId = `SELECT friend_id FROM friend_list WHERE user_id = ?`
 
 func (d *mysqlUserDao) FriendsByUserID(id int64) ([]int64, error) {
   rows, err := d.friends.Query()

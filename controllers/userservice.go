@@ -35,19 +35,36 @@ func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUser
     return responseUserDto, err
   }
 
-  userEntity := dto.RequestUserDtoToEntity(userDto)
-  nameLetterToUppep(&userEntity)
+  if validPasswordLength(userDto.Password) == false {
+    return responseUserDto, errors.New("Password too short.")
+  }
 
-  id, err := us.DB.AddUser(&userEntity)
+  hashPass, err := bcrypt.Crypter.Hash(userDto.Password)
 
   if err != nil {
     return responseUserDto, err
   }
 
-  err = us.newPassIfValid(id, userDto.Password)
+  userEntity := dto.RequestUserDtoToEntity(userDto)
+  nameLetterToUppep(&userEntity)
+
+  user, err := us.DB.AddUser(&userEntity)
 
   if err != nil {
-    us.DB.ForceDeleteUser(id)
+    return responseUserDto, err
+  }
+
+  newPass := dao.Password{
+    0,
+    hashPass,
+    time.Now().Format("2006-01-02 15:04:05"),
+    user.ID,
+  }
+
+  _, err = us.DB.InsertPass(&newPass)
+
+  if err != nil {
+    us.DB.ForceDeleteUser(user.ID)
     return responseUserDto, err
   }
 
@@ -102,7 +119,7 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
   newUserData := dto.RequestUserDtoToEntity(userDto)
   nameLetterToUppep(&newUserData)
 
-  err = us.DB.UpdateUser(id, &newUserData)
+  _, err = us.DB.UpdateUser(id, &newUserData)
   if err != nil {
     log.Println(err)
     return responseUserDto, err
