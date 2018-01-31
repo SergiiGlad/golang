@@ -266,15 +266,27 @@ paths:
   /post:
     post:
       consumes:
-        - application/json
+        - multipart/form-data
       produces:
         - application/json
       parameters:
-        - in: body
-          name: Post
-          required: true
-          schema:
-            $ref: '#/definitions/PostBody'
+         - in: formData
+           name: post_title
+           type: string
+           description: Post Title
+         - in: formData
+           name: post_text
+           type: string
+           description: Post Text
+         - in: formData
+           name: user_id
+           type: string
+           description: User ID
+         - in: formData
+           name: upfile
+           type: file
+           description: Upload File
+
       summary: Create post for current logined user.
       responses:
         '200':

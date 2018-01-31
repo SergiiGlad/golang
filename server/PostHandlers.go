@@ -7,12 +7,14 @@ import (
   "github.com/aws/aws-sdk-go/aws/session"
   "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/service/dynamodb"
-  "time"
   "github.com/aws/aws-sdk-go/aws/awserr"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
   "github.com/gorilla/mux"
   "github.com/aws/aws-sdk-go/service/dynamodb/expression"
   "os"
+  "time"
+  "mime/multipart"
+  "github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 //Post structure
@@ -26,20 +28,43 @@ type Post struct{
 
 //To CREATE new post in DynamoDB Table "Post"
 func CreateNewPost(w http.ResponseWriter, r *http.Request) {
+
   var newPost Post
 
-  //Decode request JSON
-  _ = json.NewDecoder(r.Body).Decode(&newPost)
+  //Decode request MULTIPART/FORM-DATA
+  r.ParseMultipartForm(10000000)
+  newPost.Title = r.FormValue("post_title")
+  newPost.Text = r.FormValue("post_text")
+  newPost.UserID = r.FormValue("user_id")
 
   //Set "post_id" and "post_like"
   newPost.PostID = time.Now().String()
   newPost.Like = "0"
+
+  file, handler, err := r.FormFile("upfile")
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+
+  defer file.Close()
+
+  //f, err := os.Open(handler.Filename)
+  //if err != nil {
+  //
+  //  fmt.Errorf("failed to open file %q, %v", f.Name(), err)
+  //  return
+  //}
 
   //Create new Session for DynamoDB
   sess, err := session.NewSession(&aws.Config{
     Region: aws.String("eu-west-2"),
   })
   svc := dynamodb.New(sess)
+  if file != nil {
+    UploadFileToS3(sess, file, handler)
+  }
 
   //Request to DynamoDB to CREATE new post with KEY_ATTRIBUTE "post_id" (TimeStamp)
   input := &dynamodb.PutItemInput{
@@ -222,7 +247,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
   _ = json.NewEncoder(w).Encode(&post)
 }
 
-//To GET posts from DynamoDB Table "Post" by UserID
+//To GET posts by "user_id" from DynamoDB Table "Post"
 func GetPostByUserID(w http.ResponseWriter, r *http.Request){
   var post Post
 
@@ -362,4 +387,27 @@ func UpdatePost(w http.ResponseWriter, r *http.Request){
   _ = json.NewEncoder(w).Encode(&post)
 
 }
+
+func UploadFileToS3 (sess *session.Session, f multipart.File, handl *multipart.FileHeader) string{
+  // Create an uploader with the session and default options
+  uploader := s3manager.NewUploader(sess)
+
+
+  // Upload the file to S3.
+  result, err := uploader.Upload(&s3manager.UploadInput{
+    Bucket: aws.String("gohumfiles"),
+    Key:    aws.String(handl.Filename),
+    Body:   f,
+  })
+  if err != nil {
+    fmt.Errorf("failed to upload file, %v", err)
+    return ""
+  }
+  fmt.Printf("file uploaded to, %s\n", aws.StringValue(&result.Location))
+
+  link := result.Location
+
+  return link
+}
+
 
