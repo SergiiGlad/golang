@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -15,59 +16,35 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-// Create structs to hold info about new item of HumMessage
-
-type HumUser struct {
-	IdSql   int    `json:"id_sql"`
-	NameSql string `json:"name_sql"`
-}
-
-type HumMessageDataBinary struct {
-	BinData string `json:"bin_data"`
-	BinName string `json:"bin_name"`
-}
-
-type HumMessageData struct {
-	Text             string                 `json:"text"`
-	TypeOfHumMessage string                 `json:"type"`
-	BinaryParts      []HumMessageDataBinary `json:"binary_parts"`
-}
-type HumMessageSocialStatus struct {
-	Dislike int
-	Like    int
-	Views   int
-}
-
-type HumMessage struct {
-	MessageId           string                 `json:"message_id"`
-	MessageChatRoomId   string                 `json:"message_chat_room_id"`
-	MessageData         HumMessageData         `json:"message_data"`
-	MessageParentId     string                 `json:"message_parent_id"`
-	MessageSocialStatus HumMessageSocialStatus `json:"message_social_status"`
-	MessageTimestamp    string                 `json:"message_timestamp"`
-	MessageUser         HumUser                `json:"message_user"`
-	/////////END
-}
-
-///////////////
-
-type test_struct struct {
-	//Test string
-	ChatRoomId string
-	Message    string
-}
-
-//GetActionUserId - return ID of user who make this action
-func GetActionUserId(r *http.Request) string {
+//GetActionUserID - return ID of user who make this action
+func GetActionUserID(r *http.Request) int {
 	// TEMPORARY stub
+	//Later it will get user from session/token/cookies
 
 	if r.Method == "GET" {
-		return "12" //later We will get it REALY
+
+		keys, ok := r.URL.Query()["id"]
+		if !ok || len(keys) < 1 {
+			return -1
+		}
+		iid, ok =: strconv.Atoi(keys[0])
+		if !ok {
+			iid = -1
+		}
+		return iid //later We will get it REALY
 
 	} else if r.Method == "POST" {
-		return "23"
+		decoder := json.NewDecoder(r.Body)
+
+		var data HumMessage
+		err := decoder.Decode(&data)
+		if err != nil {
+			//panic(err)
+			return -1
+		}
+		return data.MessageUser.IdSql
 	} else {
-		return "34"
+		return -1 //UNsupported method
 	}
 
 }
@@ -116,7 +93,7 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 		os.Exit(1)
 	}
 
-	// Create DynamoDB client
+	// // Create DynamoDB client
 	svc := dynamodb.New(sess)
 	av, err := dynamodbattribute.MarshalMap(m)
 
@@ -152,7 +129,7 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 func HandlerOfMessages(w http.ResponseWriter, r *http.Request) {
 
 	//DEBUG
-	//currentUserID := GetActionUserId(r)
+	currentUserID := GetActionUserID(r)
 	//fmt.Println(currentUserID)
 
 	if r.Method == "GET" {
@@ -161,7 +138,6 @@ func HandlerOfMessages(w http.ResponseWriter, r *http.Request) {
 		//Assume it is an GET
 		//Shuold return an  last messages
 		//for user ID=currentUserID
-		currentUserID := GetActionUserId(r)
 
 	} else if r.Method == "POST" || r.Method == "OPTIONS" {
 		//CORS!!! "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-web-security --user-data-dir="D:/Chrome"
@@ -190,6 +166,7 @@ func HandlerOfMessages(w http.ResponseWriter, r *http.Request) {
 		//fmt.Println(r.Body)
 		//// https://gist.github.com/alyssaq/75d6678d00572d103106
 		var inputMessage HumMessage
+		inputMessage.MessageUser.IdSql = currentUserID
 
 		ReadReqBodyPOST(r, &inputMessage)
 

@@ -11,3 +11,10 @@ vendor/
 *.njsproj
 *.sln
 debug
+# Win executable
+*.exe
+# VS code dirs and files
+*.swp
+launch.json
+.vscode/
+
