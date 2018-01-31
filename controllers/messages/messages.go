@@ -14,25 +14,26 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
 //GetActionUserID - return ID of user who make this action
 func GetActionUserID(r *http.Request) int {
 	// TEMPORARY stub
 	//Later it will get user from session/token/cookies
-
+	iid := -1
 	if r.Method == "GET" {
 
 		keys, ok := r.URL.Query()["id"]
 		if !ok || len(keys) < 1 {
-			return -1
-		}
-		iid, ok =: strconv.Atoi(keys[0])
-		if !ok {
 			iid = -1
 		}
-		return iid //later We will get it REALY
-
+		iiid, err := strconv.Atoi(keys[0])
+		if err != nil {
+			iid = -1
+		} else {
+			iid = iiid
+		}
 	} else if r.Method == "POST" {
 		decoder := json.NewDecoder(r.Body)
 
@@ -40,16 +41,18 @@ func GetActionUserID(r *http.Request) int {
 		err := decoder.Decode(&data)
 		if err != nil {
 			//panic(err)
-			return -1
+			iid = -1
+		} else {
+			iid = data.MessageUser.IdSql
 		}
-		return data.MessageUser.IdSql
 	} else {
-		return -1 //UNsupported method
+		iid = -1 //UNsupported method
 	}
+	return iid
 
 }
 
-//ValideteDataFromUser very important func
+//ValidateDataFromUser very important func
 //Do NOT trust any data from User!!!
 //VALIDATE EVERUTHING
 func ValidateDataFromUser(m *HumMessage) {
@@ -60,6 +63,86 @@ func ValidateDataFromUser(m *HumMessage) {
 	//go home
 }
 
+func GetMessagesFromDynamo(writeRespon http.ResponseWriter, humUserId int, numberOfMessages int) {
+
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(conf.DynamoRegion),
+		Credentials: credentials.NewStaticCredentials(conf.AwsAccessKeyId, conf.AwsSecretKey, ""),
+	})
+
+	if err != nil {
+		fmt.Println("Got error creating session")
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	// // Create DynamoDB client
+	svc := dynamodb.New(sess)
+	// Create the Expression to fill the input struct with.
+	// Get all movies in that year; we'll pull out those with a higher rating later
+	// filt := expression.Name("year").Equal(expression.Value(year))
+	filt := expression.Name("message_user.id_sql").Equal(expression.Value(humUserId))
+	print("=============")
+	expr, err := expression.NewBuilder().WithFilter(filt).Build()
+
+	if err != nil {
+		fmt.Println("Got error building expression:")
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	// Build the query input parameters
+	params := &dynamodb.ScanInput{
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		FilterExpression:          expr.Filter(),
+		//  ProjectionExpression:      expr.Projection(),
+		TableName: aws.String("messages"),
+	}
+	// fmt.Println("=======params==========")
+	// fmt.Println(params)
+	// fmt.Println("=======================")
+	// // Make the DynamoDB Query API call
+	result, err := svc.Scan(params)
+
+	if err != nil {
+		fmt.Println("Query API call failed:")
+		fmt.Println((err.Error()))
+		//fmt.Println(params)
+		os.Exit(1)
+	}
+
+	num_items := 0
+
+	for _, i := range result.Items {
+		item := HumMessage{}
+
+		err = dynamodbattribute.UnmarshalMap(i, &item)
+
+		if err != nil {
+			fmt.Println("Got error unmarshalling:")
+			fmt.Println(err.Error())
+			fmt.Println("+++++++++++++++++++++++++++")
+			fmt.Println(item)
+			fmt.Println("+++++++++++++++++++++++++++")
+			//os.Exit(1)
+		}
+
+		// Which ones had a higher rating?
+		//if item.Info.Rating > min_rating {
+		// Or it we had filtered by rating previously:
+		//   if item.Year == year {
+		num_items = num_items + 1
+
+		fmt.Println("message_id: ", item.MessageId)
+		fmt.Println("Message Data Text:", item.MessageData.Text)
+		fmt.Println()
+		//}
+	}
+
+	fmt.Println("Found", num_items)
+}
+
 func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
 	body, err1 := ioutil.ReadAll(req.Body)
 	if err1 != nil {
@@ -67,9 +150,7 @@ func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
 		// 	http.StatusInternalServerError)
 		return
 	}
-
 	//fmt.Println(string(body)) //DEBUG output
-
 	err2 := json.Unmarshal(body, humMess)
 	if err2 != nil {
 		//panic(err)
@@ -133,11 +214,23 @@ func HandlerOfMessages(w http.ResponseWriter, r *http.Request) {
 	//fmt.Println(currentUserID)
 
 	if r.Method == "GET" {
-		r.ParseForm() // Parses the request body
-
 		//Assume it is an GET
 		//Shuold return an  last messages
 		//for user ID=currentUserID
+		numberOfMessages := 10
+
+		keys, ok := r.URL.Query()["numberOfMessages"]
+		if !ok || len(keys) < 1 {
+			//	numberOfMessages = 10
+		} else {
+			iiid, err := strconv.Atoi(keys[0])
+			if err != nil {
+				//	numberOfMessages = 10
+			} else {
+				numberOfMessages = iiid
+			}
+		}
+		GetMessagesFromDynamo(w, currentUserID, numberOfMessages)
 
 	} else if r.Method == "POST" || r.Method == "OPTIONS" {
 		//CORS!!! "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-web-security --user-data-dir="D:/Chrome"
