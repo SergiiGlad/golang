@@ -27,24 +27,6 @@ func GetLog() *logrus.Logger {
 // Init logger
 func init() {
 
-	// Init Viper for read configuration file ./conf.json
-	var viper = viper.New()
-
-	// name of config file (without extension), here we use some logrus_mate sample
-	viper.SetConfigName("conf")
-
-	// optionally look for config in the working directory
-	viper.AddConfigPath("./conf")
-
-	// Find and read the config file
-	err := viper.ReadInConfig()
-
-	// Handle errors reading the config file
-	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
-	}
-	// End Init Viper
-
 	// new hook, you just need a registration
 	// beacause logrus_mate doesn't have a lsfhook in package
 	logrus_mate.RegisterHook("lfshook", NewHook)
@@ -52,7 +34,7 @@ func init() {
 	// Read and unmarshal configuration from viper
 
 	var mate_conf logrus_mate.LoggerConfig
-	mate_conf = logrusHelper.UnmarshalConfiguration(viper)
+	mate_conf = logrusHelper.UnmarshalConfiguration(viper.GetViper())
 
 	// create logger's instance
 	log = logrus.New()
