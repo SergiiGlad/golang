@@ -15,6 +15,11 @@ import (
   "time"
   "mime/multipart"
   "github.com/aws/aws-sdk-go/service/s3/s3manager"
+  "io"
+  "crypto/rand"
+  "strings"
+  "github.com/aws/aws-sdk-go/service/s3"
+  "strconv"
 )
 
 //Post structure
@@ -24,6 +29,7 @@ type Post struct{
   PostID string `json:"post_id"`
   UserID string `json:"user_id"`
   Like string `json:"post_like"`
+  FileLink string `json:"file_link"`
 }
 
 //To CREATE new post in DynamoDB Table "Post"
@@ -31,40 +37,42 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
 
   var newPost Post
 
-  //Decode request MULTIPART/FORM-DATA
-  r.ParseMultipartForm(10000000)
-  newPost.Title = r.FormValue("post_title")
-  newPost.Text = r.FormValue("post_text")
-  newPost.UserID = r.FormValue("user_id")
-
-  //Set "post_id" and "post_like"
-  newPost.PostID = time.Now().String()
-  newPost.Like = "0"
-
-  file, handler, err := r.FormFile("upfile")
-
-  if err != nil {
-    fmt.Println(err)
-    return
-  }
-
-  defer file.Close()
-
-  //f, err := os.Open(handler.Filename)
-  //if err != nil {
-  //
-  //  fmt.Errorf("failed to open file %q, %v", f.Name(), err)
-  //  return
-  //}
-
   //Create new Session for DynamoDB
   sess, err := session.NewSession(&aws.Config{
     Region: aws.String("eu-west-2"),
   })
-  svc := dynamodb.New(sess)
-  if file != nil {
-    UploadFileToS3(sess, file, handler)
+
+  //Decode request MULTIPART/FORM-DATA
+  r.ParseMultipartForm(0)
+  newPost.Title = r.FormValue("post_title")
+  newPost.Text = r.FormValue("post_text")
+  newPost.UserID = r.FormValue("user_id")
+
+  //Set "post_id", "post_like", "file_link"
+  newPost.PostID = time.Now().String()
+  newPost.Like = "0"
+  newPost.FileLink = "NULL"
+
+  //Check if file exists in request
+  //if exists UPLOAD to S3
+  //if does not "file_link" remains "NULL"
+  if fhs := r.MultipartForm.File["upfile"]; len(fhs) > 0{
+
+    //Get File, File Header, Error from Multipart Form File
+    file, handler, err := r.FormFile("upfile")
+
+    if err != nil {
+      fmt.Println(err)
+      return
+    }
+
+    defer file.Close()
+
+    //UPLOAD file to S3 and GET link
+    newPost.FileLink = UploadFileToS3(sess, file, handler)
   }
+
+  svc := dynamodb.New(sess)
 
   //Request to DynamoDB to CREATE new post with KEY_ATTRIBUTE "post_id" (TimeStamp)
   input := &dynamodb.PutItemInput{
@@ -83,6 +91,9 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
       },
       "post_like": {
         N: &newPost.Like,
+      },
+      "file_link": {
+        S: &newPost.FileLink,
       },
     },
     ReturnConsumedCapacity: aws.String("TOTAL"),
@@ -136,6 +147,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
   sess, err := session.NewSession(&aws.Config{
     Region:      aws.String("eu-west-2"),
   })
+
   svc := dynamodb.New(sess)
 
   //Request to DynamoDB to DELETE post with KEY_ATTRIBUTE "post_id" (TimeStamp)
@@ -265,7 +277,7 @@ func GetPostByUserID(w http.ResponseWriter, r *http.Request){
   filt := expression.Name("user_id").Equal(expression.Value(post.UserID))
 
   //Make projection: displays all expression.Name with equal "user_id"
-  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"))
+  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"))
 
   //Build expression with filter and projection
   expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
@@ -388,26 +400,125 @@ func UpdatePost(w http.ResponseWriter, r *http.Request){
 
 }
 
+//To UPLOAD file to S3
 func UploadFileToS3 (sess *session.Session, f multipart.File, handl *multipart.FileHeader) string{
+
   // Create an uploader with the session and default options
   uploader := s3manager.NewUploader(sess)
 
+  fileType := GetFileType(handl.Filename)
+
+  uuid, err := newUUID()
+  if err != nil {
+    fmt.Printf("error: %v\n", err)
+  }
+  fmt.Printf("%s\n", uuid)
 
   // Upload the file to S3.
   result, err := uploader.Upload(&s3manager.UploadInput{
     Bucket: aws.String("gohumfiles"),
-    Key:    aws.String(handl.Filename),
+    Key:    aws.String(uuid + fileType),
     Body:   f,
   })
   if err != nil {
     fmt.Errorf("failed to upload file, %v", err)
-    return ""
+    return "failed to upload file"
   }
   fmt.Printf("file uploaded to, %s\n", aws.StringValue(&result.Location))
-
-  link := result.Location
-
+  link := "/uploads/" + uuid + fileType
   return link
+}
+
+//To GET file from S3
+func GetFileFromS3(w http.ResponseWriter, r *http.Request) {
+
+  //Gorilla tool to handle request "/post/{post_id}" with method DELETE
+  vars := mux.Vars(r)
+  fileName := vars["file_link"]
+
+  //Create new Session for DynamoDB
+  sess, err := session.NewSession(&aws.Config{
+    Region: aws.String("eu-west-2"),
+  })
+
+  // Create a downloader with the session and default options
+  downloader := s3manager.NewDownloader(sess)
+
+  // Create a file to write the S3 Object contents to.
+  f, err := os.Create(fileName)
+  if err != nil {
+    fmt.Errorf("failed to create file %q, %v", fileName, err)
+    return
+  }
+
+  // Write the contents of S3 Object to the file
+  n, err := downloader.Download(f, &s3.GetObjectInput{
+    Bucket: aws.String("gohumfiles"),
+    Key:    aws.String(fileName),
+  })
+  if err != nil {
+    fmt.Errorf("failed to download file, %v", err)
+    return
+  }
+  fmt.Printf("file downloaded, %d bytes\n", n)
+
+  f, err = os.Open(fileName)
+  defer f.Close()
+
+  if err != nil {
+    //File not found, send 404
+    http.Error(w, "File not found.", 404)
+    return
+  }
+
+  //Get the Content-Type of the file
+  //Create a buffer to store the header of the file in
+  FileHeader := make([]byte, 512)
+  //Copy the headers into the FileHeader buffer
+  f.Read(FileHeader)
+  //Get content type of file
+  FileContentType := http.DetectContentType(FileHeader)
+
+  //Get the file size
+  FileStat, _ := f.Stat()                     //Get info from file
+  FileSize := strconv.FormatInt(FileStat.Size(), 10) //Get file size as a string
+
+  //Send the headers
+  w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
+  w.Header().Set("Content-Type", FileContentType)
+  w.Header().Set("Content-Length", FileSize)
+
+  //Send the file
+  //We read 512 bytes from the file already so we reset the offset back to 0
+  f.Seek(0, 0)
+  io.Copy(w, f) //'Copy' the file to the client
+
+  os.Remove(fileName)
+}
+
+//To DELETE file from S3 when DELETE Post
+//func DeleteFile(sess *session.Session, postID string) {}
+
+//To get type of uploading file
+func GetFileType(s string) (ft string) {
+  index := strings.LastIndexAny(s, ".")
+  ft = s[index:]
+  ft = strings.ToLower(ft)
+  return
+}
+
+//To generate a random UUID according to RFC 4122
+func newUUID() (string, error) {
+  uuid := make([]byte, 16)
+  n, err := io.ReadFull(rand.Reader, uuid)
+  if n != len(uuid) || err != nil {
+    return "", err
+  }
+  // variant bits; see section 4.1.1
+  uuid[8] = uuid[8]&^0xc0 | 0x80
+  // version 4 (pseudo-random); see section 4.1.3
+  uuid[6] = uuid[6]&^0xf0 | 0x40
+  return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
 

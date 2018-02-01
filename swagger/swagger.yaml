@@ -418,6 +418,24 @@ paths:
             $ref: '#/definitions/Post'
         '403':
           description: User wasnt login or dont have perrmision to like comment
+  '/uploads/{file_link}':
+    get:
+      summary: Retrun specified file.
+      produces:
+        - application/octet-stream
+      parameters:
+        - name: file_link
+          in: path
+          description: File link
+          required: true
+          type: string
+      responses:
+        '200':
+          description: the file to retrieve
+          schema:
+            type: file
+        '400':
+          description: Couldn't download file
 definitions:
   Profile:
     type: object

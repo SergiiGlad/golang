@@ -96,4 +96,11 @@ var routes = Routes{
     "/post/{post_id}",
     UpdatePost,
   },
+
+  Route {
+    "GetFile",
+    "GET",
+    "/uploads/{file_link}",
+    GetFileFromS3,
+  },
 }
