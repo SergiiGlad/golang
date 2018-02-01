@@ -10,6 +10,7 @@ vendor/
 *.ntvs*
 *.njsproj
 *.sln
+<<<<<<< HEAD
 debug
 # Win executable
 *.exe
@@ -17,4 +18,4 @@ debug
 *.swp
 launch.json
 .vscode/
-
+#go-team-room ###??? Who added it HERE ???

@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  gohum:
+    image: registry.gitlab.com/kv-031.go/go-team-room:latest
+    mem_limit: -1
+    ports:
+          - "80:80"
+          - "443:443"
+          - "8080:8080"
+    environment:
+      - GO_AWS_ACCESS_KEY_ID=${ID}
+      - GO_AWS_SECRET_ACCESS_KEY=${KEY}
+      - GO_AWS_DYNAMO_ENDPOINT=${ENDPOINT}
+      - GO_AWS_DYNAMO_REGION=${REGION}
+      - GO_MYSQL_DSN=${DSN}
