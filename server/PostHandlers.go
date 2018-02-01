@@ -55,7 +55,7 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
 
   //Check if file exists in request
   //if exists UPLOAD to S3
-  //if does not "file_link" remains "NULL"
+  //if not - "file_link" remains "NULL"
   if fhs := r.MultipartForm.File["upfile"]; len(fhs) > 0{
 
     //Get File, File Header, Error from Multipart Form File
@@ -148,6 +148,11 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
     Region:      aws.String("eu-west-2"),
   })
 
+  post = GetPostBody(post, sess)
+
+  if post.FileLink != "NULL"{
+    DeleteFileFromS3(post.FileLink, sess)
+  }
   svc := dynamodb.New(sess)
 
   //Request to DynamoDB to DELETE post with KEY_ATTRIBUTE "post_id" (TimeStamp)
@@ -406,13 +411,14 @@ func UploadFileToS3 (sess *session.Session, f multipart.File, handl *multipart.F
   // Create an uploader with the session and default options
   uploader := s3manager.NewUploader(sess)
 
-  fileType := GetFileType(handl.Filename)
+  fileType := handl.Filename[strings.LastIndexAny(handl.Filename, "."):]
+  fileType = strings.ToLower(fileType)
 
+  //Generate UUID for File
   uuid, err := newUUID()
   if err != nil {
     fmt.Printf("error: %v\n", err)
   }
-  fmt.Printf("%s\n", uuid)
 
   // Upload the file to S3.
   result, err := uploader.Upload(&s3manager.UploadInput{
@@ -497,14 +503,66 @@ func GetFileFromS3(w http.ResponseWriter, r *http.Request) {
 }
 
 //To DELETE file from S3 when DELETE Post
-//func DeleteFile(sess *session.Session, postID string) {}
+func DeleteFileFromS3(file string, sess *session.Session) {
+  filename := strings.TrimPrefix(file, "/uploads/")
 
-//To get type of uploading file
-func GetFileType(s string) (ft string) {
-  index := strings.LastIndexAny(s, ".")
-  ft = s[index:]
-  ft = strings.ToLower(ft)
-  return
+  svc := s3.New(sess)
+
+  input := &s3.DeleteObjectsInput{
+    Bucket: aws.String("gohumfiles"),
+    Delete: &s3.Delete{
+      Objects: []*s3.ObjectIdentifier{
+        {
+          Key: aws.String(filename),
+        },
+      },
+      Quiet: aws.Bool(false),
+    },
+  }
+
+  result, err := svc.DeleteObjects(input)
+  if err != nil {
+    if aerr, ok := err.(awserr.Error); ok {
+      switch aerr.Code() {
+      default:
+        fmt.Println(aerr.Error())
+      }
+    } else {
+      // Print the error, cast err to awserr.Error to get the Code and
+      // Message from an error.
+      fmt.Println(err.Error())
+    }
+    return
+  }
+  fmt.Println(result)
+}
+
+//To GET Post body from Table "Post" in DynamoDB by "post_id". Return Post body
+func GetPostBody(post Post, sess *session.Session) Post {
+  svc := dynamodb.New(sess)
+
+  //Request to DynamoDB to GET post by "post_id"
+  input := &dynamodb.GetItemInput{
+    Key: map[string]*dynamodb.AttributeValue{
+      "post_id": {
+        S: &post.PostID,
+      },
+    },
+    TableName: aws.String("Post"),
+  }
+
+  //Get result
+  result, err := svc.GetItem(input)
+
+  //ERROR block (from AWS SDK GO DynamoDB documentation)
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  //Unmarshal result to Post structure
+  err = dynamodbattribute.UnmarshalMap(result.Item, &post)
+
+  return post
 }
 
 //To generate a random UUID according to RFC 4122
