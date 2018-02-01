@@ -24,6 +24,8 @@ var userQueriesRegexes []string = []string{
   `SELECT (.+) FROM users_data WHERE phone =(.+)`,
   //user friends
   `SELECT friend_id FROM friend_list WHERE user_id =(.+)`,
+  //count row by user-role
+  `SELECT COUNT\(\*\) FROM users_data WHERE role_in_network =(.+)`,
 }
 
 var passQueriesRegexes []string = []string {

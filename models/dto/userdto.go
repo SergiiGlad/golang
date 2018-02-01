@@ -20,11 +20,12 @@ func (user ResponseUserDto) String() string {
 }
 
 type RequestUserDto struct {
-  Email     string `json:"email"`
-  FirstName string `json:"first_name"`
-  LastName  string `json:"last_name"`
-  Phone     string `json:"phone"`
-  Password  string `json:"password"`
+  Email     string   `json:"email"`
+  FirstName string   `json:"first_name"`
+  LastName  string   `json:"last_name"`
+  Phone     string   `json:"phone"`
+  Role      dao.Role `json:"role"`
+  Password  string   `json:"password"`
 }
 
 func (user RequestUserDto) String() string {
@@ -33,13 +34,17 @@ func (user RequestUserDto) String() string {
 }
 
 func RequestUserDtoToEntity(userDto *RequestUserDto) dao.User {
+  if userDto.Role == "" {
+    userDto.Role = dao.UserRole
+  }
+
   userDao := dao.User {
     0,
     userDto.Email,
     userDto.FirstName,
     userDto.LastName,
     userDto.Phone,
-    dao.UserRole,
+    userDto.Role,
     dao.Active,
     "",
   }

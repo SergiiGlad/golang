@@ -139,7 +139,7 @@ func TestNewProfileHandler(t *testing.T) {
     }{
       {
         description:        "Creating user [Should return 200 OK]",
-        handlerFunc:         createProfile(UserServiceMock{}),
+        handlerFunc:        createProfileByAdmin(UserServiceMock{}),
         expectedStatusCode: http.StatusOK,
         reqBody: `{
         "email": "string",

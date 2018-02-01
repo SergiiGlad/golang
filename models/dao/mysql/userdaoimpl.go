@@ -15,6 +15,7 @@ type mysqlUserDao struct {
   update      *sql.Stmt
   delete      *sql.Stmt
   forceDelete *sql.Stmt
+  countByRole *sql.Stmt
   byid        *sql.Stmt
   byemail     *sql.Stmt
   byphone     *sql.Stmt
@@ -58,6 +59,9 @@ func newMySqlUserDao(conn *sql.DB) (interfaces.UserDao, error) {
     return nil, fmt.Errorf("mysql: prepare list: %v", err)
   }
   if db.friends, err = conn.Prepare(findFriendsByUserId); err != nil {
+    return nil, fmt.Errorf("mysql: prepare list: %v", err)
+  }
+  if db.countByRole, err = conn.Prepare(coundByRoleStatement); err != nil {
     return nil, fmt.Errorf("mysql: prepare list: %v", err)
   }
   return db, nil
@@ -122,6 +126,18 @@ func (d *mysqlUserDao) ForceDeleteUser(id int64) error {
   _, err := execAffectingOneRow(d.forceDelete, id)
 
   return err
+}
+
+const coundByRoleStatement = `SELECT COUNT(*) FROM users_data WHERE role_in_network = ?`
+
+func (d *mysqlUserDao) CountByRole(role dao.Role) (int64, error) {
+  var count int64
+  err := d.countByRole.QueryRow(role).Scan(&count)
+  if err != nil {
+    return 0, err
+  }
+
+  return count, nil
 }
 
 const findByIdStatement = `SELECT * FROM users_data WHERE user_id = ?`

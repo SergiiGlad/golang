@@ -61,6 +61,19 @@ func (md mockDb) UpdateUser(id int64, user *dao.User) (dao.User, error) {
   return *user, errors.New("user could not be found")
 }
 
+func (md mockDb) CountByRole(role dao.Role) (int64, error) {
+
+  counter := 0
+
+  for _, user := range md.DB {
+    if user.Role == role {
+      counter++
+    }
+  }
+
+  return int64(counter), nil
+}
+
 func (md mockDb) FindUserById(id int64) (dao.User, error) {
 
   if id < 0 {

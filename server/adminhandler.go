@@ -12,7 +12,7 @@ import (
   "strconv"
 )
 
-func createProfile(service controllers.UserServiceInterface) http.HandlerFunc {
+func createProfileByAdmin(service controllers.UserServiceInterface) http.HandlerFunc {
   return func (w http.ResponseWriter, r *http.Request) {
     reqUserDto, err := userDtoFromReq(r)
 

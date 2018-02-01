@@ -62,7 +62,7 @@ var routes = Routes{
     "NewProfileByAdmin",
     "POST",
     "/admin/profile",
-    createProfile(userService),
+    createProfileByAdmin(userService),
   },
 
   Route {

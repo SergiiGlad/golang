@@ -6,6 +6,7 @@ type UserDao interface {
   AddUser(user *dao.User) (dao.User, error)
   DeleteUser(id int64) error
   UpdateUser(id int64, user *dao.User) (dao.User, error)
+  CountByRole(role dao.Role) (int64, error)
 
   FindUserById(id int64) (dao.User, error)
   FindUserByEmail(email string) (dao.User, error)

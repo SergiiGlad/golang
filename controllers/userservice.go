@@ -138,6 +138,17 @@ func (us *UserService) DeleteUser(id int64) (dto.ResponseUserDto, error) {
 
   userEntity, err := us.DB.FindUserById(id)
 
+  if userEntity.Role == dao.AdminRole {
+    admins, err := us.DB.CountByRole(dao.AdminRole)
+    if err != nil {
+      return responseUserDto, err
+    }
+
+    if admins == 1 {
+      return responseUserDto, errors.New("could not delete user with admin status")
+    }
+  }
+
   if err != nil {
     return responseUserDto, err
   }
@@ -223,7 +234,7 @@ func validEmail(email string) bool {
 }
 
 func validPhone(phone string) bool {
-  return validRegexItem(phone, "^[+][0-9]{12}")
+  return validRegexItem(phone, "^[+][0-9]{12}$")
 }
 
 func validCyrillicName(name string) bool {
