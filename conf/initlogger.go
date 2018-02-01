@@ -40,7 +40,7 @@ func init() {
 	log = logrus.New()
 
 	// apply the configuration to logger
-	if logrusHelper.SetConfig(log, mate_conf); err != nil {
+	if err := logrusHelper.SetConfig(log, mate_conf); err != nil {
 		// Handle errors reading the mate config
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
