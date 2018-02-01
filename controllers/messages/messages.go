@@ -14,8 +14,32 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
+
+type MyDynamo struct {
+	Db dynamodbiface.DynamoDBAPI
+}
+
+var Dyna *MyDynamo
+
+func init() {
+	Dyna = new(MyDynamo)
+	awsSession, err := session.NewSession(&aws.Config{
+		Region:      aws.String(conf.DynamoRegion),
+		Credentials: credentials.NewStaticCredentials(conf.AwsAccessKeyId, conf.AwsSecretKey, ""),
+	})
+	if err != nil {
+		fmt.Println("Got error creating Dynamo session")
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	var svc *dynamodb.DynamoDB = dynamodb.New(awsSession)
+	Dyna.Db = dynamodbiface.DynamoDBAPI(svc)
+
+}
 
 //GetActionUserID - return ID of user who make this action
 func GetActionUserID(r *http.Request) int {
@@ -35,10 +59,10 @@ func GetActionUserID(r *http.Request) int {
 			iid = iiid
 		}
 	} else if r.Method == "POST" {
-		decoder := json.NewDecoder(r.Body)
+		//decoder := json.NewDecoder(r.Body)
 
 		var data HumMessage
-		err := decoder.Decode(&data)
+		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
 			//panic(err)
 			iid = -1
@@ -63,21 +87,8 @@ func ValidateDataFromUser(m *HumMessage) {
 	//go home
 }
 
-func GetMessagesFromDynamo(writeRespon http.ResponseWriter, humUserId int, numberOfMessages int) {
+func GetMessagesFromDynamoByID(writeRespon http.ResponseWriter, humUserId int, numberOfMessages int) {
 
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(conf.DynamoRegion),
-		Credentials: credentials.NewStaticCredentials(conf.AwsAccessKeyId, conf.AwsSecretKey, ""),
-	})
-
-	if err != nil {
-		fmt.Println("Got error creating session")
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	// // Create DynamoDB client
-	svc := dynamodb.New(sess)
 	// Create the Expression to fill the input struct with.
 	// Get all movies in that year; we'll pull out those with a higher rating later
 	// filt := expression.Name("year").Equal(expression.Value(year))
@@ -86,9 +97,11 @@ func GetMessagesFromDynamo(writeRespon http.ResponseWriter, humUserId int, numbe
 	expr, err := expression.NewBuilder().WithFilter(filt).Build()
 
 	if err != nil {
-		fmt.Println("Got error building expression:")
-		fmt.Println(err.Error())
-		os.Exit(1)
+		fmt.Println("Got error building Dynamo expression:")
+		fmt.Println(err.Error()) //DEBUG output
+		fmt.Fprint(writeRespon, "500 server error")
+		//os.Exit(1)
+		return
 	}
 
 	// Build the query input parameters
@@ -103,13 +116,14 @@ func GetMessagesFromDynamo(writeRespon http.ResponseWriter, humUserId int, numbe
 	// fmt.Println(params)
 	// fmt.Println("=======================")
 	// // Make the DynamoDB Query API call
-	result, err := svc.Scan(params)
-
+	////	// result, err := svc.Scan(params)
+	result, err := Dyna.Db.Scan(params)
 	if err != nil {
 		fmt.Println("Query API call failed:")
 		fmt.Println((err.Error()))
 		//fmt.Println(params)
-		os.Exit(1)
+		fmt.Fprint(writeRespon, "500 server error")
+		//os.Exit(1)
 	}
 
 	num_items := 0
@@ -146,9 +160,7 @@ func GetMessagesFromDynamo(writeRespon http.ResponseWriter, humUserId int, numbe
 func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
 	body, err1 := ioutil.ReadAll(req.Body)
 	if err1 != nil {
-		// http.Error(w, "Error reading request body",
-		// 	http.StatusInternalServerError)
-		return
+		return err1
 	}
 	//fmt.Println(string(body)) //DEBUG output
 	err2 := json.Unmarshal(body, humMess)
@@ -230,7 +242,7 @@ func HandlerOfMessages(w http.ResponseWriter, r *http.Request) {
 				numberOfMessages = iiid
 			}
 		}
-		GetMessagesFromDynamo(w, currentUserID, numberOfMessages)
+		GetMessagesFromDynamoByID(w, currentUserID, numberOfMessages)
 
 	} else if r.Method == "POST" || r.Method == "OPTIONS" {
 		//CORS!!! "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-web-security --user-data-dir="D:/Chrome"

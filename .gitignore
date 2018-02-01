@@ -10,11 +10,12 @@ vendor/
 *.ntvs*
 *.njsproj
 *.sln
-debug
 # Win executable
+debug
 *.exe
+main.exe
 # VS code dirs and files
 *.swp
 launch.json
 .vscode/
-
+.vscode/launch.json
