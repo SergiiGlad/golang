@@ -11,4 +11,4 @@ vendor/
 *.njsproj
 *.sln
 go-team-room
-log
+log/*
