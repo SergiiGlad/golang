@@ -9,6 +9,12 @@ import (
   "go-team-room/models/dao/mysql"
 )
 
+/*
+Route describes request routing (it defines what HandlerFunc
+should be called for incoming request). Its fields are used to
+register a new gorilla route with a matcher for HTTP methods
+and the URL path.
+*/
 type Route struct {
   Name        string
   Method      string
@@ -18,6 +24,8 @@ type Route struct {
 
 type Routes []Route
 
+
+//NewRouter creates new mux.Router to handle incoming requests
 func NewRouter() *mux.Router {
   router := mux.NewRouter().StrictSlash(true)
   for _, route := range routes {
@@ -38,6 +46,7 @@ func NewRouter() *mux.Router {
   return router
 }
 
+
 func handl(w http.ResponseWriter, r *http.Request) {
   tmpl, err := template.ParseFiles("client/index.html")
   if err != nil {
@@ -49,7 +58,7 @@ func handl(w http.ResponseWriter, r *http.Request) {
 
 }
 
-var routes = Routes{
+var routes = Routes {
 
   Route {
     "Index",
@@ -69,14 +78,14 @@ var routes = Routes{
     "UpdateProfileByAdmin",
     "PUT",
     "/admin/profile/{user_id:[0-9]+}",
-    updateProfile(userService),
+    updateProfileByAdmin(userService),
   },
 
   Route {
     "DeleteProfileByAdmin",
     "DELETE",
     "/admin/profile/{user_id:[0-9]+}",
-    deleteProfile(userService),
+    deleteProfileByAdmin(userService),
   },
 
   // and so on, just add new Route structs to this array

@@ -6,9 +6,9 @@ import (
   "net/http"
   "strings"
   "net/http/httptest"
-  "go-team-room/models/dao"
   "github.com/gorilla/mux"
   "errors"
+  "go-team-room/models/dao/entity"
 )
 
 type UserServiceMock struct {
@@ -44,7 +44,7 @@ func (usm UserServiceMock) DeleteUser(id int64) (dto.ResponseUserDto, error) {
     return respUser, errors.New("negative id")
   }
 
-  respUser = dto.UserEntityToResponseDto(&dao.User{})
+  respUser = dto.UserEntityToResponseDto(&entity.User{})
   respUser.Friends = []int64{}
   return respUser, nil
 
@@ -191,7 +191,7 @@ func TestUpdateProfileHandler(t *testing.T) {
   }{
     {
       description:        "Update user [Should return 200 OK]",
-      handlerFunc:        updateProfile(&UserServiceMock{}),
+      handlerFunc:        updateProfileByAdmin(&UserServiceMock{}),
       expectedStatusCode: http.StatusOK,
       reqBody: `{
         "email": "string",
@@ -235,7 +235,7 @@ func TestDeleteProfileHandler(t *testing.T) {
   }{
     {
       description:        "Deleting user [Should return 200 OK]",
-      handlerFunc: deleteProfile(&UserServiceMock {}),
+      handlerFunc:        deleteProfileByAdmin(&UserServiceMock {}),
       expectedStatusCode: http.StatusOK,
       expectRespBody:
       `{"id":0,"email":"","first_name":"","last_name":"","phone":"","friends":[]}`,

@@ -2,9 +2,9 @@ package mysql
 
 import (
   "testing"
-  "go-team-room/models/dao"
   sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
   "github.com/stretchr/testify/assert"
+  "go-team-room/models/dao/entity"
 )
 
 var userQueriesRegexes []string = []string{
@@ -40,14 +40,14 @@ var passQueriesRegexes []string = []string {
 var preps map [string] *sqlmock.ExpectedPrepare = make(map[string] *sqlmock.ExpectedPrepare)
 
 func TestAddUser(t *testing.T) {
-  user := dao.User {
+  user := entity.User {
     0,
     "email@gmail.com",
     "Name",
     "Surname",
     "+3805436857",
-    dao.UserRole,
-    dao.Active,
+    entity.UserRole,
+    entity.Active,
     "",
   }
 
@@ -207,7 +207,7 @@ func TestFindFriendByUserId(t *testing.T) {
 }
 
 func TestInsertPass(t *testing.T) {
-  password := dao.Password{
+  password := entity.Password{
     0,
     "123456",
     "1999-01-01 10:10:01",

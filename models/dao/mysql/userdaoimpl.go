@@ -1,13 +1,14 @@
 package mysql
 
 import (
-  "go-team-room/models/dao"
   "fmt"
   "database/sql"
   _ "github.com/go-sql-driver/mysql"
   "go-team-room/models/dao/interfaces"
+  "go-team-room/models/dao/entity"
 )
 
+//mysqlUserDao implements UserDao interface
 type mysqlUserDao struct {
   conn *sql.DB
 
@@ -24,6 +25,8 @@ type mysqlUserDao struct {
 
 var _ interfaces.UserDao = &mysqlUserDao{}
 
+//newMySqlUserDao creates new mysqlUserDao object by instantiating every statement field. Any statement
+// field can then be used without repeating Prepare() performing before next db query.
 func newMySqlUserDao(conn *sql.DB) (interfaces.UserDao, error) {
 
   if err := conn.Ping(); err != nil {
@@ -76,7 +79,7 @@ const insertStatement = `INSERT INTO
   users_data (email, first_name, last_name, phone, role_in_network, account_status, avatar_ref)
   VALUES (?, ?, ?, ?, ?, ?, ?)`
 
-func (d *mysqlUserDao) AddUser(user *dao.User) (dao.User, error) {
+func (d *mysqlUserDao) AddUser(user *entity.User) (entity.User, error) {
   r, err := execAffectingOneRow(d.insert, user.Email, user.FirstName, user.LastName, user.Phone, user.Role,
     user.AccStatus, user.AvatarRef)
 
@@ -100,7 +103,7 @@ const updateStatement = `UPDATE users_data SET
   email = ?, first_name = ?, last_name = ?, phone = ?, role_in_network = ?, account_status = ?, avatar_ref = ?
   WHERE user_id = ?`
 
-func (d *mysqlUserDao) UpdateUser(id int64, user *dao.User) (dao.User, error) {
+func (d *mysqlUserDao) UpdateUser(id int64, user *entity.User) (entity.User, error) {
   _, err := execAffectingOneRow(d.update, user.Email, user.FirstName, user.LastName, user.Phone, user.Role,
     user.AccStatus, user.AvatarRef, id)
 
@@ -130,7 +133,7 @@ func (d *mysqlUserDao) ForceDeleteUser(id int64) error {
 
 const coundByRoleStatement = `SELECT COUNT(*) FROM users_data WHERE role_in_network = ?`
 
-func (d *mysqlUserDao) CountByRole(role dao.Role) (int64, error) {
+func (d *mysqlUserDao) CountByRole(role entity.Role) (int64, error) {
   var count int64
   err := d.countByRole.QueryRow(role).Scan(&count)
   if err != nil {
@@ -142,7 +145,7 @@ func (d *mysqlUserDao) CountByRole(role dao.Role) (int64, error) {
 
 const findByIdStatement = `SELECT * FROM users_data WHERE user_id = ?`
 
-func (d *mysqlUserDao) FindUserById(id int64) (dao.User, error) {
+func (d *mysqlUserDao) FindUserById(id int64) (entity.User, error) {
   user, err := scanUser(d.byid.QueryRow(id))
 
   if err != nil {
@@ -155,7 +158,7 @@ func (d *mysqlUserDao) FindUserById(id int64) (dao.User, error) {
 
 const findByEmailStatement = `SELECT * FROM users_data WHERE email = ?`
 
-func (d *mysqlUserDao) FindUserByEmail(email string) (dao.User, error) {
+func (d *mysqlUserDao) FindUserByEmail(email string) (entity.User, error) {
   user, err := scanUser(d.byemail.QueryRow(email))
 
   if err != nil {
@@ -168,7 +171,7 @@ func (d *mysqlUserDao) FindUserByEmail(email string) (dao.User, error) {
 
 const findByPhoneStatement = `SELECT * FROM users_data WHERE phone = ?`
 
-func (d *mysqlUserDao) FindUserByPhone(phone string) (dao.User, error) {
+func (d *mysqlUserDao) FindUserByPhone(phone string) (entity.User, error) {
   user, err := scanUser(d.byphone.QueryRow(phone))
 
   if err != nil {
@@ -215,22 +218,22 @@ var (
   avRef      sql.NullString
 )
 
-func scanUser(s rowScanner) (dao.User, error) {
+func scanUser(s rowScanner) (entity.User, error) {
 
-  user := dao.User{}
+  user := entity.User{}
 
   if err := s.Scan(&user_id, &email, &firstName, &secondName, &phone, &role, &accStat, &avRef); err != nil {
       return user, err
   }
 
-  user = dao.User{
+  user = entity.User{
     user_id,
     email.String,
     firstName.String,
     secondName.String,
     phone.String,
-    dao.Role(role.String),
-    dao.AccountStatus(accStat.String),
+    entity.Role(role.String),
+    entity.AccountStatus(accStat.String),
     avRef.String,
   }
 

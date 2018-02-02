@@ -5,6 +5,8 @@ import (
   "go-team-room/models/dao/interfaces"
 )
 
+//this file defines global mysql db connection that can be used and accessed in any project part
+
 var (
   DB interfaces.MySqlDal
 )

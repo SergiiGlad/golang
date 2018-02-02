@@ -19,7 +19,7 @@
     },
     "GO_MYSQL_DSN": {
       "description": "https://en.wikipedia.org/wiki/Data_source_name , basically this is string to connect to MYSQL",
-      "type": "DSN, example 'username:password@localhost:3306/dbname'"
+      "type": "DSN, example 'username:password@tcp(localhost:3306)/'"
     }
   },
   "config.json": {
