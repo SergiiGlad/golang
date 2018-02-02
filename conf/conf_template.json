@@ -44,5 +44,22 @@
       "type": "string, path to directory",
       "description": "Absolute path to directory with static files."
     }
+    "out": {
+      
+            "name": "stdout"
+          },
+          "level": "debug",
+          "formatter": {
+            "name": "json"
+          },
+          "hooks": [{
+            "name": "lfshook",
+            "options": {
+              "formatter":"json",
+              "logfile": "/logs/current.log",
+              "rotatehours": "24",
+              "maxdays": "7"
+            }
+          }]
   }
 }

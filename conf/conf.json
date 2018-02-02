@@ -3,8 +3,7 @@
   "port": "8080",
 
   "out": {
-    "name": "stdout",
-    "options": {}
+    "name": "stdout"
   },
   "level": "debug",
   "formatter": {
@@ -13,6 +12,7 @@
   "hooks": [{
     "name": "lfshook",
     "options": {
+      "formatter":"json",
       "logfile": "/logs/current.log",
       "rotatehours": "24",
       "maxdays": "7"
