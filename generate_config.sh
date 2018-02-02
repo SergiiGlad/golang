@@ -1,7 +1,11 @@
 #!/bin/bash
 
 echo "Generating Docker Compose Env file"
-sed -e "s;%ID%;$1;g" -e "s;%KEY%;$2;g" \
-    -e "s;%ENDPOINT%;$3;g" -e "s;%REGION%;$4;g" -e "s;%DSN%;$5;g" \
-    env.template > .env
-tail .env
+cat <<End-of-env-template  > .env
+ID=$1
+KEY=$2
+ENDPOINT=$3
+REGION=$4
+DSN=$5
+End-of-env-template
+cat .env
