@@ -77,8 +77,10 @@ func newHook(options logrus_mate.Options) (hook logrus.Hook, err error) {
 
 	filename, err := options.String(logfile)
 	if err != nil {
-		filename = "/logs/current.log"
+		filename = viper.GetString("work_dir") + "/logs/current.log"
 		logrus.Info("Useing default name for logs file current.log")
+	} else {
+		filename = viper.GetString("work_dir") + filename
 	}
 
 	//Interval between file rotation.
