@@ -14,8 +14,9 @@ vendor/
 debug
 *.exe
 main.exe
+Gopkg.lock
 # VS code dirs and files
 *.swp
-launch.json
 .vscode/
 .vscode/launch.json
+#go-team-room ###??? Who added it HERE ???
