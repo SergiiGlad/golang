@@ -16,6 +16,8 @@ import (
 // If you want to use only your log message  It will need use own call logs example
 var log = conf.GetLog()
 
+var i = 0
+
 func createProfile(service controllers.UserServiceInterface) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		reqUserDto, err := userDtoFromReq(r)
