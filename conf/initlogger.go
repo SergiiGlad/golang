@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-// The variable log is a name for our logger
+// create global logger's instance
 var log *logrus.Logger
 
 // A function to fetch current logger
@@ -27,17 +27,37 @@ func GetLog() *logrus.Logger {
 // Init logger
 func init() {
 
+	// Creates a new logger. Configuration should be set by changing `Formatter`,
+	// `Out` and `Hooks` directly on the default logger instance. You can also just
+	// instantiate your own:
+	//
+	//    var log = &Logger{
+	//      Out: os.Stderr,
+	//      Formatter: new(JSONFormatter),
+	//      Hooks: make(LevelHooks),
+	//      Level: logrus.DebugLevel,
+	//    }
+	//
+	// It's recommended to make this a global instance called `log`.
+	log = logrus.New()
+
+	// read configuration from conf/conf.json and setup logger
+	readSetupLogger(log)
+
+	// end logger setup configuration
+	log.Info("Logger configuration has finished")
+
+}
+
+func readSetupLogger(log *logrus.Logger) {
+
 	// new hook, you just need a registration
 	// beacause logrus_mate doesn't have a lsfhook in package
-	logrus_mate.RegisterHook("lfshook", NewHook)
+	// func newHook()
+	logrus_mate.RegisterHook("lfshook", newHook)
 
 	// Read and unmarshal configuration from viper
-
-	var mate_conf logrus_mate.LoggerConfig
-	mate_conf = logrusHelper.UnmarshalConfiguration(viper.GetViper())
-
-	// create logger's instance
-	log = logrus.New()
+	mate_conf := logrusHelper.UnmarshalConfiguration(viper.GetViper())
 
 	// apply the configuration to logger
 	if err := logrusHelper.SetConfig(log, mate_conf); err != nil {
@@ -45,14 +65,10 @@ func init() {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
 
-	// end logger setup configuration
-
-	log.Info("Logger configuration has finished")
-
 }
 
 // If you want to use your own hook, you just need todo as follow
-func NewHook(options logrus_mate.Options) (hook logrus.Hook, err error) {
+func newHook(options logrus_mate.Options) (hook logrus.Hook, err error) {
 
 	// name of field viper file conf.json
 	logfile := "logfile"
@@ -60,6 +76,10 @@ func NewHook(options logrus_mate.Options) (hook logrus.Hook, err error) {
 	maxdays := "maxdays"
 
 	filename, err := options.String(logfile)
+	if err != nil {
+		filename = "/logs/current.log"
+		logrus.Info("Useing default name for logs file current.log")
+	}
 
 	//Interval between file rotation.
 	//By default logs are rotated every 86400 seconds.

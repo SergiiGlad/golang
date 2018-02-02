@@ -1,16 +1,13 @@
 // File sample_log demonstares a sample logging by useing logrus package
 // The simplest way to use Logrus is simply the package-level exported logger
 // logrus.Info() and customize it all you want
-// You also can create new loggger with specific parameters 
+// You also can create new loggger with specific parameters
 // For a full guide visit https://github.com/sirupsen/logrus
-
-
 
 package conf
 
 import (
 	"github.com/sirupsen/logrus"
-
 )
 
 // print log message str with *logrus.Logger
@@ -68,6 +65,7 @@ func Sample_log() {
 	// Often it's helpful to have fields always attached to log statements
 	// You should create logger with fileds
 	requestLogger := log.WithFields(logrus.Fields{"request_id": 1, "user_ip": "127.0.0.1"})
+
 	// will log request_id and user_ip
 	requestLogger.Warn("something not great happened")
 

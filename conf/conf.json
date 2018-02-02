@@ -13,7 +13,7 @@
   "hooks": [{
     "name": "lfshook",
     "options": {
-      "logfile": "./logs/current.log",
+      "logfile": "/logs/current.log",
       "rotatehours": "24",
       "maxdays": "7"
     }
