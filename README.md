@@ -1,5 +1,5 @@
 # GoHum
-
+[![pipeline status](https://gitlab.com/Kv-031.Go/go-team-room/badges/master/pipeline.svg)](https://gitlab.com/Kv-031.Go/go-team-room/commits/master)
 ## Software requirements specification
 
 1. Introduction
@@ -67,6 +67,6 @@ software requirements.
 
 #### Functional requirements
 
-The application can handle the 10k requests and the efficient 
-concurrence of goroutine. 
+The application can handle the 10k requests and the efficient
+concurrence of goroutine.
 
