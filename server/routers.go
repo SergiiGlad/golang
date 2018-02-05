@@ -46,7 +46,6 @@ func NewRouter() *mux.Router {
   return router
 }
 
-
 func handl(w http.ResponseWriter, r *http.Request) {
   tmpl, err := template.ParseFiles("client/index.html")
   if err != nil {
@@ -56,9 +55,10 @@ func handl(w http.ResponseWriter, r *http.Request) {
   }
   //fmt.Fprintf(w, "Hello Home! %s", r.URL.Path[1:]) )
 
+	log.Info(reqtoLog(r))
 }
 
-var routes = Routes {
+var routes = Routes{
 
   Route {
     "Index",

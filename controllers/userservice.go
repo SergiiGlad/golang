@@ -4,14 +4,18 @@ import (
   "regexp"
   "errors"
   "gopkg.in/hlandau/passlib.v1/hash/bcrypt"
-  "log"
   "database/sql"
   "strings"
   "go-team-room/models/dto"
   "go-team-room/models/dao/interfaces"
   "time"
   "go-team-room/models/dao/entity"
+  "go-team-room/conf"
 )
+
+// Get instance of logger (Formatter, Hook，Level, Output ).
+// If you want to use only your log message  It will need use own call logs example
+var log = conf.GetLog()
 
 //UserService type implements UserServiceInterface and holds one field DB to access to database
 type UserService struct {

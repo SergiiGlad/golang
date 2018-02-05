@@ -3,14 +3,17 @@ package server
 import (
   "net/http"
   "io/ioutil"
-  "log"
-  "fmt"
   "encoding/json"
   "go-team-room/models/dto"
   "go-team-room/controllers"
   "github.com/gorilla/mux"
   "strconv"
+  "go-team-room/conf"
 )
+
+// Get instance of logger (Formatter, Hook，Level, Output ).
+// If you want to use only your log message  It will need use own call logs example
+var log = conf.GetLog()
 
 //createProfileByAdmin is HandlerFunc wrapper. It accepts types that implement UserServiceInterface.
 // This function can be called to create new user with any role (dao.Role) type. Use it only for
@@ -119,7 +122,6 @@ func responseError(w http.ResponseWriter, err error, code int) {
   body, err := json.Marshal(rerror)
   if err != nil {
     log.Println(err)
-    fmt.Fprint(w, err)
   }
 
   http.Error(w, string(body), code)
