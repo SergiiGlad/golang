@@ -30,8 +30,13 @@ type EmailBodyGeneratorInterface interface {
 }
 
 type TokenGeneratorInterface interface {
-  GenerateToken(email string) (error, string) //TODO implement this interface
-  }
+  //Generate Token For Email And Save it To Database change user status to inactive
+  GenerateTokenForEmail(email string) (string, error)
+  // Change status for token to inActive and update user account status to active
+  // If token wasn't found return false
+  // If successfully update user status to Active return true
+  ApproveUser(email string, token string) (bool, error)
+}
 
 type EmailSendInterface interface {
   // Send email

@@ -36,6 +36,7 @@ const (
 type AccountStatus string
 
 const (
+  InActive = "inactive"
   Active AccountStatus = "active"
   Deleted AccountStatus = "deleted"
 )
