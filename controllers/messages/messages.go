@@ -70,7 +70,7 @@ func GetActionUserID(r *http.Request) int {
 			iid = data.MessageUser.IdSql
 		}
 	} else {
-		iid = -1 //UNsupported method
+		iid = -1 //UNsupported method/bad ID
 	}
 	return iid
 
@@ -91,9 +91,8 @@ func GetMessagesFromDynamoByID(writeRespon http.ResponseWriter, humUserId int, n
 
 	// Create the Expression to fill the input struct with.
 	// Get all movies in that year; we'll pull out those with a higher rating later
-	// filt := expression.Name("year").Equal(expression.Value(year))
 	filt := expression.Name("message_user.id_sql").Equal(expression.Value(humUserId))
-	print("=============")
+	//print("=============")
 	expr, err := expression.NewBuilder().WithFilter(filt).Build()
 
 	if err != nil {
@@ -129,29 +128,12 @@ func GetMessagesFromDynamoByID(writeRespon http.ResponseWriter, humUserId int, n
 	num_items := 0
 
 	for _, i := range result.Items {
-		item := HumMessage{}
 
-		err = dynamodbattribute.UnmarshalMap(i, &item)
-
-		if err != nil {
-			fmt.Println("Got error unmarshalling:")
-			fmt.Println(err.Error())
-			fmt.Println("+++++++++++++++++++++++++++")
-			fmt.Println(item)
-			fmt.Println("+++++++++++++++++++++++++++")
-			//os.Exit(1)
-		}
-
-		// Which ones had a higher rating?
-		//if item.Info.Rating > min_rating {
-		// Or it we had filtered by rating previously:
-		//   if item.Year == year {
+		fmt.Fprint(writeRespon, i)
 		num_items = num_items + 1
 
-		fmt.Println("message_id: ", item.MessageId)
-		fmt.Println("Message Data Text:", item.MessageData.Text)
-		fmt.Println()
-		//}
+		//fmt.Println("message_id: ", item.MessageId)
+		//fmt.Println("Message Data Text:", item.MessageData.Text)
 	}
 
 	//fmt.Println("Found", num_items)
@@ -168,26 +150,12 @@ func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
 		//panic(err)
 		fmt.Println(err2)
 	}
-
 }
 
 //PutMessageToDynamo get prepeared HummMessage obj and write it to Dynamo
 //result of operation writed into writeRespon
 func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(conf.DynamoRegion),
-		Credentials: credentials.NewStaticCredentials(conf.AwsAccessKeyId, conf.AwsSecretKey, ""),
-	})
-
-	if err != nil {
-		fmt.Println("Got error creating session")
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	// // Create DynamoDB client
-	svc := dynamodb.New(sess)
 	av, err := dynamodbattribute.MarshalMap(m)
 
 	if err != nil {
@@ -202,7 +170,7 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 		TableName: aws.String("messages"),
 	}
 
-	_, err = svc.PutItem(input)
+	_, err = Dyna.Db.PutItem(input)
 
 	if err != nil {
 		fmt.Println("Got error calling PutItem:")
@@ -212,7 +180,6 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 	} else {
 
 		fmt.Fprint(writeRespon, "200 Post done")
-
 	}
 
 	//fmt.Println("Successfully added 'The Big someNewMessage' to  table")
