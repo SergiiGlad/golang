@@ -30,6 +30,7 @@ type Post struct{
   UserID string `json:"user_id"`
   Like string `json:"post_like"`
   FileLink string `json:"file_link"`
+  LastUpdate string `json:"post_last_update"`
 }
 
 //To CREATE new post in DynamoDB Table "Post"
@@ -50,6 +51,7 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
 
   //Set "post_id", "post_like", "file_link"
   newPost.PostID = time.Now().String()
+  newPost.LastUpdate = newPost.PostID
   newPost.Like = "0"
   newPost.FileLink = "NULL"
 
@@ -94,6 +96,9 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
       },
       "file_link": {
         S: &newPost.FileLink,
+      },
+      "post_last_update": {
+        S: &newPost.LastUpdate,
       },
     },
     ReturnConsumedCapacity: aws.String("TOTAL"),
@@ -338,6 +343,8 @@ func UpdatePost(w http.ResponseWriter, r *http.Request){
   vars := mux.Vars(r)
   post.PostID = vars["post_id"]
 
+  post.LastUpdate = time.Now().String()
+
   //Create new session for DynamoDB
   sess, err := session.NewSession(&aws.Config{
     Region: aws.String("eu-west-2"),
@@ -349,6 +356,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request){
     ExpressionAttributeNames: map[string]*string{
       "#PTitle": aws.String("post_title"),
       "#PText": aws.String("post_text"),
+      "#PDate": aws.String("post_last_update"),
     },
     //Attributes to UPDATE
     ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
@@ -358,6 +366,9 @@ func UpdatePost(w http.ResponseWriter, r *http.Request){
       ":e": {
         S: &post.Text,
       },
+      ":d": {
+        S: &post.LastUpdate,
+      },
     },
     Key: map[string]*dynamodb.AttributeValue{
       "post_id": {
@@ -366,7 +377,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request){
     },
     ReturnValues:     aws.String("UPDATED_NEW"),
     TableName: aws.String("Post"),
-    UpdateExpression: aws.String("set #PTitle = :t, #PText = :e"),
+    UpdateExpression: aws.String("set #PTitle = :t, #PText = :e, #PDate = :d"),
   }
 
   //Get result
@@ -578,5 +589,3 @@ func newUUID() (string, error) {
   uuid[6] = uuid[6]&^0xf0 | 0x40
   return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
-
-
