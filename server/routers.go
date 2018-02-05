@@ -23,6 +23,7 @@ func NewRouter() *mux.Router {
   for _, route := range routes {
     var handler http.Handler
     handler = route.HandlerFunc
+    handler = Authorize(handler)
     //handler = middleware.Logger(handler, route.Name)
     //handler = middleware.Auth(handler)
     // ....
@@ -60,7 +61,7 @@ var routes = Routes{
 
   Route {
     "NewProfileByAdmin",
-    "POST",
+    "GET", //"POST",
     "/admin/profile",
     createProfile(userService),
   },
@@ -79,12 +80,12 @@ var routes = Routes{
     deleteProfile(userService),
   },
 
-  Route {
-    "Login",
-    "POST",
-    "/login",
-    loginhandler,
-  },
+  //Route {
+  //  "Login",
+  //  "POST",
+  //  "/login",
+  //  loginhandler,
+  //},
 
   // and so on, just add new Route structs to this array
 }

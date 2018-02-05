@@ -8,7 +8,7 @@ import (
   "encoding/json"
 )
 
-func loginhandler(w http.ResponseWriter, r *http.Request) {
+func Loginhandler(w http.ResponseWriter, r *http.Request) {
   body, err := ioutil.ReadAll(r.Body)
 
   if err != nil {
@@ -42,5 +42,14 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  session, err := store.Get(r, "name")
+
+  if err != nil {
+    responseError(w, err)
+    return
+  }
+
+  session.Values["auth"] = "loginned"
+  session.Save(r, w)
   w.Write(userResMarsh)
 }
