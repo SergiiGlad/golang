@@ -8,6 +8,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"go-team-room/controllers/messages"
+
 )
 
 type Route struct {
@@ -83,8 +85,8 @@ var routes = Routes{
 		"PutMessage",
 		"GET|POST|OPTIONS",
 		"/messages/",
-		HandlerOfMessages,
-		//messages.HandlerOfMessages
+		//HandlerOfMessages,
+		messages.HandlerOfMessages,
 	},
 
 	// and so on, just add new Route structs to this array

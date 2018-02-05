@@ -5,7 +5,6 @@ import (
 	"go-team-room/conf"
 	"go-team-room/server"
 	"net/http"
-	"go-team-room/controllers/messages"
 )
 
 func main() {

@@ -31,7 +31,7 @@ func init() {
 		Credentials: credentials.NewStaticCredentials(conf.AwsAccessKeyId, conf.AwsSecretKey, ""),
 	})
 	if err != nil {
-		fmt.Println("Got error creating Dynamo session")
+		fmt.Println("Got error creating Dynamo session (can't init messages)")
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
@@ -154,13 +154,13 @@ func GetMessagesFromDynamoByID(writeRespon http.ResponseWriter, humUserId int, n
 		//}
 	}
 
-	fmt.Println("Found", num_items)
+	//fmt.Println("Found", num_items)
 }
 
 func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
 	body, err1 := ioutil.ReadAll(req.Body)
 	if err1 != nil {
-		return err1
+		return //r1
 	}
 	//fmt.Println(string(body)) //DEBUG output
 	err2 := json.Unmarshal(body, humMess)
