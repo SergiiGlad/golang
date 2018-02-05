@@ -5,14 +5,14 @@
   "out": {
     "name": "stdout"
   },
-  "level": "debug",
+  "level": "error",
   "formatter": {
-    "name": "json"
+    "name": "text"
   },
   "hooks": [{
     "name": "lfshook",
     "options": {
-      "formatter":"json",
+      "formatter":"text",
       "logfile": "/logs/current.log",
       "rotatehours": "24",
       "maxdays": "7"

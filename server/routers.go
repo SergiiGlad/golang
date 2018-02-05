@@ -46,7 +46,7 @@ func handl(w http.ResponseWriter, r *http.Request) {
 		tmpl.Execute(w, r)
 	}
 
-	log.Info(RequestToLog(r))
+	log.Info(reqtoLog(r))
 }
 
 var routes = Routes{

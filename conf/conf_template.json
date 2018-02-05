@@ -44,22 +44,58 @@
       "type": "string, path to directory",
       "description": "Absolute path to directory with static files."
     }
+    
     "out": {
+        "name": {
+          "default": "stdout",
+          "type": "string, name of stream for logging",
+          "description": "stream to output communication channels "
+        },
+      },
       
-            "name": "stdout"
-          },
-          "level": "debug",
-          "formatter": {
-            "name": "json"
-          },
-          "hooks": [{
-            "name": "lfshook",
-            "options": {
-              "formatter":"json",
-              "logfile": "/logs/current.log",
-              "rotatehours": "24",
-              "maxdays": "7"
-            }
-          }]
-  }
+    
+    "level": {
+      "default": "debug",
+      "type": "string,  logging level",
+      "description": "debug,info,warn,error,fatal, panic "
+    },  
+    
+    "formatter": {
+      "name": {
+        "default": "text",
+        "type": "string,  formatter for logging",
+        "description": "support text or json formmating logger "
+        },
+    },    
+      
+    "hooks": [{
+        "name": {
+              "type": "string,  name of hook",
+              "description": "hook which you will use"
+        },
+        
+        "options": {
+              "formatter":"json"{
+                "default":"text" ,
+                "type": "string,  formatter for hook logging",
+                "description": "type formatters when writing to local file " 
+              },
+              "logfile": {
+                "type": "string, work_dir + logfile + .%Y%m%d",
+                "description": "filename must be passed, Path where a symlink for the actual log file is placed" 
+              },
+              "rotatehours": {
+                "default":"86400" ,
+                "type": "string, sec",
+                "description": "Interval between file rotation" 
+              },
+              "maxdays": {
+                "default":"7" ,
+                "type": "string, days",
+                "description": "Time to wait until old logs are purged" 
+              },
+              
+        },
+    }],
+  
 }

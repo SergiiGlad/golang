@@ -104,7 +104,7 @@ func LogResp(w http.ResponseWriter) (msg string) {
 
 }
 
-func RequestToLog(r *http.Request) string {
+func reqtoLog(r *http.Request) string {
 
 	var msg string
 

@@ -5,7 +5,6 @@
 package conf
 
 import (
-	"fmt"
 	"github.com/heirko/go-contrib/logrusHelper"
 	"github.com/heralight/logrus_mate"
 	rotatelogs "github.com/lestrrat/go-file-rotatelogs"
@@ -22,6 +21,13 @@ var log *logrus.Logger
 // A function to fetch current logger
 func GetLog() *logrus.Logger {
 	return log
+}
+
+type LfsHookConfig struct {
+	Logfile     string `json:"logfile"`
+	RotateHours string `json:"ritatehours"`
+	MaxDays     string `json:"maxdays"`
+	Formatter   string `json:"formatter"`
 }
 
 // Init logger
@@ -61,6 +67,7 @@ func readSetupLogger() {
 	// beacause logrus_mate doesn't have a lsfhook in package
 	// func newHook func(logrus_mate.Options) (hook logrus.Hook, err error)
 	logrus_mate.RegisterHook("lfshook", newHook)
+	log.Info("Registering hooks: ", logrus_mate.Hooks())
 
 	// Read and unmarshal configuration from viper
 	mate_conf := logrusHelper.UnmarshalConfiguration(viper.GetViper())
@@ -68,7 +75,7 @@ func readSetupLogger() {
 	// apply the configuration to logger
 	if err := logrusHelper.SetConfig(log, mate_conf); err != nil {
 		// Handle errors reading the mate config
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		log.Panicf("Fatal error config file: %s \n", err)
 	}
 
 }
@@ -76,90 +83,54 @@ func readSetupLogger() {
 // If you want to use your own hook, you just need todo as follow
 func newHook(options logrus_mate.Options) (hook logrus.Hook, err error) {
 
-	logHook := log.WithFields(logrus.Fields{
-		"Setup Hook": "lfshoook",
-		"Useing":     "default values"})
+	logHook := log.WithField("Setup Hook", "lfshoook")
 
-	// names of fields which will be parsed from viper file conf.json
-	// section "hooks"
+	// if options are good conf will read
+	// type Options map[string]interface{}
+	conf := LfsHookConfig{}
 
-	formatter := "formatter"
-	logfile := "logfile"
-	rotatehours := "rotatehours"
-	maxdays := "maxdays"
+	if err = options.ToObject(&conf); err != nil {
+		return
+	}
 
-	//default values for settings
-	filenameDeafult := "/logs/current.log"
-	rotationTimeDefault := "24" // 24 hours
-	maxDaysDefault := "7"
-	formatterDefault := "text"
-
-	filename, err := options.String(logfile)
-	if err != nil {
-		logHook.Error(err)
-		filename = filenameDeafult
+	for k, v := range options {
+		logHook.Infof(" %v : %v", k, v)
 	}
 
 	//Interval between file rotation.
 	//By default logs are rotated every 86400 seconds.
 	//Note: Remember to use time.Duration values.
-	rotationTime, err := options.String(rotatehours)
+	age, err := strconv.ParseInt(conf.MaxDays, 10, 64)
 	if err != nil {
-		logHook.Error(err)
-		rotationTime = rotationTimeDefault
+		age = 7
 	}
-	rotation, err := strconv.ParseInt(rotationTime, 10, 64)
 
-	maxAge, err := options.String(maxdays)
+	rotation, err := strconv.ParseInt(conf.RotateHours, 10, 64)
 	if err != nil {
-		logHook.Error(err)
-		maxAge = maxDaysDefault
+		rotation = 3600
 	}
-	age, err := strconv.ParseInt(maxAge, 10, 64)
 
 	writer, err := rotatelogs.New(
-		viper.GetString("work_dir")+filename+".%Y%m%d%H%M",
+		viper.GetString("work_dir")+conf.Logfile+".%Y%m%d%H%M",
 		rotatelogs.WithMaxAge(time.Duration(86400*age)*time.Second),
 		rotatelogs.WithRotationTime(time.Duration(3600*rotation)*time.Second),
 		rotatelogs.WithClock(rotatelogs.UTC),
 	)
 
-	pathMap := lfshook.WriterMap{
-		logrus.DebugLevel: writer,
-		logrus.InfoLevel:  writer,
-		logrus.WarnLevel:  writer,
-		logrus.ErrorLevel: writer,
-		logrus.FatalLevel: writer,
-		logrus.PanicLevel: writer,
-	}
-
-	formatterHook, err := options.String(formatter)
 	if err != nil {
-		logHook.Error(err)
-		formatterHook = formatterDefault
-	}
-
-	if err != nil {
-		logHook.Warn("Useing defaul values!")
-	}
-
-	switch formatterHook {
-	case "json":
-		hook = lfshook.NewHook(
-			pathMap,
-			&logrus.JSONFormatter{},
-		)
-
-	default:
-		hook = lfshook.NewHook(
-			pathMap,
-			&logrus.TextFormatter{},
-		)
-	}
-
-	if err = options.ToObject(&hook); err != nil {
 		return
 	}
+
+	var formatter logrus.Formatter
+
+	if conf.Formatter == "json" {
+		formatter = &logrus.JSONFormatter{}
+	}
+
+	hook = lfshook.NewHook(
+		writer,
+		formatter,
+	)
 
 	return
 }
