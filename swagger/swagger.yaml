@@ -442,9 +442,9 @@ definitions:
     properties:
       email:
         type: string
-      firstName:
+      first_name:
         type: string
-      lastName:
+      last_name:
         type: string
       phone:
         type: string
@@ -457,9 +457,9 @@ definitions:
         type: integer
       email:
         type: string
-      firstName:
+      first_name:
         type: string
-      lastName:
+      last_name:
         type: string
       phone:
         type: string
@@ -472,15 +472,15 @@ definitions:
     type: object
     required:
       - email
-      - firstName
-      - lastName
+      - first_name
+      - last_name
       - password
     properties:
       email:
         type: string
-      firstName:
+      first_name:
         type: string
-      lastName:
+      last_name:
         type: string
       phone:
         type: string
