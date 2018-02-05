@@ -9,17 +9,18 @@ import (
 // If you want to use only your log message  It will need use own call logs example
 var log = conf.GetLog()
 
+//this var defines global mysql db connection that can be used and accessed in any project part
 var (
-	DB interfaces.MySqlDal
+  DB interfaces.MySqlDal
 )
 
 func init() {
 
-	var err error
+  var err error
 
-	DB, err = newMySQLDatabase()
+  DB, err = newMySQLDatabase()
 
-	if err != nil {
-		log.Fatalf("Could not connect DB: %s", err)
-	}
+  if err != nil {
+    log.Fatalf("Could not connect DB: %s", err)
+  }
 }
