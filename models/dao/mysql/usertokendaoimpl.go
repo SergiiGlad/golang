@@ -9,13 +9,14 @@ import (
 type mysqlUserTokenDao struct {
   conn *sql.DB
 
-  insert  *sql.Stmt
-  update  *sql.Stmt
-  delete  *sql.Stmt
-  byid    *sql.Stmt
-  byemail *sql.Stmt
-  byphone *sql.Stmt
-  friends *sql.Stmt
+  getALl         *sql.Stmt
+  insert         *sql.Stmt
+  update         *sql.Stmt
+  delete         *sql.Stmt
+  byid           *sql.Stmt
+  byemail        *sql.Stmt
+  forUser        *sql.Stmt
+  updateForEmail *sql.Stmt
 }
 
 var _ interfaces.UserTokenDao = &mysqlUserTokenDao{}
