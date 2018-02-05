@@ -18,7 +18,6 @@ var log = conf.GetLog()
 //createProfileByAdmin is HandlerFunc wrapper. It accepts types that implement UserServiceInterface.
 // This function can be called to create new user with any role (dao.Role) type. Use it only for
 // admin role use cases.
-
 func createProfileByAdmin(service controllers.UserServiceInterface) http.HandlerFunc {
   return func (w http.ResponseWriter, r *http.Request) {
     reqUserDto, err := userDtoFromReq(r)
