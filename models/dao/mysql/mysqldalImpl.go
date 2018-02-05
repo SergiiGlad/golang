@@ -14,6 +14,7 @@ type mySqlDatabaseImpl struct {
 
   interfaces.UserDao
   interfaces.PasswordDao
+  interfaces.UserTokenDao
 }
 
 func newMySQLDatabase() (interfaces.MySqlDal, error) {
@@ -48,10 +49,12 @@ func newMySQLDatabase() (interfaces.MySqlDal, error) {
     return nil, err
   }
 
+  tokenDao, err := newMySqlTokenDao(conn)
   db := mySqlDatabaseImpl{
     conn,
     userDao,
     passwordDao,
+    tokenDao,
   }
 
   return db, nil
@@ -93,6 +96,14 @@ var createTableStatements = []string{
     user_id INTEGER REFERENCES users_data(user_id),
     user_id_equals_friend_id CHAR(0) AS (CASE WHEN friend_id NOT IN (user_id) THEN '' END) VIRTUAL NOT NULL
   );`,
+
+  `CREATE TABLE IF NOT EXISTS users_token (
+    token_id SERIAL PRIMARY KEY,
+    token VARCHAR(128) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    is_active BOOLEAN,
+    user_id INTEGER REFERENCES users_data(user_id)
+  );`,
 }
 
 func ensureTableExists() error {
@@ -108,7 +119,7 @@ func ensureTableExists() error {
       "could be bad address, or this address is not whitelisted for access.")
   }
 
-  if  _, err := conn.Exec("USE goteamroom"); err != nil {
+  if _, err := conn.Exec("USE goteamroom"); err != nil {
     // MySQL error 1049 is "database does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1049 {
       return createAllTables(conn)
@@ -123,7 +134,6 @@ func ensureTableExists() error {
 
     return fmt.Errorf("mysql: could not connect to the database: %v", err)
   }
-
 
   return nil
 }

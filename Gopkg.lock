@@ -68,12 +68,6 @@
   revision = "7cd445abb89c7dbb8220e616a1805fc904cc541b"
 
 [[projects]]
-  name = "github.com/jordan-wright/email"
-  packages = ["."]
-  revision = "94ae17dedda217a49e3b47d68f1b54b3c946e16b"
-  version = "v3.0"
-
-[[projects]]
   name = "github.com/magiconair/properties"
   packages = ["."]
   revision = "d419a98cdbed11a922bf76f257b7c4be79b50e73"
@@ -188,6 +182,18 @@
   revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
 
 [[projects]]
+  branch = "v3"
+  name = "gopkg.in/alexcesaro/quotedprintable.v3"
+  packages = ["."]
+  revision = "2caba252f4dc53eaf6b553000885530023f54623"
+
+[[projects]]
+  name = "gopkg.in/gomail.v2"
+  packages = ["."]
+  revision = "41f3572897373c5538c50a2402db15db079fa4fd"
+  version = "2.0.0"
+
+[[projects]]
   name = "gopkg.in/hlandau/passlib.v1"
   packages = ["abstract","hash/bcrypt"]
   revision = "933f1c3f63ffb0d17de04c3174f875ae683a33cd"
@@ -202,6 +208,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "41e24d4dd71663c6eb01433f0bddb6389ffbd0b847fe689d6c8a66534ee5fe3f"
+  inputs-digest = "a985692a81ebcf2597b17724646d10b7de34ba9f15375c4cdb2239241ac1ac4e"
   solver-name = "gps-cdcl"
   solver-version = 1

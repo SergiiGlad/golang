@@ -22,11 +22,11 @@ type EmailServiceInterface interface {
 
 type EmailBodyGeneratorInterface interface {
   // Generate message body for welcome email.
-  GenerateWelcomeBody(user dto.RequestUserDto) []byte
+  GenerateWelcomeBody(user dto.RequestUserDto) string
   // Generate message body for registration confirmation email where token is confirmation token.
-  GenerateRegistrationConfirmationEmail(user dto.RequestUserDto, token string) []byte
+  GenerateRegistrationConfirmationEmail(user dto.RequestUserDto, token string) string
   // Generate message body for password change confirmation where token is confirmation token.
-  GenerateChangePasswordConfirmationEmail(user dto.RequestUserDto, token string) []byte
+  GenerateChangePasswordConfirmationEmail(user dto.RequestUserDto, token string) string
 }
 
 type TokenGeneratorInterface interface {

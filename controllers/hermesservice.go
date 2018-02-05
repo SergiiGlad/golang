@@ -21,7 +21,7 @@ var h = hermes.Hermes{
 var _ EmailBodyGeneratorInterface = &HermesEmailBodyGenerator{}
 
 // Generate message body for welcome email.
-func (eg HermesEmailBodyGenerator) GenerateWelcomeBody(user dto.RequestUserDto) []byte {
+func (eg HermesEmailBodyGenerator) GenerateWelcomeBody(user dto.RequestUserDto) string {
   email := hermes.Email{
     Body: hermes.Body{
       Name: user.FirstName + " " + user.LastName,
@@ -50,11 +50,11 @@ func (eg HermesEmailBodyGenerator) GenerateWelcomeBody(user dto.RequestUserDto) 
     },
   }
   body, _ := h.GenerateHTML(email)
-  return []byte(body)
+  return body
 }
 
 // Generate message body for registration confirmation email.
-func (eg HermesEmailBodyGenerator) GenerateRegistrationConfirmationEmail(user dto.RequestUserDto, token string) []byte {
+func (eg HermesEmailBodyGenerator) GenerateRegistrationConfirmationEmail(user dto.RequestUserDto, token string) string {
   email := hermes.Email{
     Body: hermes.Body{
       Name: user.FirstName + " " + user.LastName,
@@ -77,12 +77,12 @@ func (eg HermesEmailBodyGenerator) GenerateRegistrationConfirmationEmail(user dt
     },
   }
   body, _ := h.GenerateHTML(email)
-  return []byte(body)
+  return body
 }
 
 // Generate message body for password change confirmation.
 func (eg HermesEmailBodyGenerator) GenerateChangePasswordConfirmationEmail(user dto.RequestUserDto,
-  token string) []byte {
+  token string) string {
   email := hermes.Email{
     Body: hermes.Body{
       Name: user.FirstName + " " + user.LastName,
@@ -105,5 +105,5 @@ func (eg HermesEmailBodyGenerator) GenerateChangePasswordConfirmationEmail(user 
     },
   }
   body, _ := h.GenerateHTML(email)
-  return []byte(body)
+  return body
 }
