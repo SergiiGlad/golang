@@ -7,9 +7,9 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"go-team-room/controllers/messages"
 
+	"github.com/gorilla/mux"
 )
 
 type Route struct {
@@ -82,8 +82,14 @@ var routes = Routes{
 		deleteProfile(userService),
 	},
 	Route{
+		"GetMessage",
+		"GET",
+		"/messages/",
+		//HandlerOfMessages,
+		messages.HandlerOfMessages,
+	}, Route{
 		"PutMessage",
-		"GET|POST|OPTIONS",
+		"POST",
 		"/messages/",
 		//HandlerOfMessages,
 		messages.HandlerOfMessages,

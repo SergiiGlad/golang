@@ -18,7 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
-func TestPutMessageToDynamo t *testing.T){
+func TestGetMessagesFromDynamoByID  (t *testing.T){
 	var mock *dynamock.DynaMock
 	Dyna.db, mock = dynamock.New()
 	///////////////
@@ -28,7 +28,7 @@ func TestPutMessageToDynamo t *testing.T){
         },
     }
 
-    expectedResult := aws.String("jaka")
+    expectedResult := aws.String("qwer")
     result := dynamodb.GetItemOutput{
         Item: map[string]*dynamodb.AttributeValue{
             "name": {
@@ -37,7 +37,7 @@ func TestPutMessageToDynamo t *testing.T){
         },
     }
 
-    //lets start dynamock in action
+    // start dynamock in action
     mock.ExpectGetItem().ToTable("employee").WithKeys(expectKey).WillReturns(result)
 
 }

@@ -93,7 +93,7 @@ func GetMessagesFromDynamoByID(writeRespon http.ResponseWriter, humUserId int, n
 	// Get all movies in that year; we'll pull out those with a higher rating later
 	// filt := expression.Name("year").Equal(expression.Value(year))
 	filt := expression.Name("message_user.id_sql").Equal(expression.Value(humUserId))
-	print("=============")
+	//print("=============")
 	expr, err := expression.NewBuilder().WithFilter(filt).Build()
 
 	if err != nil {
@@ -127,32 +127,29 @@ func GetMessagesFromDynamoByID(writeRespon http.ResponseWriter, humUserId int, n
 	}
 
 	num_items := 0
-
+///var messagesSum string
 	for _, i := range result.Items {
-		item := HumMessage{}
+		//item := HumMessage{}
+		fmt.Fprint(writeRespon, i)
 
-		err = dynamodbattribute.UnmarshalMap(i, &item)
+		// err = dynamodbattribute.UnmarshalMap(i, &item)
+		// fmt.Println("+++++++++++++++++++++++++++")
+		// fmt.Fprint(i)
+		// fmt.Println("+++++++++++++++++++++++++++")
 
-		if err != nil {
-			fmt.Println("Got error unmarshalling:")
-			fmt.Println(err.Error())
-			fmt.Println("+++++++++++++++++++++++++++")
-			fmt.Println(item)
-			fmt.Println("+++++++++++++++++++++++++++")
-			//os.Exit(1)
-		}
+		// if err != nil {
+		// 	fmt.Println("Got error unmarshalling:")
+		// 	fmt.Println(err.Error())
+		// 	fmt.Println("+++++++++++++++++++++++++++")
+		// 	fmt.Println(item)
+		// 	fmt.Println("+++++++++++++++++++++++++++")
+		// 	//os.Exit(1)
+		// }
 
-		// Which ones had a higher rating?
-		//if item.Info.Rating > min_rating {
-		// Or it we had filtered by rating previously:
-		//   if item.Year == year {
 		num_items = num_items + 1
 
-		fmt.Println("message_id: ", item.MessageId)
-		fmt.Println("Message Data Text:", item.MessageData.Text)
-		fmt.Println()
-		//}
-	}
+	
+		}
 
 	//fmt.Println("Found", num_items)
 }
@@ -224,7 +221,10 @@ func HandlerOfMessages(w http.ResponseWriter, r *http.Request) {
 	//DEBUG
 	currentUserID := GetActionUserID(r)
 	//fmt.Println(currentUserID)
-
+	if currentUserID == -1 {
+		fmt.Fprint(w, "403 Can't find your ID")
+		return
+	}
 	if r.Method == "GET" {
 		//Assume it is an GET
 		//Shuold return an  last messages
