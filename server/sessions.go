@@ -19,12 +19,12 @@ func Authorize(next http.Handler) http.Handler {
     }
     if session.Values["auth"] == "loginned" {
       next.ServeHTTP(w, r)
-      return
     } else {
-      w.Header().Add("Error", "Unauthorized")
-      w.WriteHeader(http.StatusUnauthorized)
-      //http.Redirect(w, r, "/login/", 301)
-      return
+      if r.URL.Path == "/login" {
+        next.ServeHTTP(w, r)
+      } else {
+        http.Redirect(w, r, "/login", 301)
+      }
     }
   })
 }

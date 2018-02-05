@@ -8,7 +8,7 @@ import (
   "encoding/json"
 )
 
-func Loginhandler(w http.ResponseWriter, r *http.Request) {
+func loginhandler(w http.ResponseWriter, r *http.Request) {
   body, err := ioutil.ReadAll(r.Body)
 
   if err != nil {
