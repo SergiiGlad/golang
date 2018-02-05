@@ -3,7 +3,7 @@ package controllers
 import (
   "math/rand"
   "go-team-room/models/dao/interfaces"
-  "go-team-room/models/dao"
+  "go-team-room/models/dao/entity"
 )
 
 type TokenService struct {
@@ -20,13 +20,13 @@ func (ts TokenService) GenerateTokenForEmail(email string) (string, error) {
   if err != nil {
     return "", err
   }
-  user.AccStatus = dao.InActive
-  err = ts.userDao.UpdateUser(user.ID, user)
+  user.AccStatus = entity.InActive
+  _, err = ts.userDao.UpdateUser(user.ID, &user)
   if err != nil {
     return "", err
   }
   token := randString(tokenLength)
-  _, err = ts.tokenDao.AddToken(dao.UserToken{
+  _, err = ts.tokenDao.AddToken(entity.UserToken{
     Token:    token,
     Email:    email,
     IsActive: true,
@@ -45,11 +45,11 @@ func (ts TokenService) ApproveUser(email string, token string) (bool, error) {
     return false, err
   }
   user, err := ts.userDao.FindUserByEmail(email)
-  if err != nil || user == nil {
+  if err != nil || &user == nil {
     return false, err
   }
-  user.AccStatus = dao.Active
-  err = ts.userDao.UpdateUser(user.ID, user)
+  user.AccStatus = entity.Active
+  _, err = ts.userDao.UpdateUser(user.ID, &user)
   if err != nil {
     return false, err
   }

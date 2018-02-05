@@ -6,9 +6,9 @@ import (
   "net/http"
   "strings"
   "net/http/httptest"
-  "go-team-room/models/dao"
   "github.com/gorilla/mux"
   "errors"
+  "go-team-room/models/dao/entity"
 )
 
 type UserServiceMock struct {
@@ -44,7 +44,7 @@ func (usm UserServiceMock) DeleteUser(id int64) (dto.ResponseUserDto, error) {
     return respUser, errors.New("negative id")
   }
 
-  respUser = dto.UserEntityToResponseDto(&dao.User{})
+  respUser = dto.UserEntityToResponseDto(&entity.User{})
   respUser.Friends = []int64{}
   return respUser, nil
 
@@ -72,25 +72,25 @@ func TestUserDtoFromReq(t *testing.T) {
       description: "Should perform successfully",
       reqBody:  `{
         "email": "string",
-        "firstName": "string",
-        "lastName": "string",
+        "first_name": "string",
+        "last_name": "string",
         "phone": "string",
         "password": "0"
         }`,
         expectDto: dto.RequestUserDto{
-          Email: "string",
+          Email:     "string",
           FirstName: "string",
-          LastName: "string",
-          Phone: "string",
-          CurrentPass: "0",
+          LastName:  "string",
+          Phone:     "string",
+          Password:  "0",
         },
     },
     {
       description: "Should return empty struct",
       reqBody:  `{
         "email": "string",
-        "firstName": "string",
-        "lastName": "string",
+        "first_name": "string",
+        "last_name": "string",
         "phone": "string",
         "password": "0"`,
       expectDto: dto.RequestUserDto{},
@@ -99,8 +99,8 @@ func TestUserDtoFromReq(t *testing.T) {
     description: "Should return empty pass field",
     reqBody:  `{
         "email": "string",
-        "firstName": "string",
-        "lastName": "string",
+        "first_name": "string",
+        "last_name": "string",
         "phone": "string",
         "password": 0
     }`,
@@ -110,7 +110,7 @@ func TestUserDtoFromReq(t *testing.T) {
         LastName: "string",
         Phone: "string",
       },
-  },
+    },
   }
 
   for _, tc := range tests {
@@ -129,8 +129,6 @@ func TestUserDtoFromReq(t *testing.T) {
   }
 }
 
-
-
 func TestNewProfileHandler(t *testing.T) {
     tests := []struct {
       description        string
@@ -141,17 +139,17 @@ func TestNewProfileHandler(t *testing.T) {
     }{
       {
         description:        "Creating user [Should return 200 OK]",
-        handlerFunc:         createProfile(UserServiceMock{}),
+        handlerFunc:        createProfileByAdmin(UserServiceMock{}),
         expectedStatusCode: http.StatusOK,
         reqBody: `{
         "email": "string",
-        "firstName": "string",
-        "lastName": "string",
+        "first_name": "string",
+        "last_name": "string",
         "phone": "string",
         "password": "0"
         }`,
         expectRespBody:
-          `{"id":0,"email":"string","firstName":"string","lastName":"string","phone":"string","friends":[]}`,
+          `{"id":0,"email":"string","first_name":"string","last_name":"string","phone":"string","friends":[]}`,
 
       },
     }
@@ -184,6 +182,48 @@ func newGorilaServerMock(hf http.HandlerFunc) http.Handler {
 }
 
 func TestUpdateProfileHandler(t *testing.T) {
+  tests := []struct {
+    description        string
+    handlerFunc        http.HandlerFunc
+    expectedStatusCode int
+    reqBody            string
+    expectRespBody     string
+  }{
+    {
+      description:        "Update user [Should return 200 OK]",
+      handlerFunc:        updateProfileByAdmin(&UserServiceMock{}),
+      expectedStatusCode: http.StatusOK,
+      reqBody: `{
+        "email": "string",
+        "first_name": "string",
+        "last_name": "string",
+        "phone": "string",
+        "password": "0"
+        }`,
+      expectRespBody:
+      `{"id":1,"email":"string","first_name":"string","last_name":"string","phone":"string","friends":[]}`,
+    },
+  }
+
+  for _, tc := range tests {
+
+    //method and path can have any valid values. We test handlers, not routers.
+    req, err := http.NewRequest("PUT", "/admin/profile/1", strings.NewReader(tc.reqBody))
+
+    if err != nil {
+      t.Fatal(err)
+    }
+
+    rr := httptest.NewRecorder()
+    handler := newGorilaServerMock(tc.handlerFunc)
+    handler.ServeHTTP(rr, req)
+
+    if respBody := rr.Body.String();
+      rr.Code != tc.expectedStatusCode || respBody != tc.expectRespBody {
+      t.Errorf("\nDecsription: %s\nExpected response code %v with body %s.\nGot code %v with body %s",
+        tc.description, tc.expectedStatusCode, tc.expectRespBody, rr.Code, respBody)
+    }
+  }
 }
 
 func TestDeleteProfileHandler(t *testing.T) {
@@ -195,10 +235,10 @@ func TestDeleteProfileHandler(t *testing.T) {
   }{
     {
       description:        "Deleting user [Should return 200 OK]",
-      handlerFunc: deleteProfile(&UserServiceMock {}),
+      handlerFunc:        deleteProfileByAdmin(&UserServiceMock {}),
       expectedStatusCode: http.StatusOK,
       expectRespBody:
-      `{"id":0,"email":"","firstName":"","lastName":"","phone":"","friends":[]}`,
+      `{"id":0,"email":"","first_name":"","last_name":"","phone":"","friends":[]}`,
     },
   }
 

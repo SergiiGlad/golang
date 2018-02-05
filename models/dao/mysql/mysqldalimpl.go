@@ -5,11 +5,12 @@ import (
   "go-team-room/models/dao/interfaces"
   "go-team-room/conf"
   "fmt"
-  "database/sql/driver"
+  //"database/sql/driver"
   "github.com/go-sql-driver/mysql"
+  "database/sql/driver"
 )
 
-type mySqlDatabaseImpl struct {
+type MySqlDatabase struct {
   conn *sql.DB
 
   interfaces.UserDao
@@ -17,40 +18,42 @@ type mySqlDatabaseImpl struct {
   interfaces.UserTokenDao
 }
 
-func newMySQLDatabase() (interfaces.MySqlDal, error) {
+func newMySQLDatabase() (MySqlDatabase, error) {
+
+  db := MySqlDatabase{}
 
   // Check database and table exists. If not, create it.
   if err := ensureTableExists(); err != nil {
-    return nil, err
+    return db, err
   }
 
-  conn, err := sql.Open("mysql", conf.MysqlDsn)
+  conn, err := sql.Open("mysql", conf.MysqlDsn + conf.MysqlDBName)
 
   if err != nil {
-    return nil, fmt.Errorf("mysql: could not get a connection: %v", err)
+    return db, fmt.Errorf("mysql: could not get a connection: %v", err)
   }
 
   if err := conn.Ping(); err != nil {
     conn.Close()
-    return nil, fmt.Errorf("mysql: could not establish a good connection: %v", err)
+    return db, fmt.Errorf("mysql: could not establish a good connection: %v", err)
   }
 
   userDao, err := newMySqlUserDao(conn)
 
   if err != nil {
     fmt.Errorf("mysql: could not establish connection with userDao: %s", err)
-    return nil, err
+    return db, err
   }
 
   passwordDao, err := newMySqlPassDao(conn)
 
   if err != nil {
     fmt.Errorf("mysql: could not establish connection with userDao: %s", err)
-    return nil, err
+    return db, err
   }
 
   tokenDao, err := newMySqlTokenDao(conn)
-  db := mySqlDatabaseImpl{
+  db = MySqlDatabase{
     conn,
     userDao,
     passwordDao,
@@ -61,24 +64,21 @@ func newMySQLDatabase() (interfaces.MySqlDal, error) {
 }
 
 // Close closes the database, freeing up any resources.
-func (db *mySqlDatabaseImpl) Close() {
+func (db *MySqlDatabase) Close() {
   db.conn.Close()
 }
 
-var _ interfaces.MySqlDal = &mySqlDatabaseImpl{}
-
 var createTableStatements = []string{
-  `CREATE DATABASE IF NOT EXISTS goteamroom DEFAULT CHARACTER SET = 'utf8' DEFAULT COLLATE 'utf8_general_ci';`,
+  fmt.Sprintf(`CREATE DATABASE IF NOT EXISTS %s DEFAULT CHARACTER SET = 'utf8' DEFAULT COLLATE 'utf8_general_ci';`, conf.MysqlDBName),
 
-  `USE goteamroom;`,
+  fmt.Sprintf(`USE %s;`, conf.MysqlDBName),
 
   `CREATE TABLE IF NOT EXISTS users_data (
     user_id SERIAL PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
-    second_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
-    current_password VARCHAR(255) NOT NULL,
     role_in_network ENUM('admin', 'user') NOT NULL,
     account_status ENUM('inactive', active', 'deleted') NOT NULL,
     avatar_ref MEDIUMTEXT
@@ -125,7 +125,7 @@ func ensureTableExists() error {
       "could be bad address, or this address is not whitelisted for access.")
   }
 
-  if _, err := conn.Exec("USE goteamroom"); err != nil {
+  if  _, err := conn.Exec(fmt.Sprintf("USE %s", conf.MysqlDBName)); err != nil {
     // MySQL error 1049 is "database does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1049 {
       return createAllTables(conn)

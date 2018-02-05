@@ -28,6 +28,7 @@ func addDefaults() {
   setupWorkDir()
   viper.SetDefault("ip", "127.0.0.1")
   viper.SetDefault("port", "8080")
+  viper.SetDefault("mysql_db_name", "goteamroom")
   viper.SetDefault("static_dir", viper.GetString("work_dir")+"/client/dist")
 }
 
@@ -48,10 +49,10 @@ func readConfJson() {
 
 // Read environment variables into viper, if they not present error occurred.
 func readEnvVariables() {
-  readVar("aws_access_key_id", "GO_AWS_ACCESS_KEY_ID")
-  readVar("aws_secret_key", "GO_AWS_SECRET_ACCESS_KEY")
-  readVar("dynamo_endpoint", "GO_AWS_DYNAMO_ENDPOINT")
-  readVar("dynamo_region", "GO_AWS_DYNAMO_REGION")
+  readVar("aws_access_key_id", "AWS_ACCESS_KEY_ID")
+  readVar("aws_secret_key", "AWS_SECRET_ACCESS_KEY")
+  readVar("dynamo_endpoint", "AWS_DYNAMO_ENDPOINT")
+  readVar("dynamo_region", "AWS_DEFAULT_REGION")
   readVar("mysql_dsn", "GO_MYSQL_DSN")
 }
 

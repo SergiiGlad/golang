@@ -1,4 +1,23 @@
 {
-  "ip": "0.0.0.0",
-  "port": "8080"
+  "ip": "127.0.0.1",
+  "port": "8080",
+
+  "my_sql_db_name": "goteamroom",
+
+  "out": {
+    "name": "stdout"
+  },
+  "level": "error",
+  "formatter": {
+    "name": "text"
+  },
+  "hooks": [{
+    "name": "lfshook",
+    "options": {
+      "formatter":"text",
+      "logfile": "/logs/current.log",
+      "rotatehours": "24",
+      "maxdays": "7"
+    }
+  }]
 }
