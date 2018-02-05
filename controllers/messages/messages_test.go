@@ -16,7 +16,6 @@ func TestPutMessageToDynamo(t *testing.T) {
 			N: aws.String("23"),
 		},
 	}
-
 	expectedResult := aws.String("Vasya")
 	result := dynamodb.GetItemOutput{
 		Item: map[string]*dynamodb.AttributeValue{
