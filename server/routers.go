@@ -88,6 +88,13 @@ var routes = Routes{
     deleteProfileByAdmin(userService),
   },
 
+  Route {
+    "RegisterUser",
+    "POST",
+    "/registration",
+    registerUser(userService),
+  },
+
   // and so on, just add new Route structs to this array
 }
 
