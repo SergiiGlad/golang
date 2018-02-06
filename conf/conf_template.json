@@ -43,6 +43,16 @@
       "default": "$GOPATH/src/go-team-room/client/dist",
       "type": "string, path to directory",
       "description": "Absolute path to directory with static files."
+    },
+    "MAX_MESSAGES_AT_ONCE": {
+      "default": "1000",
+      "type": "int",
+      "description": "Max messages returned by once req."
+    },
+    "MAX_CHATROOMS": {
+      "default": "1000",
+      "type": "int",
+      "description": "Max number of chatRooms for one user."
     }
   }
 }

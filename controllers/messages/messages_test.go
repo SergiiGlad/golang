@@ -1,43 +1,109 @@
 package messages
 
 import (
-	"encoding/json"
-	"fmt"
-	"go-team-room/conf"
-	"io/ioutil"
 	"net/http"
-	"os"
-	"strconv"
+	"net/http/httptest"
+	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
+	"github.com/gusaul/go-dynamock"
 )
 
-func TestGetMessagesFromDynamoByID  (t *testing.T){
+func TestPutMessageToDynamo(t *testing.T) {
 	var mock *dynamock.DynaMock
-	Dyna.db, mock = dynamock.New()
-	///////////////
+	Dyna.Db, mock = dynamock.New()
 	expectKey := map[string]*dynamodb.AttributeValue{
-        "id" : {
-            N: aws.String("1")
-        },
-    }
+		"id": {
+			N: aws.String("23"),
+		},
+	}
+	expectedResult := aws.String("Vasya")
+	result := dynamodb.GetItemOutput{
+		Item: map[string]*dynamodb.AttributeValue{
+			"name": {
+				S: expectedResult,
+			},
+		},
+	}
 
-    expectedResult := aws.String("qwer")
-    result := dynamodb.GetItemOutput{
-        Item: map[string]*dynamodb.AttributeValue{
-            "name": {
-                S: expectedResult,
-            },
-        },
-    }
+	//	lets start dynamock in action
+	mock.ExpectGetItem().ToTable("massages").WithKeys(expectKey).WillReturns(result)
 
-    // start dynamock in action
-    mock.ExpectGetItem().ToTable("employee").WithKeys(expectKey).WillReturns(result)
+}
 
+func TestGetMessageFromDynamoByUserID(t *testing.T) {
+	testUserID := 777
+	// someNewMessage1 := HumMessage{
+	// 	MessageId:        "1",
+	// 	MessageParentId:  "0",
+	// 	MessageTimestamp: "20180110155533001",
+	// 	MessageData: HumMessageData{
+	// 		Text:             "A lot of text and stupid smiles :)))))",
+	// 		TypeOfHumMessage: "TypeOfHumMessage-UNDEFINED FOR NOW",
+	// 		BinaryParts: []HumMessageDataBinary{HumMessageDataBinary{
+	// 			BinData: "",
+	// 			BinName: "",
+	// 		}},
+	// 	},
+	// 	MessageSocialStatus: HumMessageSocialStatus{
+	// 		Dislike: 11,
+	// 		Like:    22,
+	// 		Views:   33,
+	// 	},
+	// 	MessageUser: HumUser{
+	// 		IdSql:   777,
+	// 		NameSql: "Vasya",
+	// 	},
+	// }
+	// someNewMessage2 := HumMessage{
+	// 	MessageId:        "2",
+	// 	MessageParentId:  "0",
+	// 	MessageTimestamp: "20180110155533011",
+	// 	MessageData: HumMessageData{
+	// 		Text:             "MORE of text and stupid smiles :)))))",
+	// 		TypeOfHumMessage: "TypeOfHumMessage-UNDEFINED FOR NOW",
+	// 		BinaryParts: []HumMessageDataBinary{HumMessageDataBinary{
+	// 			BinData: "",
+	// 			BinName: "",
+	// 		}},
+	// 	},
+	// 	MessageSocialStatus: HumMessageSocialStatus{
+	// 		Dislike: 11,
+	// 		Like:    22,
+	// 		Views:   33,
+	// 	},
+	// 	MessageUser: HumUser{
+	// 		IdSql:   666,
+	// 		NameSql: "Petya",
+	// 	},
+	// }
+
+	GetMessageFromDynamoByUserID(testUserID)
+
+}
+
+func TestHandlerOfGetMessages(t *testing.T) {
+	req, err := http.NewRequest("GET", "/messages/",
+		nil,
+		// url.Values{"id": {"777"}, "maxMessages": {"100"}}
+		)
+	if err != nil {
+		t.Fatal(err)
+	}
+	respRecorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(HandlerOfGetMessages)
+
+	handler.ServeHTTP(respRecorder, req)
+	if status := respRecorder.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	// respon body
+	expected := `{"alive": true}`
+	if respRecorder.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			respRecorder.Body.String(), expected)
+	}
 }

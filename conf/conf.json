@@ -1,4 +1,6 @@
 {
   "ip": "0.0.0.0",
-  "port": "8080"
+  "port": "8080",
+  "MAX_MESSAGES_AT_ONCE": 1000,
+  "MAX_CHATROOMS": 1000
 }

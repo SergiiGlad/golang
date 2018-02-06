@@ -2,6 +2,7 @@ package messages
 
 // Create structs to hold info about new item of HumMessage
 
+//
 type HumUser struct {
 	IdSql   int    `json:"id_sql"`
 	NameSql string `json:"name_sql"`
@@ -32,12 +33,4 @@ type HumMessage struct {
 	MessageTimestamp    string                 `json:"message_timestamp"`
 	MessageUser         HumUser                `json:"message_user"`
 	/////////END
-}
-
-///////////////
-
-type test_struct struct {
-	//Test string
-	ChatRoomId string
-	Message    string
 }
