@@ -18,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
+
 type MyDynamo struct {
 	Db dynamodbiface.DynamoDBAPI
 }
@@ -70,7 +71,7 @@ func GetActionUserID(r *http.Request) int {
 			iid = data.MessageUser.IdSql
 		}
 	} else {
-		iid = -1 //UNsupported method
+		iid = -1 //UNsupported method/bad ID
 	}
 	return iid
 
@@ -78,7 +79,7 @@ func GetActionUserID(r *http.Request) int {
 
 //ValidateDataFromUser very important func
 //Do NOT trust any data from User!!!
-//VALIDATE EVERUTHING
+//VALIDATE EVERETHING
 func ValidateDataFromUser(m *HumMessage) {
 	//work this out LATER
 	//for now it is stub only
@@ -91,7 +92,6 @@ func GetMessagesFromDynamoByID(writeRespon http.ResponseWriter, humUserId int, n
 
 	// Create the Expression to fill the input struct with.
 	// Get all movies in that year; we'll pull out those with a higher rating later
-	// filt := expression.Name("year").Equal(expression.Value(year))
 	filt := expression.Name("message_user.id_sql").Equal(expression.Value(humUserId))
 	//print("=============")
 	expr, err := expression.NewBuilder().WithFilter(filt).Build()
@@ -127,29 +127,15 @@ func GetMessagesFromDynamoByID(writeRespon http.ResponseWriter, humUserId int, n
 	}
 
 	num_items := 0
-///var messagesSum string
+    //var messagesSum string
 	for _, i := range result.Items {
-		//item := HumMessage{}
+
 		fmt.Fprint(writeRespon, i)
-
-		// err = dynamodbattribute.UnmarshalMap(i, &item)
-		// fmt.Println("+++++++++++++++++++++++++++")
-		// fmt.Fprint(i)
-		// fmt.Println("+++++++++++++++++++++++++++")
-
-		// if err != nil {
-		// 	fmt.Println("Got error unmarshalling:")
-		// 	fmt.Println(err.Error())
-		// 	fmt.Println("+++++++++++++++++++++++++++")
-		// 	fmt.Println(item)
-		// 	fmt.Println("+++++++++++++++++++++++++++")
-		// 	//os.Exit(1)
-		// }
-
 		num_items = num_items + 1
 
-	
-		}
+		//fmt.Println("message_id: ", item.MessageId)
+		//fmt.Println("Message Data Text:", item.MessageData.Text)
+	}
 
 	//fmt.Println("Found", num_items)
 }
@@ -165,26 +151,12 @@ func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
 		//panic(err)
 		fmt.Println(err2)
 	}
-
 }
 
 //PutMessageToDynamo get prepeared HummMessage obj and write it to Dynamo
 //result of operation writed into writeRespon
 func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(conf.DynamoRegion),
-		Credentials: credentials.NewStaticCredentials(conf.AwsAccessKeyId, conf.AwsSecretKey, ""),
-	})
-
-	if err != nil {
-		fmt.Println("Got error creating session")
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	// // Create DynamoDB client
-	svc := dynamodb.New(sess)
 	av, err := dynamodbattribute.MarshalMap(m)
 
 	if err != nil {
@@ -199,7 +171,7 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 		TableName: aws.String("messages"),
 	}
 
-	_, err = svc.PutItem(input)
+	_, err = Dyna.Db.PutItem(input)
 
 	if err != nil {
 		fmt.Println("Got error calling PutItem:")
@@ -209,7 +181,6 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 	} else {
 
 		fmt.Fprint(writeRespon, "200 Post done")
-
 	}
 
 	//fmt.Println("Successfully added 'The Big someNewMessage' to  table")
@@ -221,10 +192,7 @@ func HandlerOfMessages(w http.ResponseWriter, r *http.Request) {
 	//DEBUG
 	currentUserID := GetActionUserID(r)
 	//fmt.Println(currentUserID)
-	if currentUserID == -1 {
-		fmt.Fprint(w, "403 Can't find your ID")
-		return
-	}
+	
 	if r.Method == "GET" {
 		//Assume it is an GET
 		//Shuold return an  last messages

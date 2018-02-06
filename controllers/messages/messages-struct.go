@@ -2,6 +2,7 @@ package messages
 
 // Create structs to hold info about new item of HumMessage
 
+//
 type HumUser struct {
 	IdSql   int    `json:"id_sql"`
 	NameSql string `json:"name_sql"`
