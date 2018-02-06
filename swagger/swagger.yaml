@@ -313,6 +313,8 @@ paths:
           description: Post representation.
           schema:
             $ref: '#/definitions/Post'
+        '204':
+          description: Post does not exist
         '403':
           description: User wasnt login or dont have permition to see this posts
     put:
@@ -546,15 +548,14 @@ definitions:
       body:
         allOf:
           - $ref: '#/definitions/PostBody'
-      likes:
-        type: integer
+      post_like:
+        type: string
       comments:
         type: array
         items:
           $ref: '#/definitions/Comment'
-      lastUpdateDate:
+      post_last_update:
         type: string
-        format: date
   PostBody:
     type: object
     properties:
@@ -564,11 +565,9 @@ definitions:
         type: string
       user_id:
         type: string
-      files:
-        type: array
-        items:
-          type: string
-          format: binary
+      file_link:
+        type: string
+
   Comment:
     type: object
     properties:

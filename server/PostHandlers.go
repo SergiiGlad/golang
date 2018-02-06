@@ -20,6 +20,7 @@ import (
   "strings"
   "github.com/aws/aws-sdk-go/service/s3"
   "strconv"
+  "go-team-room/conf"
 )
 
 //Post structure
@@ -40,7 +41,7 @@ func CreateNewPost(w http.ResponseWriter, r *http.Request) {
 
   //Create new Session for DynamoDB
   sess, err := session.NewSession(&aws.Config{
-    Region: aws.String("eu-west-2"),
+    Region: aws.String(conf.DynamoRegion),
   })
 
   //Decode request MULTIPART/FORM-DATA
@@ -150,7 +151,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 
   //Create new Session for DynamoDB
   sess, err := session.NewSession(&aws.Config{
-    Region:      aws.String("eu-west-2"),
+    Region:      aws.String(conf.DynamoRegion),
   })
 
   post = GetPostBody(post, sess)
@@ -215,7 +216,7 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 
   //Create new session for DynamoDB
   sess, err := session.NewSession(&aws.Config{
-    Region:      aws.String("eu-west-2"),
+    Region:      aws.String(conf.DynamoRegion),
   })
   svc := dynamodb.New(sess)
 
@@ -279,7 +280,7 @@ func GetPostByUserID(w http.ResponseWriter, r *http.Request){
 
   //Create new session for DynamoDB
   sess, err := session.NewSession(&aws.Config{
-    Region:      aws.String("eu-west-2"),
+    Region:      aws.String(conf.DynamoRegion),
   })
   svc := dynamodb.New(sess)
 
@@ -347,7 +348,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request){
 
   //Create new session for DynamoDB
   sess, err := session.NewSession(&aws.Config{
-    Region: aws.String("eu-west-2"),
+    Region: aws.String(conf.DynamoRegion),
   })
   svc := dynamodb.New(sess)
 
@@ -433,7 +434,7 @@ func UploadFileToS3 (sess *session.Session, f multipart.File, handl *multipart.F
 
   // Upload the file to S3.
   result, err := uploader.Upload(&s3manager.UploadInput{
-    Bucket: aws.String("gohumfiles"),
+    Bucket: aws.String(conf.AwsBucketName),
     Key:    aws.String(uuid + fileType),
     Body:   f,
   })
@@ -455,22 +456,19 @@ func GetFileFromS3(w http.ResponseWriter, r *http.Request) {
 
   //Create new Session for DynamoDB
   sess, err := session.NewSession(&aws.Config{
-    Region: aws.String("eu-west-2"),
+    Region: aws.String(conf.DynamoRegion),
+
   })
 
   // Create a downloader with the session and default options
   downloader := s3manager.NewDownloader(sess)
 
-  // Create a file to write the S3 Object contents to.
-  f, err := os.Create(fileName)
-  if err != nil {
-    fmt.Errorf("failed to create file %q, %v", fileName, err)
-    return
-  }
+  var b []byte
+  buff := aws.NewWriteAtBuffer(b)
 
   // Write the contents of S3 Object to the file
-  n, err := downloader.Download(f, &s3.GetObjectInput{
-    Bucket: aws.String("gohumfiles"),
+  n, err := downloader.Download(buff, &s3.GetObjectInput{
+    Bucket: aws.String(conf.AwsBucketName),
     Key:    aws.String(fileName),
   })
   if err != nil {
@@ -479,38 +477,23 @@ func GetFileFromS3(w http.ResponseWriter, r *http.Request) {
   }
   fmt.Printf("file downloaded, %d bytes\n", n)
 
-  f, err = os.Open(fileName)
-  defer f.Close()
-
-  if err != nil {
-    //File not found, send 404
-    http.Error(w, "File not found.", 404)
-    return
-  }
-
   //Get the Content-Type of the file
   //Create a buffer to store the header of the file in
   FileHeader := make([]byte, 512)
   //Copy the headers into the FileHeader buffer
-  f.Read(FileHeader)
+  FileHeader = buff.Bytes()[:512]
   //Get content type of file
   FileContentType := http.DetectContentType(FileHeader)
 
-  //Get the file size
-  FileStat, _ := f.Stat()                     //Get info from file
-  FileSize := strconv.FormatInt(FileStat.Size(), 10) //Get file size as a string
+  FileSize := strconv.FormatInt(int64(len(buff.Bytes())), 10) //Get file size as a string
+
 
   //Send the headers
   w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
   w.Header().Set("Content-Type", FileContentType)
   w.Header().Set("Content-Length", FileSize)
 
-  //Send the file
-  //We read 512 bytes from the file already so we reset the offset back to 0
-  f.Seek(0, 0)
-  io.Copy(w, f) //'Copy' the file to the client
-
-  os.Remove(fileName)
+  w.Write(buff.Bytes())
 }
 
 //To DELETE file from S3 when DELETE Post
@@ -520,7 +503,7 @@ func DeleteFileFromS3(file string, sess *session.Session) {
   svc := s3.New(sess)
 
   input := &s3.DeleteObjectsInput{
-    Bucket: aws.String("gohumfiles"),
+    Bucket: aws.String(conf.AwsBucketName),
     Delete: &s3.Delete{
       Objects: []*s3.ObjectIdentifier{
         {
