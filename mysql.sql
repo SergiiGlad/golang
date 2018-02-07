@@ -1,10 +1,9 @@
 CREATE TABLE users_data (
   user_id SERIAL PRIMARY KEY,
   first_name VARCHAR(50) NOT NULL,
-  second_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50) NOT NULL,
   email VARCHAR(100) NOT NULL,
   phone VARCHAR(20),
-  current_password VARCHAR(255) NOT NULL,
   role_in_network ENUM('admin', 'user') NOT NULL,
   account_status ENUM('active', 'deleted') NOT NULL,
   avatar_ref MEDIUMTEXT

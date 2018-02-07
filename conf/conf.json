@@ -1,6 +1,26 @@
 {
-  "ip": "0.0.0.0",
+  "ip": "127.0.0.1",
   "port": "8080",
+
+  "my_sql_db_name": "goteamroom",
+
   "MAX_MESSAGES_AT_ONCE": 1000,
   "MAX_CHATROOMS": 1000
+
+  "out": {
+    "name": "stdout"
+  },
+  "level": "error",
+  "formatter": {
+    "name": "text"
+  },
+  "hooks": [{
+    "name": "lfshook",
+    "options": {
+      "formatter":"text",
+      "logfile": "/logs/current.log",
+      "rotatehours": "24",
+      "maxdays": "7"
+    }
+  }]
 }

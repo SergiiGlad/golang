@@ -20,4 +20,6 @@ Gopkg.lock
 *.swp
 .vscode/
 .vscode/launch.json
-#go-team-room ###??? Who added it HERE ???
+logs
+*.log
+/main
