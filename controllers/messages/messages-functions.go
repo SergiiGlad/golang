@@ -155,6 +155,7 @@ func ValidateDataFromUser(m *HumMessage) {
 	//go home
 }
 
+//ReadReqBodyPOST - reads all POST request body to HumMessage
 func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
 	// body, err := ioutil.ReadAll(req.Body)
 	//  if err != nil {
@@ -205,7 +206,7 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 	//fmt.Println("Successfully added 'The Big someNewMessage' to  table")
 }
 
-//HandlerOfMessages This func should process any messages end point
+//HandlerOfPOSTMessages This func should process any messages end point
 func HandlerOfPOSTMessages(w http.ResponseWriter, r *http.Request) {
 
 	//DEBUG

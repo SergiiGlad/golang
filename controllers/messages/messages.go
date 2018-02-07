@@ -12,10 +12,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 )
 
+//MyDynamo struct for mock`ing DynampDB in tests
 type MyDynamo struct {
 	Db dynamodbiface.DynamoDBAPI
 }
 
+//Dyna - global variable to use as DynamoDb interfase
 var Dyna *MyDynamo
 
 func init() {

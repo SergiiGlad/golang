@@ -4,32 +4,66 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+//////////////////////////////////////////
+	"github.com/gusaul/go-dynamock"
+
 )
 
-/*
+var mock *dynamock.DynaMock
+
+func init() {
+	Dyna.Db, mock = dynamock.New()
+}
 func TestPutMessageToDynamo(t *testing.T) {
 
-	var mock *dynamock.DynaMock
-	Dyna.Db, mock = dynamock.New()
-	expectKey := map[string]*dynamodb.AttributeValue{
-		"id": {
-			N: aws.String("23"),
-		},
-	}
-	expectedResult := aws.String("Vasya")
-	result := dynamodb.GetItemOutput{
-		Item: map[string]*dynamodb.AttributeValue{
-			"name": {
-				S: expectedResult,
-			},
-		},
-	}
+	// expectKey := map[string]*dynamodb.AttributeValue{
+	// 	"id": {
+	// 		N: aws.String("23"),
+	// 	},
+	// }
+	// expectedResult := aws.String("Vasya")
+	// result := dynamodb.GetItemOutput{
+	// 	Item: map[string]*dynamodb.AttributeValue{
+	// 		"name": {
+	// 			S: expectedResult,
+	// 		},
+	// 	},
+	// }
 
 	//	lets start dynamock in action
-	mock.ExpectGetItem().ToTable("massages").WithKeys(expectKey).WillReturns(result)
-
+	//	mock.ExpectGetItem().ToTable("massages").WithKeys(expectKey).WillReturns(result)
+	//mock.ExpectGetItem().ToTable("massages").WithKeys().WillReturns()
+	mock.ExpectPutItem().ToTable("massages")
+	someNewMessage1 := HumMessage{
+		MessageID:        "1",
+		MessageParentID:  "0",
+		MessageTimestamp: "20180110155533001",
+		MessageData: HumMessageData{
+			Text:             "A lot of text and stupid smiles :)))))",
+			TypeOfHumMessage: "TypeOfHumMessage-UNDEFINED FOR NOW",
+			BinaryParts: []HumMessageDataBinary{HumMessageDataBinary{
+				BinData: "",
+				BinName: "",
+			}},
+		},
+		MessageSocialStatus: HumMessageSocialStatus{
+			Dislike: 11,
+			Like:    22,
+			Views:   33,
+		},
+		MessageUser: HumUser{
+			IdSql:   777,
+			NameSQL: "Vasya",
+		},
+	}
+	respRecorder := httptest.NewRecorder()
+	PutMessageToDynamo(respRecorder, &someNewMessage1)
+	if status := respRecorder.Code; status != http.StatusOK {
+		t.Errorf("Function PutMessageToDynamo does something wrong: got %v want %v",
+			status, http.StatusOK)
+	}
 }
-*/
+
 /*
 func TestGetMessageFromDynamoByUserID(t *testing.T) {
 	testUserID := 777
