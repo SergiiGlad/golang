@@ -6,6 +6,7 @@ import (
   "io/ioutil"
   "go-team-room/models/dto"
   "encoding/json"
+  "github.com/gorilla/sessions"
 )
 
 func loginhandler(w http.ResponseWriter, r *http.Request) {
@@ -25,10 +26,19 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  user, err :=  controllers.Login(login.PhoneOrEmail, login.Password)
+  session, err := store.Get(r, "name")
 
   if err != nil {
     responseError(w, err)
+    return
+  }
+
+  user, err := controllers.Login(login.PhoneOrEmail, login.Password)
+
+  if err != nil {
+    responseError(w, err)
+    //session.AddFlash(errors.New("Wrong credentials"), "_errors")
+    //session.Save(r, w)
     return
   }
 
@@ -42,14 +52,12 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  session, err := store.Get(r, "name")
-
-  if err != nil {
-    responseError(w, err)
-    return
-  }
-
-  session.Values["auth"] = "loginned"
+  session.Values["loginned"] = true
+  store.Options = &sessions.Options {
+    MaxAge:   24*60*60,
+    Secure:   true,
+    HttpOnly: true,
+      }
   session.Save(r, w)
   w.Write(userResMarsh)
 }

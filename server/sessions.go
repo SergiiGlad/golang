@@ -6,7 +6,7 @@ import (
 )
 
 var (
-  store = sessions.NewCookieStore([]byte("secretkey"))
+  store = sessions.NewCookieStore([]byte("somekey"))
 )
 
 func Authorize(next http.Handler) http.Handler {
@@ -14,12 +14,16 @@ func Authorize(next http.Handler) http.Handler {
     session, err := store.Get(r, "name")
 
     if err != nil {
+      session.Options.MaxAge = -1
+      session.Save(r, w)
       responseError(w, err)
       return
     }
-    if session.Values["auth"] == "loginned" {
+
+    if session.Values["loginned"] == true {
       next.ServeHTTP(w, r)
     } else {
+      // add session flashes when UI will be ready
       if r.URL.Path == "/login" {
         next.ServeHTTP(w, r)
       } else {
