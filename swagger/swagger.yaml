@@ -238,17 +238,17 @@ paths:
               $ref: '#/definitions/Message'
         '403':
           description: User wasnt login
-  '/posts/{userId}':
+  '/post/user/{user_id}':
     get:
       summary: Retrun all posts of specified user
       produces:
         - application/json
       parameters:
-        - name: userId
+        - name: user_id
           in: path
           description: Id of user
           required: true
-          type: integer
+          type: string
         - name: numberOfPosts
           in: query
           description: Number of latest posts to be returned if not present return all
@@ -266,15 +266,27 @@ paths:
   /post:
     post:
       consumes:
-        - application/json
+        - multipart/form-data
       produces:
         - application/json
       parameters:
-        - in: body
-          name: Post
-          required: true
-          schema:
-            $ref: '#/definitions/PostBody'
+         - in: formData
+           name: post_title
+           type: string
+           description: Post Title
+         - in: formData
+           name: post_text
+           type: string
+           description: Post Text
+         - in: formData
+           name: user_id
+           type: string
+           description: User ID
+         - in: formData
+           name: upfile
+           type: file
+           description: Upload File
+
       summary: Create post for current logined user.
       responses:
         '200':
@@ -285,22 +297,24 @@ paths:
           description: If failed to create post.
         '403':
           description: User wasnt login
-  '/post/{postId}':
+  '/post/{post_id}':
     get:
       summary: Retrun specified post.
       produces:
         - application/json
       parameters:
-        - name: postId
+        - name: post_id
           in: path
           description: Id of post
           required: true
-          type: integer
+          type: string
       responses:
         '200':
           description: Post representation.
           schema:
             $ref: '#/definitions/Post'
+        '204':
+          description: Post does not exist
         '403':
           description: User wasnt login or dont have permition to see this posts
     put:
@@ -310,9 +324,9 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: postId
+          name: post_id
           required: true
-          type: integer
+          type: string
           description: Post id
         - in: body
           name: Post
@@ -334,8 +348,8 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: postId
-          type: integer
+          name: post_id
+          type: string
           required: true
       summary: Delete post with given id
       responses:
@@ -406,6 +420,24 @@ paths:
             $ref: '#/definitions/Post'
         '403':
           description: User wasnt login or dont have perrmision to like comment
+  '/uploads/{file_link}':
+    get:
+      summary: Retrun specified file.
+      produces:
+        - application/octet-stream
+      parameters:
+        - name: file_link
+          in: path
+          description: File link
+          required: true
+          type: string
+      responses:
+        '200':
+          description: the file to retrieve
+          schema:
+            type: file
+        '400':
+          description: Couldn't download file
 definitions:
   Profile:
     type: object
@@ -511,34 +543,31 @@ definitions:
   Post:
     type: object
     properties:
-      id:
-        type: integer
-      owner:
-        type: integer
+      post_id:
+        type: string
       body:
         allOf:
           - $ref: '#/definitions/PostBody'
-      likes:
-        type: integer
+      post_like:
+        type: string
       comments:
         type: array
         items:
           $ref: '#/definitions/Comment'
-      lastUpdateDate:
+      post_last_update:
         type: string
-        format: date
   PostBody:
     type: object
     properties:
-      title:
+      post_title:
         type: string
-      message:
+      post_text:
         type: string
-      files:
-        type: array
-        items:
-          type: string
-          format: binary
+      user_id:
+        type: string
+      file_link:
+        type: string
+
   Comment:
     type: object
     properties:

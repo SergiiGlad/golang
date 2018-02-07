@@ -1,21 +1,25 @@
 {
   "environment variables": {
     "description": "Sensitive information that we need to hide under environment variables, you will need to setup them manually in your system, if at least one missing error wil occurred.",
-    "GO_AWS_ACCESS_KEY_ID" : {
+    "AWS_ACCESS_KEY_ID" : {
       "description" : "Access key id, you can get this from your aws account",
       "type" : "AWS access key ID, represented as string"
     },
-    "GO_AWS_SECRET_ACCESS_KEY" : {
+    "AWS_SECRET_ACCESS_KEY" : {
       "description" : "AWS secret key,  you can get this from your aws account",
       "type" : "AWS secret key, represented as string"
     },
-    "GO_AWS_DYNAMO_ENDPOINT" : {
+    "AWS_DYNAMO_ENDPOINT" : {
       "description": "Endpoint of your dynamo db, can be found in information panel of your DynamoDB instance",
       "type" : "ip or domain name,as string"
     },
-    "GO_AWS_DYNAMO_REGION" : {
+    "AWS_DEFAULT_REGION" : {
       "description": "Region of your DynamoDB instance, NOTE THIS IS NOT REGION NAME",
       "type": "REGION column from https://docs.aws.amazon.com/general/latest/gr/rande.html#ddb_region as string"
+    },
+    "AWS_BUCKET_NAME" : {
+      "description" : "AWS S3 bucket name, where files are stored",
+      "type" : "AWS bucket name, represented as string"
     },
     "GO_MYSQL_DSN": {
       "description": "https://en.wikipedia.org/wiki/Data_source_name , basically this is string to connect to MYSQL",
@@ -44,58 +48,52 @@
       "type": "string, path to directory",
       "description": "Absolute path to directory with static files."
     },
-
     "out": {
-        "name": {
-          "default": "stdout",
-          "type": "string, name of stream for logging",
-          "description": "stream to output communication channels "
-        },
-      },
-
-
+      "name": {
+        "default": "stdout",
+        "type": "string, name of stream for logging",
+        "description": "stream to output communication channels "
+      }
+    },
     "level": {
       "default": "debug",
       "type": "string,  logging level",
       "description": "debug,info,warn,error,fatal, panic "
     },
-
     "formatter": {
       "name": {
         "default": "text",
         "type": "string,  formatter for logging",
         "description": "support text or json formmating logger "
-        },
+      }
     },
-
-    "hooks": [{
+    "hooks": [
+      {
         "name": {
-              "type": "string,  name of hook",
-              "description": "hook which you will use"
+          "type": "string,  name of hook",
+          "description": "hook which you will use"
         },
-
         "options": {
-              "formatter":"json"{
-                "default":"text" ,
-                "type": "string,  formatter for hook logging",
-                "description": "type formatters when writing to local file "
-              },
-              "logfile": {
-                "type": "string, work_dir + logfile + .%Y%m%d",
-                "description": "filename must be passed, Path where a symlink for the actual log file is placed"
-              },
-              "rotatehours": {
-                "default":"86400" ,
-                "type": "string, sec",
-                "description": "Interval between file rotation"
-              },
-              "maxdays": {
-                "default":"7" ,
-                "type": "string, days",
-                "description": "Time to wait until old logs are purged"
-              },
-
+          "formatter": "json",
+          "default": "text",
+          "type": "string,  formatter for hook logging",
+          "description": "type formatters when writing to local file "
         },
-    }],
-
+        "logfile": {
+          "type": "string, work_dir + logfile + .%Y%m%d",
+          "description": "filename must be passed, Path where a symlink for the actual log file is placed"
+        },
+        "rotatehours": {
+          "default": "86400",
+          "type": "string, sec",
+          "description": "Interval between file rotation"
+        },
+        "maxdays": {
+          "default": "7",
+          "type": "string, days",
+          "description": "Time to wait until old logs are purged"
+        }
+      }]
+  }
 }
+

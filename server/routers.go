@@ -89,6 +89,47 @@ var routes = Routes{
   },
 
   Route {
+    "CreateNewPost",
+    "POST",
+    "/post",
+    CreateNewPost,
+  },
+
+  Route {
+    "DeletePost",
+    "DELETE",
+    "/post/{post_id}",
+    DeletePost,
+  },
+
+  Route {
+    "GetPostByPostID",
+    "GET",
+    "/post/{post_id}",
+    GetPost,
+  },
+
+  Route {
+    "GetPostByUserID",
+    "GET",
+    "/post/user/{user_id}",
+    GetPostByUserID,
+  },
+
+  Route {
+    "UpdatePost",
+    "PUT",
+    "/post/{post_id}",
+    UpdatePost,
+  },
+
+  Route {
+    "GetFile",
+    "GET",
+    "/uploads/{file_link}",
+    GetFileFromS3,
+  },
+  Route {
     "RegisterUser",
     "POST",
     "/registration",
