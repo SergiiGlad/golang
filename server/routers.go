@@ -92,4 +92,5 @@ var routes = Routes{
 }
 
 //Initialise services here
-var userService = &controllers.UserService{mysql.DB}
+var friendSerivce = &controllers.FriendService{mysql.DB}
+var userService = &controllers.UserService{mysql.DB, friendSerivce}

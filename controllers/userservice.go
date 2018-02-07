@@ -20,6 +20,7 @@ var log = conf.GetLog()
 //UserService type implements UserServiceInterface and holds one field DB to access to database
 type UserService struct {
   DB interfaces.MySqlDal
+  FS *FriendService
 }
 
 var _ UserServiceInterface = &UserService{}
@@ -121,7 +122,7 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
 
   newUserData.ID = id
   responseUserDto = dto.UserEntityToResponseDto(&newUserData)
-  responseUserDto.Friends, _ = us.GetUserFriends(id)
+  responseUserDto.Friends, _ = us.FS.GetUserFriedsIds(id)
 
   return responseUserDto, nil
 }
@@ -146,19 +147,9 @@ func (us *UserService) DeleteUser(id int64) (dto.ResponseUserDto, error) {
   }
 
   responseUserDto = dto.UserEntityToResponseDto(&userEntity)
-  responseUserDto.Friends, _ = us.GetUserFriends(id)
+  responseUserDto.Friends, _ = us.FS.GetUserFriedsIds(id)
 
   return responseUserDto, us.DB.DeleteUser(id)
-}
-
-func (us *UserService) GetUserFriends(id int64) ([]int64, error) {
-
-  _, err := us.DB.FindUserById(id)
-  if err != nil {
-    return nil, err
-  }
-
-  return us.DB.FriendsByUserID(id)
 }
 
 //CheckUniqueEmail validates email string and queries to database to make sure that email is unique

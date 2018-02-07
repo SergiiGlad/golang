@@ -8,25 +8,7 @@ basePath: /
 schemes:
   - http
 paths:
-  /admin:
-    post:
-      summary: Register User with status admin. Can only be done by admin.
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: Credentials
-          required: true
-          schema:
-            $ref: '#/definitions/RegistrationForm'
-      responses:
-        '200':
-          description: User was registred
-        '403':
-          description: No permission.
-  /admin/profile:
+  '/admin/profile':
     post:
       summary: Register User from admin console. Can only be done by admin.
       consumes:
@@ -42,6 +24,8 @@ paths:
       responses:
         '200':
           description: User was registred
+          schema:
+            $ref: '#/definitions/UserDetails'
         '400':
           description: Error ocured
           schema:
@@ -406,6 +390,87 @@ paths:
             $ref: '#/definitions/Post'
         '403':
           description: User wasnt login or dont have perrmision to like comment
+  '/profile/{user_id}/friends':
+    get:
+      summary: Returns user friend list
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: user_id
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: If friends queried successfully
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserDetails'
+        '403':
+          description: User wasnt login or dont have perrmision get friend list
+  '/profile/{user_id}/friends/requests':
+    get:
+      summary: Returns friend request list for user with specified id
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: user_id
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: If friend requests queried successfully
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserDetails'
+        '403':
+          description: User wasnt login or dont have perrmision to get friend requests
+  '/friend':
+    post:
+      summary: Sends a friend request to user with specified friend_user_id
+      parameters:
+        - in: path
+          name: user_id
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: If friend request queried successfully
+          schema:
+            $ref: '#/definitions/Friend'
+        '403':
+          description: User wasnt login or dont have perrmision to send friend request
+    put:
+      summary:  Send a friend response to user with specified friend_user_id
+      parameters:
+        - in: path
+          name: user_id
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: If friend request queried successfully
+          schema:
+            $ref: '#/definitions/Friend'
+        '403':
+          description: User wasnt login or dont have perrmision to send friend request
+    delete:
+      summary: delete a user with specified friend_user_id from friends
+      parameters:
+        - in: path
+          name: user_id
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: If friend deletion queried successfully
+          schema:
+            $ref: '#/definitions/Friend'
+        '403':
+          description: User wasnt login or dont have perrmission to delete friend
 definitions:
   Profile:
     type: object
@@ -422,11 +487,13 @@ definitions:
         type: string
   UserDetails:
     type: object
+    required:
+      - id
+      - first_name
+      - last_name
     properties:
       id:
         type: integer
-      email:
-        type: string
       first_name:
         type: string
       last_name:
@@ -438,6 +505,17 @@ definitions:
         items:
           type: integer
           description: list of friends ids
+  Friend:
+    type: object
+    required:
+      - friend_user_id
+    properties:
+      friend_user_id:
+        type: integer
+      user_id:
+        type: integer
+      connection_status:
+        type: string
   RegistrationForm:
     type: object
     required:

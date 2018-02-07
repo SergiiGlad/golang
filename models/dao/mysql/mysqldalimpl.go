@@ -88,10 +88,11 @@ var createTableStatements = []string{
     user_id INTEGER REFERENCES users_data(user_id)
   );`,
 
-  `CREATE TABLE IF NOT EXISTS friend_list (
-    friend_id INTEGER REFERENCES users_data(user_id),
-    user_id INTEGER REFERENCES users_data(user_id),
-    user_id_equals_friend_id CHAR(0) AS (CASE WHEN friend_id NOT IN (user_id) THEN '' END) VIRTUAL NOT NULL
+  `CREATE TABLE friend_list (
+  friend_user_id INTEGER REFERENCES users_data(user_id),
+  user_id INTEGER REFERENCES users_data(user_id),
+  connection_status ENUM('approved', 'rejected', 'waiting') NOT NULL,
+  user_id_equals_friend_id CHAR(0) AS (CASE WHEN friend_id NOT IN (user_id) THEN '' END) VIRTUAL NOT NULL
   );`,
 }
 

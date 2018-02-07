@@ -20,7 +20,6 @@ type mysqlUserDao struct {
   byid        *sql.Stmt
   byemail     *sql.Stmt
   byphone     *sql.Stmt
-  friends     *sql.Stmt
 }
 
 var _ interfaces.UserDao = &mysqlUserDao{}
@@ -59,9 +58,6 @@ func newMySqlUserDao(conn *sql.DB) (interfaces.UserDao, error) {
     return nil, fmt.Errorf("mysql: prepare list: %v", err)
   }
   if db.byphone, err = conn.Prepare(findByPhoneStatement); err != nil {
-    return nil, fmt.Errorf("mysql: prepare list: %v", err)
-  }
-  if db.friends, err = conn.Prepare(findFriendsByUserId); err != nil {
     return nil, fmt.Errorf("mysql: prepare list: %v", err)
   }
   if db.countByRole, err = conn.Prepare(coundByRoleStatement); err != nil {
@@ -179,30 +175,6 @@ func (d *mysqlUserDao) FindUserByPhone(phone string) (entity.User, error) {
   }
 
   return user, nil
-}
-
-const findFriendsByUserId = `SELECT friend_id FROM friend_list WHERE user_id = ?`
-
-func (d *mysqlUserDao) FriendsByUserID(id int64) ([]int64, error) {
-  rows, err := d.friends.Query()
-
-  if err != nil {
-    return nil, err
-  }
-  defer rows.Close()
-
-  friendIds := []int64{}
-  var friendId int64
-  for rows.Next() {
-    err = rows.Scan(&friendId)
-    if err != nil {
-      return nil, fmt.Errorf("mysql: could not read row: %v", err)
-    }
-
-    friendIds = append(friendIds, friendId)
-  }
-
-  return friendIds, nil
 }
 
 //scanUser reads a user from a sql.Row or sql.Rows
