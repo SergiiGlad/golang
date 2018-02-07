@@ -19,6 +19,9 @@ test:
     - mysql:latest
   image: golang:1.9.2-alpine3.7
   stage: test
+  tags:
+    - academy
+    - docker
   cache:
     paths:
      - /go/src/go-team-room/vendor
@@ -37,6 +40,9 @@ test:
 buildServer:
   image: golang:1.9.2-alpine3.7
   stage: build
+  tags:
+    - academy
+    - docker
   cache:
     paths:
      - vendor
@@ -55,8 +61,9 @@ buildClient:
     cache:
       paths:
         - client/node_modules
-    image: node:alpine
     stage: build
+    tags:
+      - js
     script:
       - npm install --prefix client
       - npm run build --prefix client
@@ -70,7 +77,9 @@ buildClient:
 
 package:
   stage: package
-  image: docker:latest
+  tags:
+    - academy
+    - container
   script:
     - docker build -t registry.gitlab.com/kv-031.go/go-team-room .
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
@@ -81,6 +90,9 @@ deploy:
   when: manual
   stage: deploy
   image: python:3-alpine
+  tags:
+    - academy
+    - docker
   services:
     - docker:dind
   script:
