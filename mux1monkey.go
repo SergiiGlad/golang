@@ -9,7 +9,8 @@ import (
 
 	"time"
 
-
+	"bytes"
+	"encoding/json"
 )
 
 type Route struct {
@@ -52,6 +53,7 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 
 // struct for holding access log data.
 type recHttpJson struct {
+	routePattern   string		`json:"route_pattern"`
 	RemoteAddr     string        `json:"remote_addr"`
 	RequestTime    time.Time     `json:"request_time"`
 	RequestMethod  string        `json:"request_method"`
@@ -64,6 +66,15 @@ type recHttpJson struct {
 	HTTPReferrer   string        `json:"http_referrer"`
 	HTTPUserAgent  string        `json:"http_user_agent"`
 	RemoteUser     string        `json:"remote_user"`
+	nextHandler    http.Handler
+}
+
+func (r *recHttpJson) json() ([]byte, error) {
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+
+	err := encoder.Encode(r)
+	return buffer.Bytes(), err
 }
 
 type recHttpText struct {
@@ -106,7 +117,45 @@ func (lh *recHttpText) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	lh.ElapsedTime = time.Since( lh.RequestTime )
 
 	//formatter := time.RFC1123
-	fmt.Fprintf(w, " Duration %t ", lh.ElapsedTime)
+	fmt.Fprintf(w, " Duration %v ", lh.ElapsedTime)
+
+	println("come back from lof writer")
+
+}
+
+func (lh *recHttpJson) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// do this w , r
+
+
+	var msg string
+
+	lh.RequestTime = time.Now()
+	lh.RemoteAddr = r.RemoteAddr //context.Input.IP()
+	lh.RequestMethod = r.Method
+	lh.ServerProtocol = r.Proto
+	lh.Host = r.Host
+	lh.HTTPReferrer = r.Header.Get("Referer")
+	lh.HTTPUserAgent = r.Header.Get("User-Agent")
+	lh.RemoteUser = r.Header.Get("Remote-User")
+
+	if jsonData, err := lh.json(); err != nil {
+		msg = fmt.Sprintf(`{"Error": "%s"}`, err)
+	} else {
+
+		msg = string(jsonData)
+
+	}
+
+
+	fmt.Fprintf(w, "http -->  %v Route pattern :  %v \n", lh.routePattern, msg)
+
+
+	lh.nextHandler.ServeHTTP(w, r)
+
+	lh.ElapsedTime = time.Since( lh.RequestTime )
+
+	//formatter := time.RFC1123
+	fmt.Fprintf(w, " Duration %v ", lh.ElapsedTime)
 
 	println("come back from lof writer")
 
@@ -135,7 +184,7 @@ func logWritter(next http.Handler, name string) http.Handler {
 
 func logRequest(next http.Handler, str string) http.Handler {
 
-	la := &recHttpText{
+	la := &recHttpJson{
 		nextHandler: next,
 		routePattern:   str,
 	}
