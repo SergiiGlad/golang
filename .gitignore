@@ -14,7 +14,6 @@ vendor/
 debug
 *.exe
 main.exe
-Gopkg.lock
 .env
 # VS code dirs and files
 *.swp
