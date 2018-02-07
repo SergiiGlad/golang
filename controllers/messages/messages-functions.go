@@ -18,7 +18,6 @@ import (
 func GetMessageFromDynamoByUserID(humUserId int, maxMessages ...int) []HumMessage {
 	var resultMessages []HumMessage
 	maxMes := conf.MaxMessages
-
 	if maxMessages != nil && maxMessages[0] < maxMes {
 		maxMes = maxMessages[0]
 	}
