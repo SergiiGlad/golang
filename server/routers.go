@@ -7,6 +7,7 @@ import (
   "html/template"
   "go-team-room/controllers"
   "go-team-room/models/dao/mysql"
+  //"log"
 )
 
 /*
@@ -135,6 +136,14 @@ var routes = Routes{
     "/registration",
     registerUser(userService),
   },
+
+  Route {
+    "RecoveryPass",
+    "GET",
+    "/recoveryPass",
+    recoveryPass(userService),
+  },
+
 
   // and so on, just add new Route structs to this array
 }
