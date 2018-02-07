@@ -1,25 +1,25 @@
 package controllers
 
 import (
-  "go-team-room/models/dao"
   "errors"
   "testing"
   "go-team-room/models/dto"
   "go-team-room/models/dao/interfaces"
   "database/sql"
+  "go-team-room/models/dao/entity"
 )
 
 type mockDb struct {
-  DB []dao.User
+  DB []entity.User
 }
 
 //user instance to be returned with errors
-var errorUser dao.User
+var errorUser entity.User
 
-func (md mockDb) AddUser(user *dao.User) (int64, error) {
+func (md mockDb) AddUser(user *entity.User) (entity.User, error) {
   md.DB = append(md.DB, *user)
   user.ID = int64(len(md.DB) - 1)
-  return user.ID, nil
+  return *user, nil
 }
 
 func (md mockDb) DeleteUser(id int64) error {
@@ -29,7 +29,7 @@ func (md mockDb) DeleteUser(id int64) error {
 
   for indx, user := range md.DB {
     if user.ID == id {
-      md.DB[indx].AccStatus = dao.Deleted
+      md.DB[indx].AccStatus = entity.Deleted
       return nil
     }
   }
@@ -37,23 +37,44 @@ func (md mockDb) DeleteUser(id int64) error {
   return errors.New("user could not be found")
 }
 
-func (md mockDb) UpdateUser(id int64, user *dao.User) error {
+func (md mockDb) ForceDeleteUser(id int64) error {
   if id < 0 {
     return errors.New("invalid id")
+  }
+
+  return errors.New("user could not be found")
+}
+
+func (md mockDb) UpdateUser(id int64, user *entity.User) (entity.User, error) {
+  if id < 0 {
+    return *user, errors.New("invalid id")
   }
 
   for indx, user := range md.DB {
     if user.ID == id {
       md.DB[indx] = user
       user.ID = id
-      return nil
+      return user, nil
     }
   }
 
-  return errors.New("user could not be found")
+  return *user, errors.New("user could not be found")
 }
 
-func (md mockDb) FindUserById(id int64) (dao.User, error) {
+func (md mockDb) CountByRole(role entity.Role) (int64, error) {
+
+  counter := 0
+
+  for _, user := range md.DB {
+    if user.Role == role {
+      counter++
+    }
+  }
+
+  return int64(counter), nil
+}
+
+func (md mockDb) FindUserById(id int64) (entity.User, error) {
 
   if id < 0 {
     return errorUser, errors.New("invalid id")
@@ -68,7 +89,7 @@ func (md mockDb) FindUserById(id int64) (dao.User, error) {
   return errorUser, sql.ErrNoRows
 }
 
-func (md mockDb) FindUserByEmail(email string) (dao.User, error) {
+func (md mockDb) FindUserByEmail(email string) (entity.User, error) {
 
   for indx, user := range md.DB {
     if user.Email == email {
@@ -79,7 +100,7 @@ func (md mockDb) FindUserByEmail(email string) (dao.User, error) {
   return errorUser, sql.ErrNoRows
 }
 
-func (md mockDb) FindUserByPhone(phone string) (dao.User, error) {
+func (md mockDb) FindUserByPhone(phone string) (entity.User, error) {
 
   for indx, user := range md.DB {
     if user.Phone == phone {
@@ -98,16 +119,16 @@ func (md mockDb) FriendsByUserID(id int64) ([]int64, error) {
   return []int64{}, nil
 }
 
-func (md mockDb) InsertPass(pass *dao.Password) (int64, error) {
+func (md mockDb) InsertPass(pass *entity.Password) (int64, error) {
   return 0, nil
 }
 
-func (md mockDb) LastPassByUserId(id int64) (dao.Password, error) {
-  return dao.Password{}, nil
+func (md mockDb) LastPassByUserId(id int64) (entity.Password, error) {
+  return entity.Password{}, nil
 }
 
-func (md mockDb) PasswdsByUserId(id int64) ([]dao.Password, error) {
-  return []dao.Password{}, nil
+func (md mockDb) PasswdsByUserId(id int64) ([]entity.Password, error) {
+  return []entity.Password{}, nil
 }
 
 var userService = UserService{}
@@ -121,7 +142,7 @@ func TestUserServiceCreate(t *testing.T) {
   }{
     {
       description: "CreateNewUser [Should perform successfully]",
-      db: mockDb{[]dao.User{}},
+      db: mockDb{[]entity.User{}},
       newUser: dto.RequestUserDto{
         Email:     "email@gmail.com",
         FirstName: "Name",
@@ -140,7 +161,7 @@ func TestUserServiceCreate(t *testing.T) {
     },
     {
       description: "CreateNewUser [Should return empty resp]",
-      db: mockDb{[]dao.User{}},
+      db: mockDb{[]entity.User{}},
       newUser: dto.RequestUserDto{
         Email:     "email@gmail",
         FirstName: "Name",
@@ -151,7 +172,7 @@ func TestUserServiceCreate(t *testing.T) {
     },
     {
       description: "CreateNewUser [Should return empty resp]",
-      db: mockDb{[]dao.User{}},
+      db: mockDb{[]entity.User{}},
       newUser: dto.RequestUserDto{
         Email:     "email@gmail.com",
         FirstName: "name",
@@ -162,7 +183,7 @@ func TestUserServiceCreate(t *testing.T) {
     },
     {
       description: "CreateNewUser [Should return empty resp]",
-      db:          mockDb{[]dao.User{}},
+      db:          mockDb{[]entity.User{}},
       newUser: dto.RequestUserDto{
         Email:     "email@gmail.com",
         FirstName: "name",
@@ -193,8 +214,8 @@ func TestUserServiceUpdate(t *testing.T) {
   }{
     {
       description: "Update user [Should perform successfully]",
-      db: mockDb{[]dao.User{
-        dao.User{
+      db: mockDb{[]entity.User{
+        entity.User{
           ID:        0,
           Email:     "email@gmail.com",
           FirstName: "Name",
@@ -221,8 +242,8 @@ func TestUserServiceUpdate(t *testing.T) {
     },
     {
       description: "Update user [Should return unique error]",
-      db: mockDb{[]dao.User{
-        dao.User{
+      db: mockDb{[]entity.User{
+        entity.User{
           ID:        0,
           Email:     "email@gmail.com",
           FirstName: "Name",
@@ -256,13 +277,13 @@ func TestUserServiceDelete(t *testing.T) {
   tests := [] struct {
     description  string
     db           interfaces.MySqlDal
-    newUser      dto.RequestUserDto
+    id           int64
     expectReturn dto.ResponseUserDto
   }{
     {
       description: "Update user [Should perform successfully]",
-      db: mockDb{[]dao.User{
-        dao.User{
+      db: mockDb{[]entity.User{
+        entity.User{
           ID:        0,
           Email:     "email@gmail.com",
           FirstName: "Name",
@@ -271,40 +292,14 @@ func TestUserServiceDelete(t *testing.T) {
         },
       },
       },
-      newUser: dto.RequestUserDto{
-        Email:     "newemail@gmail.com",
-        FirstName: "Name",
-        LastName:  "surname",
-        Phone:     "+380509684211",
-        Password:  "123456",
-      },
+      id: 0,
       expectReturn: dto.ResponseUserDto{
         ID:        0,
-        Email:     "newemail@gmail.com",
-        FirstName: "Name",
-        LastName:  "Surname",
-        Phone:     "+380509684211",
-        Friends: []int64{},
-      },
-    },
-    {
-      description: "Update user [Should return unique error]",
-      db: mockDb{[]dao.User{
-        dao.User{
-          ID:        0,
-          Email:     "email@gmail.com",
-          FirstName: "Name",
-          LastName:  "surname",
-          Phone:     "+380509684212",
-        },
-      },
-      },
-      newUser: dto.RequestUserDto{
         Email:     "email@gmail.com",
         FirstName: "Name",
         LastName:  "surname",
         Phone:     "+380509684212",
-        Password:  "123456",
+        Friends: []int64{},
       },
     },
   }
@@ -312,10 +307,11 @@ func TestUserServiceDelete(t *testing.T) {
   for _, tc := range tests {
     userService.DB = tc.db
 
-    respDto, _ := userService.UpdateUser(0, &tc.newUser)
+    respDto, _ := userService.DeleteUser(0)
 
     if respDto.String() != tc.expectReturn.String() {
       t.Errorf("\nExpected: %s\nGot: %s", tc.expectReturn, respDto)
     }
   }
 }
+

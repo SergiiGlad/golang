@@ -10,3 +10,15 @@ vendor/
 *.ntvs*
 *.njsproj
 *.sln
+# Win executable
+debug
+*.exe
+main.exe
+.env
+# VS code dirs and files
+*.swp
+.vscode/
+.vscode/launch.json
+logs
+*.log
+/main

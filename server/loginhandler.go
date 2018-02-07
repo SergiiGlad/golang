@@ -13,7 +13,7 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
   body, err := ioutil.ReadAll(r.Body)
 
   if err != nil {
-    responseError(w, err)
+    responseError(w, err, http.StatusBadRequest)
     return
   }
 
@@ -22,21 +22,21 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
   err = json.Unmarshal(body, &login)
 
   if err != nil {
-    responseError(w, err)
+    responseError(w, err, http.StatusBadRequest)
     return
   }
 
   session, err := store.Get(r, "name")
 
   if err != nil {
-    responseError(w, err)
+    responseError(w, err, http.StatusBadRequest)
     return
   }
 
   user, err := controllers.Login(login.PhoneOrEmail, login.Password)
 
   if err != nil {
-    responseError(w, err)
+    responseError(w, err, http.StatusForbidden)
     //session.AddFlash(errors.New("Wrong credentials"), "_errors")
     //session.Save(r, w)
     return
@@ -48,7 +48,7 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
   userResMarsh, err := json.Marshal(userRes)
 
   if err != nil {
-    responseError(w, err)
+    responseError(w, err, http.StatusBadRequest)
     return
   }
 

@@ -1,8 +1,9 @@
+//Package dto provides data transfer objects used in this project.
 package dto
 
 import (
   "fmt"
-  "go-team-room/models/dao"
+  "go-team-room/models/dao/entity"
 )
 
 type LoginDto struct {
@@ -28,12 +29,14 @@ func (user ResponseUserDto) String() string {
     user.ID, user.Email, user.FirstName, user.LastName, user.Phone, user.Friends)
 }
 
+//RequestUserDto is used in converting from json structure pulled from request body.
 type RequestUserDto struct {
-  Email     string `json:"email"`
-  FirstName string `json:"first_name"`
-  LastName  string `json:"last_name"`
-  Phone     string `json:"phone"`
-  Password  string `json:"password"`
+  Email     string      `json:"email"`
+  FirstName string      `json:"first_name"`
+  LastName  string      `json:"last_name"`
+  Phone     string      `json:"phone"`
+  Role      entity.Role `json:"role"`
+  Password  string      `json:"password"`
 }
 
 func (user RequestUserDto) String() string {
@@ -41,23 +44,28 @@ func (user RequestUserDto) String() string {
     user.Email, user.FirstName, user.LastName, user.Phone, user.Password)
 }
 
-func RequestUserDtoToEntity(userDto *RequestUserDto) dao.User {
-  userDao := dao.User {
+//RequestUserDtoToEntity converts RequestUserDto to dao.User. user role is set by default if such field is empty.
+func RequestUserDtoToEntity(userDto *RequestUserDto) entity.User {
+  if userDto.Role == "" {
+    userDto.Role = entity.UserRole
+  }
+
+  userDao := entity.User {
     0,
     userDto.Email,
     userDto.FirstName,
     userDto.LastName,
     userDto.Phone,
-    dao.UserRole,
-    dao.Active,
+    userDto.Role,
+    entity.Active,
     "",
   }
 
   return userDao
 }
 
-//without friends
-func UserEntityToResponseDto(userDao *dao.User) ResponseUserDto {
+//UserEntityToResponseDto converts *dao.User to ResponseUserDto. For now Friends field is empty slice.
+func UserEntityToResponseDto(userDao *entity.User) ResponseUserDto {
   userDto := ResponseUserDto{
     userDao.ID,
     userDao.Email,

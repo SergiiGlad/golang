@@ -16,7 +16,7 @@ func Authorize(next http.Handler) http.Handler {
     if err != nil {
       session.Options.MaxAge = -1
       session.Save(r, w)
-      responseError(w, err)
+      responseError(w, err, http.StatusForbidden)
       return
     }
 
