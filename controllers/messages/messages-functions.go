@@ -197,12 +197,13 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 		fmt.Println("Got error calling PutItem:")
 		fmt.Println(err.Error())
 		//os.Exit(1)
-		fmt.Fprint(writeRespon, "400 Some errors")
+		writeRespon.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(writeRespon, "Some errors")
 	} else {
+		writeRespon.WriteHeader(http.StatusOK)
 
-		fmt.Fprint(writeRespon, "200 Post done")
+		fmt.Fprint(writeRespon, "Post done")
 	}
-
 	//fmt.Println("Successfully added 'The Big someNewMessage' to  table")
 }
 
@@ -252,5 +253,4 @@ func HandlerOfPOSTMessages(w http.ResponseWriter, r *http.Request) {
 	//and it is safe to put it into a Dynamo
 
 	PutMessageToDynamo(w, &inputMessage)
-
 }

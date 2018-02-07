@@ -1,12 +1,16 @@
 package messages
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
-//////////////////////////////////////////
-	"github.com/gusaul/go-dynamock"
+	//////////////////////////////////////////
 
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/gusaul/go-dynamock"
 )
 
 var mock *dynamock.DynaMock
@@ -15,25 +19,9 @@ func init() {
 	Dyna.Db, mock = dynamock.New()
 }
 func TestPutMessageToDynamo(t *testing.T) {
-
-	// expectKey := map[string]*dynamodb.AttributeValue{
-	// 	"id": {
-	// 		N: aws.String("23"),
-	// 	},
-	// }
-	// expectedResult := aws.String("Vasya")
-	// result := dynamodb.GetItemOutput{
-	// 	Item: map[string]*dynamodb.AttributeValue{
-	// 		"name": {
-	// 			S: expectedResult,
-	// 		},
-	// 	},
-	// }
-
 	//	lets start dynamock in action
 	//	mock.ExpectGetItem().ToTable("massages").WithKeys(expectKey).WillReturns(result)
-	//mock.ExpectGetItem().ToTable("massages").WithKeys().WillReturns()
-	mock.ExpectPutItem().ToTable("massages")
+	mock.ExpectPutItem().ToTable("messages")
 	someNewMessage1 := HumMessage{
 		MessageID:        "1",
 		MessageParentID:  "0",
@@ -64,7 +52,6 @@ func TestPutMessageToDynamo(t *testing.T) {
 	}
 }
 
-/*
 func TestGetMessageFromDynamoByUserID(t *testing.T) {
 	testUserID := 777
 	someNewMessage1 := HumMessage{
@@ -85,57 +72,32 @@ func TestGetMessageFromDynamoByUserID(t *testing.T) {
 			Views:   33,
 		},
 		MessageUser: HumUser{
-			IdSql:   777,
+			IdSql:   testUserID,
 			NameSQL: "Vasya",
 		},
 	}
-	// someNewMessage2 := HumMessage{
-	// 	MessageId:        "2",
-	// 	MessageParentId:  "0",
-	// 	MessageTimestamp: "20180110155533011",
-	// 	MessageData: HumMessageData{
-	// 		Text:             "MORE of text and stupid smiles :)))))",
-	// 		TypeOfHumMessage: "TypeOfHumMessage-UNDEFINED FOR NOW",
-	// 		BinaryParts: []HumMessageDataBinary{HumMessageDataBinary{
-	// 			BinData: "",
-	// 			BinName: "",
-	// 		}},
-	// 	},
-	// 	MessageSocialStatus: HumMessageSocialStatus{
-	// 		Dislike: 11,
-	// 		Like:    22,
-	// 		Views:   33,
-	// 	},
-	// 	MessageUser: HumUser{
-	// 		IdSql:   666,
-	// 		NameSql: "Petya",
-	// 	},
-	// }
-	tempMarshaledMessage, _ := json.Marshal(someNewMessage1)
-	fmt.Println(tempMarshaledMessage)
-	expectKey := map[string]*dynamodb.AttributeValue{
-		"MessageUser.IdSql": {
-			N: aws.String("777"),
-		},
+	tempMarshaledMessage, err := dynamodbattribute.MarshalMap(someNewMessage1)
+	if err != nil {
+		fmt.Println("Got error marshalling map:")
+		fmt.Println(err.Error())
+		//os.Exit(1)
 	}
-	//expectedResult := aws.String("jaka")
-	expectedResult := `{"message_id":"20180110155343158","message_chat_room_id":"995","message_data":{"text":"8 A lot of text and stupid smiles :)))))","type":"TypeOfHumMessage-UNDEFINED FOR NOW","binary_parts":[{"bin_data":"","bin_name":""}]},"message_parent_id":"","message_social_status":{"Dislike":15,"Like":262,"Views":373},"message_timestamp":"20180110155533111","message_user":{"id_sql":33,"name_sql":"Vasya"}}`
+	//fmt.Println(tempMarshaledMessage)
 
-	result := dynamodb.GetItemOutput{
-		Item: map[string]*dynamodb.AttributeValue{
-			"name": {
-				S: expectedResult,
-			},
-		},
+	result := dynamodb.ScanOutput{
+		Items: []map[string]*dynamodb.AttributeValue{tempMarshaledMessage},
 	}
-	//lets start dynamock in action
-	mock.ExpectPutItem().ToTable("messages").WithKeys(expectKey).WillReturns(result)
 
-	GetMessageFromDynamoByUserID(testUserID)
+	mock.ExpectScan().Table("messages").WillReturns(result)
+	userMessagesFromDynamo := GetMessageFromDynamoByUserID(testUserID)
 
+	//get here without errors - it is great !!!
+	//we put into mock only one message - check it
+	if !reflect.DeepEqual(someNewMessage1, userMessagesFromDynamo[0]) {
+		t.Errorf("Test TestGetMessageFromDynamoByUserID Fail!")
+	}
 }
 
-*/
 func TestHandlerOfGetMessages(t *testing.T) {
 	req, err := http.NewRequest("GET", "/messages/", nil)
 	if err != nil {
