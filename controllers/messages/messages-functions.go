@@ -156,7 +156,6 @@ func ValidateDataFromUser(m *HumMessage) {
 }
 
 func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
-
 	// body, err := ioutil.ReadAll(req.Body)
 	//  if err != nil {
 	//  	return //r1
