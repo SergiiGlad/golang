@@ -13,20 +13,19 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
-//GetMessageFromDynamoByUserId - return an slise of latest
+//GetMessageFromDynamoByUserID - return an slise of latest
 //messages but not more then MAX_MESSAGES_AT_ONCE
-func GetMessageFromDynamoByUserID(humUserId int, maxMessages ...int) []HumMessage {
+func GetMessageFromDynamoByUserID(humUserID int, maxMessages ...int) []HumMessage {
 	var resultMessages []HumMessage
 	maxMes := conf.MaxMessages
-
 	if maxMessages != nil && maxMessages[0] < maxMes {
 		maxMes = maxMessages[0]
 	}
-	if humUserId < 1 {
+	if humUserID < 1 {
 		return resultMessages //emty array
 	}
 	// Create the Expression to fill the input struct with.
-	filt := expression.Name("message_user.id_sql").Equal(expression.Value(humUserId))
+	filt := expression.Name("message_user.id_sql").Equal(expression.Value(humUserID))
 	expr, err := expression.NewBuilder().WithFilter(filt).Build()
 
 	if err != nil {
@@ -71,12 +70,12 @@ func GetMessageFromDynamoByUserID(humUserId int, maxMessages ...int) []HumMessag
 
 //HandlerOfGetMessages - handler for
 //"/messages/" endpoint
-
 func HandlerOfGetMessages(writeRespon http.ResponseWriter, r *http.Request) {
 	currentUserID := GetActionUserID(r)
 	//fmt.Println(currentUserID)
 	if currentUserID < 1 {
-		fmt.Fprint(writeRespon, "403 Can't find your ID")
+		writeRespon.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(writeRespon, "401 Can't find your ID")
 		return
 	}
 	var numberOfMessages int

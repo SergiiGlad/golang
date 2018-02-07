@@ -84,14 +84,14 @@ var routes = Routes{
 	Route{
 		"GetMessage",
 		"GET",
-		"/messages/",
+		"/messages",
 		//HandlerOfMessages,
 		messages.HandlerOfGetMessages,
 	},
 	Route{
 		"PutMessage",
 		"POST",
-		"/messages/",
+		"/messages",
 		//HandlerOfMessages,
 		messages.HandlerOfMessages,
 	},
