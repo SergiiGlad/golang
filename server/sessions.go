@@ -6,7 +6,7 @@ import (
 )
 
 var (
-  store = sessions.NewCookieStore([]byte("somekey"))
+  store = sessions.NewCookieStore([]byte("wesomekey"))
 )
 
 func Authorize(next http.Handler) http.Handler {
@@ -24,7 +24,7 @@ func Authorize(next http.Handler) http.Handler {
       next.ServeHTTP(w, r)
     } else {
       // add session flashes when UI will be ready
-      if r.URL.Path == "/login" {
+      if r.URL.Path == "/login" || r.URL.Path == "/registration" || r.URL.Path == "/" || r.URL.Path == "/logout" {
         next.ServeHTTP(w, r)
       } else {
         http.Redirect(w, r, "/login", 301)

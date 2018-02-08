@@ -142,6 +142,13 @@ var routes = Routes{
   },
 
   Route{
+    "Logout",
+    "GET",
+    "/logout",
+    logout,
+  },
+
+  Route{
     "GetMessage",
     "GET",
     "/messages",
