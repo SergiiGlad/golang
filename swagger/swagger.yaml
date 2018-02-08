@@ -1,8 +1,8 @@
 swagger: '2.0'
 info:
   description: Social network for file sharing
-  version: 1.0.0
-  title: File Sharing Socila Network
+  version: 1.0.1
+  title: File Sharing Social Network
 host: 'localhost:8080'
 basePath: /
 schemes:
@@ -202,6 +202,11 @@ paths:
     get:
       summary: Retrn all/'number of latest messages' of logined user.
       parameters:
+        - name: id
+          in: query
+          description: Current user id
+          required: true
+          type: integer
         - name: numberOfMessages
           in: query
           description: Number of latest messages to be returned if not present return all
@@ -214,7 +219,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Message'
-        '403':
+        '401':
           description: User wasnt login
     post:
       summary: Send message from current logined user to specified chat room.
@@ -227,7 +232,7 @@ paths:
           name: Message
           required: true
           schema:
-            $ref: '#/definitions/MessageBody'
+            $ref: '#/definitions/Message'
       responses:
         '200':
           description: If succesfully send message.
@@ -235,16 +240,26 @@ paths:
             $ref: '#/definitions/Message'
         '400':
           description: If failed to send message.
-        '403':
+        '401':
           description: User wasnt login
   /messages/new:
     get:
-      summary: Return all/'number of latest messages' to logined user with isNew = true
+      summary: Return all/'number of latest messages' to logined user witha are newer than lastDate
       parameters:
+        - name: id
+          in: query
+          description: Current user id (later move it to cookie)
+          required: true
+          type: integer
+        - name: lastDate
+          in: query
+          description: Date to start search new msg
+          required: true
+          type: string
         - name: numberOfMessages
           in: query
           description: Number of latest messages to be returned if not present return all
-          required: true
+          required: false
           type: string
       responses:
         '200':
@@ -253,7 +268,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Message'
-        '403':
+        '401':
           description: User wasnt login
   '/post/user/{user_id}':
     get:
@@ -513,15 +528,14 @@ definitions:
       phoneOrEmail:
         type: string
       password:
-        type: integer
-        format: int32
+        type: string
   Message:
     type: object
     properties:
       id:
         type: integer
         format: int64
-      sendDate:
+      MessageTimestamp:
         type: string
         description: UserId of reciver
       isNew:
