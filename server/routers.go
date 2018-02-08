@@ -7,6 +7,7 @@ import (
   "html/template"
   "go-team-room/controllers"
   "go-team-room/models/dao/mysql"
+  "go-team-room/models/Amazon"
 )
 
 /*
@@ -92,35 +93,35 @@ var routes = Routes{
     "CreateNewPost",
     "POST",
     "/post",
-    CreateNewPost,
+    CreateNewPost(Amazon.SVC, Amazon.SESS),
   },
 
   Route {
     "DeletePost",
     "DELETE",
     "/post/{post_id}",
-    DeletePost,
+    DeletePost(Amazon.SVC, Amazon.SESS),
   },
 
   Route {
     "GetPostByPostID",
     "GET",
     "/post/{post_id}",
-    GetPost,
+    GetPost(Amazon.Dynamo.Db),
   },
 
   Route {
     "GetPostByUserID",
     "GET",
     "/post/user/{user_id}",
-    GetPostByUserID,
+    GetPostByUserID(Amazon.Dynamo.Db),
   },
 
   Route {
     "UpdatePost",
     "PUT",
     "/post/{post_id}",
-    UpdatePost,
+    UpdatePost(Amazon.Dynamo.Db),
   },
 
   Route {
