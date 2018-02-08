@@ -7,15 +7,24 @@ import (
   "go-team-room/conf"
   "fmt"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+  "github.com/aws/aws-sdk-go/service/s3/s3iface"
+  "github.com/aws/aws-sdk-go/service/s3"
 )
-var SVC *dynamodb.DynamoDB
+var SVCD *dynamodb.DynamoDB
+var SVCS *s3.S3
 var SESS *session.Session
 
 type MyDynamo struct {
   Db dynamodbiface.DynamoDBAPI
 }
 
+type MyS3 struct{
+  S3API s3iface.S3API
+}
+
+
 var Dynamo MyDynamo
+var S3 MyS3
 
 func init() {
   //Create Session for AWS
@@ -25,6 +34,8 @@ func init() {
     if err != nil {
       fmt.Println(err)
     }
-  SVC = dynamodb.New(SESS)
-  Dynamo.Db = dynamodbiface.DynamoDBAPI(SVC)
+  SVCD = dynamodb.New(SESS)
+  Dynamo.Db = dynamodbiface.DynamoDBAPI(SVCD)
+  SVCS = s3.New(SESS)
+  S3.S3API = s3iface.S3API(SVCS)
 }

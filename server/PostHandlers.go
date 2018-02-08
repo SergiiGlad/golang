@@ -22,6 +22,7 @@ import (
   "strconv"
   "go-team-room/conf"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+  "github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
 
 //Post structure
@@ -37,7 +38,7 @@ type Post struct{
 
 
 //To CREATE new post in DynamoDB Table "Post"
-func CreateNewPost(svc *dynamodb.DynamoDB, sess *session.Session) http.HandlerFunc {
+func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, sess *session.Session) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
 
     var newPost Post
@@ -103,7 +104,7 @@ func CreateNewPost(svc *dynamodb.DynamoDB, sess *session.Session) http.HandlerFu
     }
 
     //Get result
-    result, err := svc.PutItem(input)
+    result, err := svcd.PutItem(input)
 
     //ERROR block (from AWS SDK GO DynamoDB documentation)
     if err != nil {
@@ -139,7 +140,7 @@ func CreateNewPost(svc *dynamodb.DynamoDB, sess *session.Session) http.HandlerFu
 }
 
 //To DELETE existing post by "post_id" from DynamoDB Table "Post"
-func DeletePost(svc *dynamodb.DynamoDB, sess *session.Session) http.HandlerFunc {
+func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
     var post Post
 
@@ -147,10 +148,10 @@ func DeletePost(svc *dynamodb.DynamoDB, sess *session.Session) http.HandlerFunc 
     vars := mux.Vars(r)
     post.PostID = vars["post_id"]
 
-    post = GetPostBody(post, svc)
+    post = GetPostBody(post, svcd)
 
     if post.FileLink != "NULL" {
-      DeleteFileFromS3(post.FileLink, sess)
+      DeleteFileFromS3(post.FileLink, svcs)
     }
 
     //Request to DynamoDB to DELETE post with KEY_ATTRIBUTE "post_id" (TimeStamp)
@@ -164,7 +165,7 @@ func DeletePost(svc *dynamodb.DynamoDB, sess *session.Session) http.HandlerFunc 
     }
 
     //Get result
-    result, err := svc.DeleteItem(input)
+    result, err := svcd.DeleteItem(input)
 
     //ERROR block (from AWS SDK GO DynamoDB documentation)
     if err != nil {
@@ -398,7 +399,7 @@ func UpdatePost (svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
 }
 
 //To UPLOAD file to S3
-func UploadFileToS3(sess*session.Session, f multipart.File, handl * multipart.FileHeader) string{
+func UploadFileToS3(sess *session.Session, f multipart.File, handl * multipart.FileHeader) string{
   // Create an uploader with the session and default options
   uploader := s3manager.NewUploader(sess)
 
@@ -426,61 +427,52 @@ func UploadFileToS3(sess*session.Session, f multipart.File, handl * multipart.Fi
   return link
 }
 
-
 //To GET file from S3
-func GetFileFromS3(w http.ResponseWriter, r *http.Request) {
+func GetFileFromS3(sess *session.Session) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
 
-  //Gorilla tool to handle request "/post/{post_id}" with method DELETE
-  vars := mux.Vars(r)
-  fileName := vars["file_link"]
+    //Gorilla tool to handle request "/post/{post_id}" with method DELETE
+    vars := mux.Vars(r)
+    fileName := vars["file_link"]
 
-  //Create new Session for DynamoDB
-  sess, err := session.NewSession(&aws.Config{
-    Region: aws.String(conf.DynamoRegion),
+    // Create a downloader with the session and default options
+    downloader := s3manager.NewDownloader(sess)
 
-  })
+    var b []byte
+    buff := aws.NewWriteAtBuffer(b)
 
-  // Create a downloader with the session and default options
-  downloader := s3manager.NewDownloader(sess)
+    // Write the contents of S3 Object to the file
+    n, err := downloader.Download(buff, &s3.GetObjectInput{
+      Bucket: aws.String(conf.AwsBucketName),
+      Key:    aws.String(fileName),
+    })
+    if err != nil {
+      fmt.Errorf("failed to download file, %v", err)
+      return
+    }
+    fmt.Printf("file downloaded, %d bytes\n", n)
 
-  var b []byte
-  buff := aws.NewWriteAtBuffer(b)
+    //Get the Content-Type of the file
+    //Create a buffer to store the header of the file in
+    FileHeader := make([]byte, 512)
+    //Copy the headers into the FileHeader buffer
+    FileHeader = buff.Bytes()[:512]
+    //Get content type of file
+    FileContentType := http.DetectContentType(FileHeader)
 
-  // Write the contents of S3 Object to the file
-  n, err := downloader.Download(buff, &s3.GetObjectInput{
-    Bucket: aws.String(conf.AwsBucketName),
-    Key:    aws.String(fileName),
-  })
-  if err != nil {
-    fmt.Errorf("failed to download file, %v", err)
-    return
+    FileSize := strconv.FormatInt(int64(len(buff.Bytes())), 10) //Get file size as a string
+
+    //Send the headers
+    w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
+    w.Header().Set("Content-Type", FileContentType)
+    w.Header().Set("Content-Length", FileSize)
+
+    w.Write(buff.Bytes())
   }
-  fmt.Printf("file downloaded, %d bytes\n", n)
-
-  //Get the Content-Type of the file
-  //Create a buffer to store the header of the file in
-  FileHeader := make([]byte, 512)
-  //Copy the headers into the FileHeader buffer
-  FileHeader = buff.Bytes()[:512]
-  //Get content type of file
-  FileContentType := http.DetectContentType(FileHeader)
-
-  FileSize := strconv.FormatInt(int64(len(buff.Bytes())), 10) //Get file size as a string
-
-
-  //Send the headers
-  w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
-  w.Header().Set("Content-Type", FileContentType)
-  w.Header().Set("Content-Length", FileSize)
-
-  w.Write(buff.Bytes())
 }
-
 //To DELETE file from S3 when DELETE Post
-func DeleteFileFromS3(file string, sess *session.Session) {
+func DeleteFileFromS3(file string, svc s3iface.S3API) {
   filename := strings.TrimPrefix(file, "/uploads/")
-
-  svc := s3.New(sess)
 
   input := &s3.DeleteObjectsInput{
     Bucket: aws.String(conf.AwsBucketName),
@@ -512,7 +504,7 @@ func DeleteFileFromS3(file string, sess *session.Session) {
 }
 
 //To GET Post body from Table "Post" in DynamoDB by "post_id". Return Post body
-func GetPostBody(post Post, svc *dynamodb.DynamoDB) Post {
+func GetPostBody(post Post, svc dynamodbiface.DynamoDBAPI) Post {
 
   //Request to DynamoDB to GET post by "post_id"
   input := &dynamodb.GetItemInput{
