@@ -69,8 +69,13 @@ func GetMessageFromDynamoByUserID(humUserID int, maxMessages ...int) []HumMessag
 }
 
 //HandlerOfGetMessages - handler for
-//"/messages/" endpoint
+//"/messages" endpoint
 func HandlerOfGetMessages(writeRespon http.ResponseWriter, r *http.Request) {
+	///Debug
+	GetChatRoomListByUserID(23, 23)
+	return
+	///DEBUG
+
 	currentUserID := GetActionUserID(r)
 	//fmt.Println(currentUserID)
 	if currentUserID < 1 {
@@ -253,4 +258,53 @@ func HandlerOfPOSTMessages(w http.ResponseWriter, r *http.Request) {
 	//and it is safe to put it into a Dynamo
 
 	PutMessageToDynamo(w, &inputMessage)
+}
+
+func GetChatRoomListByUserID(humUserID int, maxChatRooms ...int) []HumChatRoom {
+	var resultChatRooms []HumChatRoom
+	maxChats := conf.MaxChatRooms
+	if maxChatRooms != nil && maxChatRooms[0] < maxChats {
+		maxChats = maxChatRooms[0]
+	}
+	if humUserID < 1 {
+		return resultChatRooms //emty array
+	}
+	// Create the Expression to fill the input struct with.
+	filt := expression.Name("chat_users_list[0].id_sql").Equal(expression.Value(humUserID))
+	expr, err := expression.NewBuilder().WithFilter(filt).Build()
+
+	if err != nil {
+		fmt.Println("Got error building Dynamo expression:")
+		fmt.Println(err.Error()) //DEBUG output
+		//os.Exit(1)
+		return resultChatRooms //emty array
+	}
+	// Build the query input parameters
+	params := &dynamodb.ScanInput{
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		FilterExpression:          expr.Filter(),
+		//  ProjectionExpression:      expr.Projection(),
+		TableName: aws.String("chat_rooms"),
+	}
+	result, err := Dyna.Db.Scan(params)
+	if err != nil {
+		fmt.Println("Query API call failed:")
+		fmt.Println((err.Error()))
+		//fmt.Println(params)
+		//os.Exit(1)
+		return resultChatRooms //empty
+	}
+	var humChatHolder HumChatRoom
+	for _, i := range result.Items {
+		err = dynamodbattribute.UnmarshalMap(i, &humChatHolder)
+		if err != nil {
+			fmt.Println(err) //panic(err)
+		} else {
+			resultChatRooms = append(resultChatRooms, humChatHolder)
+		}
+		fmt.Println("item.ChatID: ", i)
+		//fmt.Println("item.ChatUsersList", i.ChatUsersList)
+	}
+	return resultChatRooms
 }
