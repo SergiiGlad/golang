@@ -3,8 +3,8 @@ package mysql
 import (
   "database/sql"
   "go-team-room/models/dao/interfaces"
-  "go-team-room/models/dao"
   "fmt"
+  "go-team-room/models/dao/entity"
 )
 
 type mysqlUserTokenDao struct {
@@ -60,14 +60,14 @@ func newMySqlTokenDao(conn *sql.DB) (interfaces.UserTokenDao, error) {
 
 const getAllTokensStatement = `SELECT token_id, token, email, is_active, user_id FROM user_tokens`
 
-func (tDao mysqlUserTokenDao) GetTokens() ([] dao.UserToken, error) {
+func (tDao mysqlUserTokenDao) GetTokens() ([] entity.UserToken, error) {
   rows, err := tDao.getAll.Query()
   if err != nil {
     return nil, err
   }
   defer rows.Close()
 
-  tokens := [] dao.UserToken{}
+  tokens := [] entity.UserToken{}
   for rows.Next() {
     token, err := scanToken(rows)
     if err != nil {
@@ -78,9 +78,9 @@ func (tDao mysqlUserTokenDao) GetTokens() ([] dao.UserToken, error) {
   return tokens, nil
 }
 
-const insertTokenStatement = `INSERT INTO user_tokens(token, email, is_active, user_id) VALUES (?, ?, ?)`
+const insertTokenStatement = `INSERT INTO user_tokens (token, email, is_active, user_id) VALUES (?, ?, ?, ?)`
 
-func (tDao mysqlUserTokenDao) AddToken(token dao.UserToken) (int64, error) {
+func (tDao mysqlUserTokenDao) AddToken(token entity.UserToken) (int64, error) {
   r, err := execAffectingOneRow(tDao.insert, token.Token, token.Email, token.IsActive, token.UserId)
   if err != nil {
     return 0, err
@@ -106,7 +106,7 @@ func (tDao mysqlUserTokenDao) DeleteToken(id int64) error {
 const updateTokenStatement = `UPDATE user_tokens SET
   token = ?, email = ?, is_active = ?, user_id = ? WHERE token_id = ?`
 
-func (tDao mysqlUserTokenDao) UpdateToken(id int64, token *dao.UserToken) error {
+func (tDao mysqlUserTokenDao) UpdateToken(id int64, token *entity.UserToken) error {
   _, err := execAffectingOneRow(tDao.update, token.Token, token.Email, token.IsActive, token.UserId, id)
   if err != nil {
     return err
@@ -117,7 +117,7 @@ func (tDao mysqlUserTokenDao) UpdateToken(id int64, token *dao.UserToken) error 
 const findTokenByIdStatement = `SELECT token_id, token, email, is_active, user_id FROM user_tokens 
 WHERE token_id = ?`
 
-func (tDao mysqlUserTokenDao) FindTokenById(id int64) (*dao.UserToken, error) {
+func (tDao mysqlUserTokenDao) FindTokenById(id int64) (*entity.UserToken, error) {
   token, err := scanToken(tDao.byid.QueryRow(id))
   if err != nil {
     return nil, err
@@ -128,7 +128,7 @@ func (tDao mysqlUserTokenDao) FindTokenById(id int64) (*dao.UserToken, error) {
 const findTokenByToken = `SELECT token_id, token, email, is_active, user_id FROM user_tokens 
 WHERE token = ?`
 
-func (tDao mysqlUserTokenDao) FindTokenByToken(token string) (*dao.UserToken, error) {
+func (tDao mysqlUserTokenDao) FindTokenByToken(token string) (*entity.UserToken, error) {
   t, err := scanToken(tDao.bytoken.QueryRow(token))
   if err != nil {
     return nil, err
@@ -139,14 +139,14 @@ func (tDao mysqlUserTokenDao) FindTokenByToken(token string) (*dao.UserToken, er
 const findTokenForUser = `SELECT token_id, token, email, is_active, user_id FROM user_tokens 
 WHERE user_id = ?`
 
-func (tDao mysqlUserTokenDao) FindTokensForUser(user_id int64) ([] dao.UserToken, error) {
+func (tDao mysqlUserTokenDao) FindTokensForUser(user_id int64) ([] entity.UserToken, error) {
   rows, err := tDao.forUser.Query(user_id)
   if err != nil {
     return nil, err
   }
   defer rows.Close()
 
-  tokens := [] dao.UserToken{}
+  tokens := [] entity.UserToken{}
   for rows.Next() {
     token, err := scanToken(rows)
     if err != nil {
@@ -164,20 +164,20 @@ func (d *mysqlUserTokenDao) Close() {
 
 var (
   token_id      int64
-  email_token   sql.NullString
+  user_email    sql.NullString
   token         sql.NullString
   is_active     bool
   user_id_token int64
 )
 
-func scanToken(s rowScanner) (*dao.UserToken, error) {
-  if err := s.Scan(&token_id, &email, &email_token, &is_active, &user_id_token); err != nil {
+func scanToken(s rowScanner) (*entity.UserToken, error) {
+  if err := s.Scan(&token_id, &user_email, &token, &is_active, &user_id_token); err != nil {
     return nil, err
   }
-  token := dao.UserToken{
+  token := entity.UserToken{
     token_id,
-    email.String,
-    email_token.String,
+    user_email.String,
+    token.String,
     is_active,
     user_id_token,
   }
