@@ -60,6 +60,6 @@ func (a AccountStatus) Value() (driver.Value, error) {
 }
 
 func (user User) String() string {
-  return fmt.Sprintf("User object:\n\tID = %d\n\tEmail = %s\n\tFirstName = %s\n\tLastName = %s\n\tPhone = %s\n\tRole %s\n\tAccStatus = %s\n\tAvatarRef = %s\n",
+  return fmt.Sprintf("User object:\n\tID = %d\n\tFirstName = %s\n\tLastName = %s\n\tEmail = %s\n\tPhone = %s\n\tRole %s\n\tAccStatus = %s\n\tAvatarRef = %s\n",
     user.ID, user.FirstName, user.LastName, user.Email, user.Phone, user.Role, user.AccStatus, user.AvatarRef)
 }

@@ -54,6 +54,7 @@ func readEnvVariables() {
   readVar("dynamo_endpoint", "AWS_DYNAMO_ENDPOINT")
   readVar("dynamo_region", "AWS_DEFAULT_REGION")
   readVar("mysql_dsn", "GO_MYSQL_DSN")
+  readVar("aws_bucket_name", "AWS_BUCKET_NAME")
 }
 
 func readVar(key, name string) {

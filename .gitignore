@@ -10,7 +10,16 @@ vendor/
 *.ntvs*
 *.njsproj
 *.sln
-go-team-room
+# Win executable
+debug
+*.exe
+main.exe
+.env
+# VS code dirs and files
+*.swp
+.vscode/
+.vscode/launch.json
 logs
 *.log
 /main
+go-team-room

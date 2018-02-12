@@ -4,10 +4,13 @@
 
   "my_sql_db_name": "goteamroom",
 
+  "MAX_MESSAGES_AT_ONCE": 1000,
+  "MAX_CHATROOMS": 1000,
+
   "out": {
     "name": "stdout"
   },
-  "level": "error",
+  "level": "info",
   "formatter": {
     "name": "text"
   },
