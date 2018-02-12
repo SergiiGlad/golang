@@ -25,7 +25,6 @@ func (m *mockDynamoDBClient) GetItem (input *dynamodb.GetItemInput) (*dynamodb.G
 
   output := dynamodb.GetItemOutput{
     Item: test,
-
   }
   return &output, nil
 }

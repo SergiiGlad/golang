@@ -8,10 +8,7 @@ import (
   "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/service/dynamodb"
   "github.com/aws/aws-sdk-go/aws/awserr"
-  "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
   "github.com/gorilla/mux"
-  "github.com/aws/aws-sdk-go/service/dynamodb/expression"
-  "os"
   "time"
   "mime/multipart"
   "github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -33,7 +30,7 @@ import (
 func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, sess *session.Session) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
 
-    var newPost Post
+    var newPost controllers.Post
 
     //Decode request MULTIPART/FORM-DATA
     r.ParseMultipartForm(0)
@@ -134,13 +131,12 @@ func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, sess *session.Session) http.H
 //To DELETE existing post by "post_id" from DynamoDB Table "Post"
 func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
-    var post Post
 
     //Gorilla tool to handle request "/post/{post_id}" with method DELETE
     vars := mux.Vars(r)
-    post.PostID = vars["post_id"]
+    post_id := vars["post_id"]
 
-    post = GetPostBody(post, svcd)
+    post, err := controllers.GetPost(svcd, post_id)
 
     if post.FileLink != "NULL" {
       DeleteFileFromS3(post.FileLink, svcs)
@@ -195,14 +191,17 @@ func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.Handler
 //To GET post by "post_id" from DynamoDB Table "Post"
 func GetPost(svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
-    var post Post
+    //var post controllers.Post
 
     //Gorilla tool to handle request "/post/{post_id}" with method GET
     vars := mux.Vars(r)
-    post.PostID = vars["post_id"]
+    post_id := vars["post_id"]
 
-    post = controllers.GetPost(svc)
+    post, err := controllers.GetPost(svc, post_id)
 
+    if err != nil {
+        w.WriteHeader(http.StatusNoContent)
+    }
 
     //Encode response JSON
     _ = json.NewEncoder(w).Encode(&post)
@@ -211,67 +210,30 @@ func GetPost(svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
 
 //To GET posts by "user_id" from DynamoDB Table "Post"
 func GetPostByUserID(svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
-  return func (w http.ResponseWriter, r * http.Request){
-  var post Post
+  return func(w http.ResponseWriter, r *http.Request) {
 
-  //Gorilla tool to handle request "/post/{user_id}" with method GET
-  vars := mux.Vars(r)
-  post.UserID = vars["user_id"]
+    //Gorilla tool to handle request "/post/{user_id}" with method GET
+    vars := mux.Vars(r)
+    user_id := vars["user_id"]
 
-  //Filter expression: Seeks all items in table with equal "user_id"
-  filt := expression.Name("user_id").Equal(expression.Value(post.UserID))
+    post, err := controllers.GetPostByUserID(svc, user_id)
 
-  //Make projection: displays all expression.Name with equal "user_id"
-  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"))
+    if err != nil {
+      w.WriteHeader(http.StatusNoContent)
+    }
 
-  //Build expression with filter and projection
-  expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
-
-  //Parameters for expression
-  params := &dynamodb.ScanInput{
-  ExpressionAttributeNames:  expr.Names(),
-  ExpressionAttributeValues: expr.Values(),
-  FilterExpression:          expr.Filter(),
-  ProjectionExpression:      expr.Projection(),
-  TableName:                 aws.String("Post"),
-  }
-
-  //Get result
-  result, err := svc.Scan(params)
-
-  //Check if POST exists in table, if not: RESPONSE 204 - "No Content"
-  if len(result.Items) == 0 {
-  w.WriteHeader(http.StatusNoContent)
-  return
-  }
-
-  //Loop for encoding multiples post which was made by "user_id"
-  for _, i := range result.Items {
-  post := Post{}
-
-  //Unmarshal result to Post structure
-  err = dynamodbattribute.UnmarshalMap(i, &post)
-
-  //Check error for unmarshalling
-  if err != nil {
-  fmt.Println("Got error unmarshalling:")
-  fmt.Println(err.Error())
-  os.Exit(1)
-  }
-
-  //Encode response JSON
-  _ = json.NewEncoder(w).Encode(&post)
-  }
-
-  //Print result in console
-  fmt.Print(result)
+    for i:=0; i < len(post); i++{
+      respPost := post[i]
+      //Encode response JSON
+      _ = json.NewEncoder(w).Encode(&respPost)
+    }
   }
 }
 
 //To UPDATE post in DynamoDB Table "Post"
 func UpdatePost (svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
-    var post Post
+    var post controllers.Post
 
     //Decode request JSON
     _ = json.NewDecoder(r.Body).Decode(&post)
@@ -280,67 +242,7 @@ func UpdatePost (svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
     vars := mux.Vars(r)
     post.PostID = vars["post_id"]
 
-    post.LastUpdate = time.Now().String()
-
-    //Request to DynamoDB to UPDATE Item in table
-    input := &dynamodb.UpdateItemInput{
-      ExpressionAttributeNames: map[string]*string{
-        "#PTitle": aws.String("post_title"),
-        "#PText":  aws.String("post_text"),
-        "#PDate":  aws.String("post_last_update"),
-      },
-      //Attributes to UPDATE
-      ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-        ":t": {
-          S: &post.Title,
-        },
-        ":e": {
-          S: &post.Text,
-        },
-        ":d": {
-          S: &post.LastUpdate,
-        },
-      },
-      Key: map[string]*dynamodb.AttributeValue{
-        "post_id": {
-          S: &post.PostID,
-        },
-      },
-      ReturnValues:     aws.String("UPDATED_NEW"),
-      TableName:        aws.String("Post"),
-      UpdateExpression: aws.String("set #PTitle = :t, #PText = :e, #PDate = :d"),
-    }
-
-    //Get result
-    result, err := svc.UpdateItem(input)
-
-    //ERROR block (from AWS SDK GO DynamoDB documentation)
-    if err != nil {
-      if aerr, ok := err.(awserr.Error); ok {
-        switch aerr.Code() {
-        case dynamodb.ErrCodeConditionalCheckFailedException:
-          fmt.Println(dynamodb.ErrCodeConditionalCheckFailedException, aerr.Error())
-        case dynamodb.ErrCodeProvisionedThroughputExceededException:
-          fmt.Println(dynamodb.ErrCodeProvisionedThroughputExceededException, aerr.Error())
-        case dynamodb.ErrCodeResourceNotFoundException:
-          fmt.Println(dynamodb.ErrCodeResourceNotFoundException, aerr.Error())
-        case dynamodb.ErrCodeItemCollectionSizeLimitExceededException:
-          fmt.Println(dynamodb.ErrCodeItemCollectionSizeLimitExceededException, aerr.Error())
-        case dynamodb.ErrCodeInternalServerError:
-          fmt.Println(dynamodb.ErrCodeInternalServerError, aerr.Error())
-        default:
-          fmt.Println(aerr.Error())
-        }
-      } else {
-        // Print the error, cast err to awserr.Error to get the Code and
-        // Message from an error.
-        fmt.Println(err.Error())
-      }
-      return
-    }
-
-    //Print result in console
-    fmt.Println(result)
+    post, _ = controllers.UpdatePost(svc, post)
 
     //Encode response JSON
     _ = json.NewEncoder(w).Encode(&post)
@@ -453,31 +355,31 @@ func DeleteFileFromS3(file string, svc s3iface.S3API) {
 }
 
 //To GET Post body from Table "Post" in DynamoDB by "post_id". Return Post body
-func GetPostBody(post Post, svc dynamodbiface.DynamoDBAPI) Post {
-
-  //Request to DynamoDB to GET post by "post_id"
-  input := &dynamodb.GetItemInput{
-    Key: map[string]*dynamodb.AttributeValue{
-      "post_id": {
-        S: &post.PostID,
-      },
-    },
-    TableName: aws.String("Post"),
-  }
-
-  //Get result
-  result, err := svc.GetItem(input)
-
-  //ERROR block (from AWS SDK GO DynamoDB documentation)
-  if err != nil {
-    fmt.Println(err)
-  }
-
-  //Unmarshal result to Post structure
-  err = dynamodbattribute.UnmarshalMap(result.Item, &post)
-
-  return post
-}
+//func GetPostBody(post Post, svc dynamodbiface.DynamoDBAPI) Post {
+//
+//  //Request to DynamoDB to GET post by "post_id"
+//  input := &dynamodb.GetItemInput{
+//    Key: map[string]*dynamodb.AttributeValue{
+//      "post_id": {
+//        S: &post.PostID,
+//      },
+//    },
+//    TableName: aws.String("Post"),
+//  }
+//
+//  //Get result
+//  result, err := svc.GetItem(input)
+//
+//  //ERROR block (from AWS SDK GO DynamoDB documentation)
+//  if err != nil {
+//    fmt.Println(err)
+//  }
+//
+//  //Unmarshal result to Post structure
+//  err = dynamodbattribute.UnmarshalMap(result.Item, &post)
+//
+//  return post
+//}
 
 //To generate a random UUID according to RFC 4122
 func newUUID() (string, error) {
