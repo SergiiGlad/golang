@@ -42,11 +42,11 @@ type HumMessage struct {
 
 //HumChatRoom - complete struct of HumChatRoom
 type HumChatRoom struct {
-	ChatAdminUserID  []HumUser `json"chat_admin_user_id"`
-	ChatCreationDate string    `json"chat_creation_date"`
-	ChatID           string    `json"chat_id"`
-	ChatName         string    `json"chat_name"`
-	ChatStatus       string    `json"chat_status"`
-	ChatTitile       string    `json"chat_title"`
-	ChatUsersList    []HumUser `json"chat_users_list"`
+	ChatAdminUserID  []HumUser `json:"chat_admin_user_id"`
+	ChatCreationDate string    `json:"chat_creation_date"`
+	ChatID           string    `json:"chat_id"`
+	ChatName         string    `json:"chat_name"`
+	ChatStatus       string    `json:"chat_status"`
+	ChatTitile       string    `json:"chat_title"`
+	ChatUsersList    []HumUser `json:"chat_users_list"`
 }

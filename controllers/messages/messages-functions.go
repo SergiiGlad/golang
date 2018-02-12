@@ -16,13 +16,17 @@ import (
 //GetMessageFromDynamoByUserID - return an slise of latest
 //messages but not more then MAX_MESSAGES_AT_ONCE
 func GetMessageFromDynamoByUserID(humUserID int, maxMessages ...int) []HumMessage {
+
 	var resultMessages []HumMessage
 	maxMes := conf.MaxMessages
 	if maxMessages != nil && maxMessages[0] < maxMes {
 		maxMes = maxMessages[0]
 	}
 	if humUserID < 1 {
+
+		logRus.Debug("Some one tryed to get messages without ID.")
 		return resultMessages //emty array
+
 	}
 	// Create the Expression to fill the input struct with.
 	filt := expression.Name("message_user.id_sql").Equal(expression.Value(humUserID))
@@ -72,8 +76,8 @@ func GetMessageFromDynamoByUserID(humUserID int, maxMessages ...int) []HumMessag
 //"/messages" endpoint
 func HandlerOfGetMessages(writeRespon http.ResponseWriter, r *http.Request) {
 	///Debug
-	GetChatRoomListByUserID(23, 23)
-	return
+	// GetChatRoomListByUserID(23, 23)
+	// return
 	///DEBUG
 
 	currentUserID := GetActionUserID(r)
@@ -260,6 +264,7 @@ func HandlerOfPOSTMessages(w http.ResponseWriter, r *http.Request) {
 	PutMessageToDynamo(w, &inputMessage)
 }
 
+//GetChatRoomListByUserID - obviously, return lost of chatrooms, where userId inlisted
 func GetChatRoomListByUserID(humUserID int, maxChatRooms ...int) []HumChatRoom {
 	var resultChatRooms []HumChatRoom
 	maxChats := conf.MaxChatRooms
@@ -274,8 +279,8 @@ func GetChatRoomListByUserID(humUserID int, maxChatRooms ...int) []HumChatRoom {
 	expr, err := expression.NewBuilder().WithFilter(filt).Build()
 
 	if err != nil {
-		fmt.Println("Got error building Dynamo expression:")
-		fmt.Println(err.Error()) //DEBUG output
+		logRus.Info("Got error building Dynamo expression")
+		logRus.Error(err.Error()) //DEBUG output
 		//os.Exit(1)
 		return resultChatRooms //emty array
 	}
@@ -289,8 +294,8 @@ func GetChatRoomListByUserID(humUserID int, maxChatRooms ...int) []HumChatRoom {
 	}
 	result, err := Dyna.Db.Scan(params)
 	if err != nil {
-		fmt.Println("Query API call failed:")
-		fmt.Println((err.Error()))
+		logRus.Info("Query API call failed:")
+		logRus.Error((err.Error()))
 		//fmt.Println(params)
 		//os.Exit(1)
 		return resultChatRooms //empty
