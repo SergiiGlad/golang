@@ -222,7 +222,7 @@ func scanUser(s rowScanner) (entity.User, error) {
 
   user := entity.User{}
 
-  if err := s.Scan(&user_id, &email, &firstName, &secondName, &phone, &role, &accStat, &avRef); err != nil {
+  if err := s.Scan(&user_id, &firstName, &secondName, &email, &phone, &role, &accStat, &avRef); err != nil {
       return user, err
   }
 

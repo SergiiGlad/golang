@@ -110,6 +110,23 @@ paths:
           description: Cant register user
           schema:
             $ref: '#/definitions/InvalidRegistrationResponse'
+  /recoveryPass:
+      get:
+        summary: User forgot password
+        consumes:
+          - application/json
+        produces:
+          - application/json
+        parameters:
+          - in: query
+            name: email
+            type: string
+            required: true
+        responses:
+          '200':
+            description: Email with password was sent
+          '400':
+            description: Cant found email
   /login:
     post:
       summary: Login User
@@ -511,8 +528,7 @@ definitions:
       phoneOrEmail:
         type: string
       password:
-        type: integer
-        format: int32
+        type: string
   Message:
     type: object
     properties:

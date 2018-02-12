@@ -1,8 +1,8 @@
 <template>
-    <form  method="POST" enctype="multipart/form-data" @submit.prevent="signInUser">
+    <form  method="post" enctype="multipart/form-data" @submit.prevent="signInUser">
         <div class="form-group row">
             <label for="Email">Enter email</label>
-            <input type="text" class="form-control" id="Email" placeholder="phone or email" v-model="user.phoneOrEmail">
+            <input type="email" class="form-control" id="Email" placeholder="google@gmail.com" v-model="user.email">
         </div>
         <div class="form-group row">
             <label for="Pass">Enter password</label>
@@ -30,21 +30,21 @@ export default {
     data(){
         return {
             user:{
-                phoneOrEmail: '',
+                email: '',
                 password: ''
             },
           error: false,
           message: ''
         }
     },
-    methods: {
-      signInUser: function() {
+    method: {
+      signInUser(){
 
         this.error = false;
 
-        if (!(/^[a-z0-9]+@[a-z]+[.][a-z]+$/.test(this.user.phoneOrEmail)) && !(/^[+][0-9]{12}$/.test(this.user.phoneOrEmail))) {
+        if (!(/^[a-z0-9]+@[a-z]+[.][a-z]+$/.test(this.user.email))) {
           this.error = true;
-          this.message = "Invalid email or phone number!";
+          this.message = "Invalid email!";
           return;
         }
         if (this.user.password.length < 6) {
@@ -52,26 +52,7 @@ export default {
           this.message = "Password must be more than 6 characters!";
           return;
         }
-        else {
 
-          var axios = require('axios');
-          let that = this;
-          axios.post('http://localhost:8080/login', this.user, {
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              "accept": "application/json",
-              "Content-Type": "application/json"
-            }
-          })
-            .then(function (response) {
-              console.log(response.data);
-            })
-            .catch(function (error) {
-                that.error = true,
-                that.message = "Invalid credentials!"
-                console.log(error.message);
-            });
-        }
       }
     }
 }

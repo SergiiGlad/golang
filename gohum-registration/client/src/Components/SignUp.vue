@@ -1,15 +1,15 @@
 <template>
-    <form  method="POST" enctype="multipart/form-data" @submit.prevent="registerUser()">
+    <form action="" method="post" enctype="multipart/form-data" @submit.prevent="registerUser()">
       <div class="alert alert-success" role="alert" v-if="success">
         <strong>Thanks for registration! Check your Email!</strong>
       </div>
         <div class="form-group row">
             <label for="Name" >First name</label>
-            <input type="text"  class="form-control" id="Name" placeholder="Enter your first name"  v-model="user.first_name">
+            <input type="text"  class="form-control" id="Name" placeholder="Enter your first name"  v-model="user.firstName">
         </div>
         <div class="form-group row">
             <label for="Surname">Last name</label>
-            <input type="text" class="form-control" id="Surname" placeholder="Enter your last name"  v-model="user.last_name">
+            <input type="text" class="form-control" id="Surname" placeholder="Enter your last name"  v-model="user.lastName">
         </div>
       <div class="form-group row">
         <label for="Phone">Phone number</label>
@@ -36,7 +36,6 @@
 </template>
 
 <script>
-
   import axsios from 'axios'
 
   export default {
@@ -44,8 +43,8 @@
       data(){
           return {
               user:{
-                  first_name: '',
-                  last_name: '',
+                  firstName: '',
+                  lastName: '',
                   phone: '',
                   email: '',
                   password: ''
@@ -62,12 +61,12 @@
             this.error = false;
             this.success = false;
 
-            if (!(/^[a-zA-Z]{1,50}$/.test(this.user.first_name)) && !(/^[а-яА-Я]{1,50}$/.test(this.user.first_name))) {
+            if (!(/^[a-zA-Z]{1,50}$/.test(this.user.firstName)) && !(/^[а-яА-Я]{1,50}$/.test(this.user.firstName))) {
               this.error = true;
               this.message = "Invalid name!";
               return;
             }
-            if (!(/^[a-zA-Z]{1,50}$/.test(this.user.last_name)) && !(/^[а-яА-Я]{1,50}$/.test(this.user.last_name))) {
+            if (!(/^[a-zA-Z]{1,50}$/.test(this.user.lastName)) && !(/^[а-яА-Я]{1,50}$/.test(this.user.lastName))) {
               this.error = true;
               this.message = "Invalid last name!";
               return;
@@ -88,23 +87,22 @@
               return;
             }
             else{
-              this.user.first_name = this.user.first_name.charAt(0).toUpperCase() + this.user.first_name.slice(1);
-              this.user.last_name = this.user.last_name.charAt(0).toUpperCase() + this.user.last_name.slice(1);
+              this.user.firstName = this.user.firstName.charAt(0).toUpperCase() + this.user.firstName.slice(1);
+              this.user.lastName = this.user.lastName.charAt(0).toUpperCase() + this.user.lastName.slice(1);
+
+              console.log(this.user)
 
               var axios = require('axios');
-              let that = this;
-              axios.post('http://localhost:8080/registration', this.user, {
-                headers: { "Access-Control-Allow-Origin": "*",
-                            "accept": "application/json",
-                            "Content-Type": "application/json" }
+              axios.post('http://localhost:9000/register', {
+                body: this.user
               })
                 .then(function (response) {
                   console.log(response.data);
-                  that.success = true;
                 })
                 .catch(function (error){
                   console.log(error.message);
                 });
+              this.success = true;
             }
           },
       }
