@@ -27,27 +27,26 @@ type Route struct {
 
 type Routes []Route
 
-
 //NewRouter creates new mux.Router to handle incoming requests
 func NewRouter() *mux.Router {
-  router := mux.NewRouter().StrictSlash(true)
-  for _, route := range routes {
-    var handler http.Handler
-    handler = route.HandlerFunc
-    handler = Authorize(handler)
-    //handler = middleware.Logger(handler, route.Name)
-    //handler = middleware.Auth(handler)
-    // ....
-    // and so on
+	router := mux.NewRouter().StrictSlash(true)
+	for _, route := range routes {
+		var handler http.Handler
+		handler = route.HandlerFunc
+		//handler = Authorize(handler)
+		//handler = middleware.Logger(handler, route.Name)
+		//handler = middleware.Auth(handler)
+		// ....
+		// and so on
 
-    router.
-      Methods(route.Method).
-      Path(route.Pattern).
-      Name(route.Name).
-      Handler(handler)
-  }
+		router.
+			Methods(route.Method).
+			Path(route.Pattern).
+			Name(route.Name).
+			Handler(handler)
+	}
 
-  return router
+	return router
 }
 
 func handl(w http.ResponseWriter, r *http.Request) {
@@ -71,116 +70,115 @@ var routes = Routes{
 		handl,
 	},
 
-  Route {
-    "NewProfileByAdmin",
-    "POST",
-    "/admin/profile",
-    createProfileByAdmin(userService),
-  },
+	Route{
+		"NewProfileByAdmin",
+		"POST",
+		"/admin/profile",
+		createProfileByAdmin(userService),
+	},
 
-  Route {
-    "UpdateProfileByAdmin",
-    "PUT",
-    "/admin/profile/{user_id:[0-9]+}",
-    updateProfileByAdmin(userService),
-  },
+	Route{
+		"UpdateProfileByAdmin",
+		"PUT",
+		"/admin/profile/{user_id:[0-9]+}",
+		updateProfileByAdmin(userService),
+	},
 
-  Route {
-    "DeleteProfileByAdmin",
-    "DELETE",
-    "/admin/profile/{user_id:[0-9]+}",
-    deleteProfileByAdmin(userService),
-  },
+	Route{
+		"DeleteProfileByAdmin",
+		"DELETE",
+		"/admin/profile/{user_id:[0-9]+}",
+		deleteProfileByAdmin(userService),
+	},
 
-  Route {
-    "CreateNewPost",
-    "POST",
-    "/post",
-    CreateNewPost,
-  },
+	Route{
+		"CreateNewPost",
+		"POST",
+		"/post",
+		CreateNewPost,
+	},
 
-  Route {
-    "DeletePost",
-    "DELETE",
-    "/post/{post_id}",
-    DeletePost,
-  },
+	Route{
+		"DeletePost",
+		"DELETE",
+		"/post/{post_id}",
+		DeletePost,
+	},
 
-  Route {
-    "GetPostByPostID",
-    "GET",
-    "/post/{post_id}",
-    GetPost,
-  },
+	Route{
+		"GetPostByPostID",
+		"GET",
+		"/post/{post_id}",
+		GetPost,
+	},
 
-  Route {
-    "GetPostByUserID",
-    "GET",
-    "/post/user/{user_id}",
-    GetPostByUserID,
-  },
+	Route{
+		"GetPostByUserID",
+		"GET",
+		"/post/user/{user_id}",
+		GetPostByUserID,
+	},
 
-  Route {
-    "UpdatePost",
-    "PUT",
-    "/post/{post_id}",
-    UpdatePost,
-  },
+	Route{
+		"UpdatePost",
+		"PUT",
+		"/post/{post_id}",
+		UpdatePost,
+	},
 
-  Route {
-    "GetFile",
-    "GET",
-    "/uploads/{file_link}",
-    GetFileFromS3,
-  },
+	Route{
+		"GetFile",
+		"GET",
+		"/uploads/{file_link}",
+		GetFileFromS3,
+	},
 
-  Route {
-    "Login",
-    "POST",
-    "/login",
-    loginhandler,
-  },
+	Route{
+		"Login",
+		"POST",
+		"/login",
+		loginhandler,
+	},
 
-  Route{
-    "Logout",
-    "GET",
-    "/logout",
-    logout,
-  },
+	Route{
+		"Logout",
+		"GET",
+		"/logout",
+		logout,
+	},
 
-  Route{
-    "GetMessage",
-    "GET",
-    "/messages",
-    //Test this rout by next string
-    //curl -X GET "http://localhost:8080/messages?id=33&numberOfMessages=1" -H  "accept: application/json"
-    messages.HandlerOfGetMessages,
-  },
-  Route{
-    "PutMessage",
-    "POST",
-    "/messages",
-    //Test this rout by next string
-    //curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"message_chat_room_id": "997","message_data": {"binary_parts": [{"bin_data": null,"bin_name": null }],"text": "0 A lot of text and stupid smiles :)))))","type": "TypeOfHumMessage-UNDEFINED FOR NOW"},"message_id": "20180110155343150","message_parent_id": "","message_social_status": {"Dislike": 10,"Like": 222,"Views": 303 },"message_timestamp": "20180110155533111","message_user": {"id_sql": 13,"name_sql": "Vasya" }}' 'http://localhost:8080/messages'
-    messages.HandlerOfPOSTMessages,
-  },
+	Route{
+		"GetMessage",
+		"GET",
+		"/messages",
+		//Test this rout by next string
+		//curl -X GET "http://localhost:8080/messages?id=33&numberOfMessages=1" -H  "accept: application/json"
+		messages.HandlerOfGetMessages,
+	},
+	Route{
+		"PutMessage",
+		"POST",
+		"/messages",
+		//Test this rout by next string
+		//curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"message_chat_room_id": "997","message_data": {"binary_parts": [{"bin_data": null,"bin_name": null }],"text": "0 A lot of text and stupid smiles :)))))","type": "TypeOfHumMessage-UNDEFINED FOR NOW"},"message_id": "20180110155343150","message_parent_id": "","message_social_status": {"Dislike": 10,"Like": 222,"Views": 303 },"message_timestamp": "20180110155533111","message_user": {"id_sql": 13,"name_sql": "Vasya" }}' 'http://localhost:8080/messages'
+		messages.HandlerOfPOSTMessages,
+	},
 
-  Route {
-    "RegisterUser",
-    "POST",
-    "/registration",
-    registerUser(userService),
-  },
+	Route{
+		"RegisterUser",
+		"POST",
+		"/registration",
+		registerUser(userService),
+	},
 
-  Route {
-    "RecoveryPass",
-    "GET",
-    "/recoveryPass",
-    recoveryPass(userService),
-  },
+	Route{
+		"RecoveryPass",
+		"GET",
+		"/recoveryPass",
+		recoveryPass(userService),
+	},
 
-
-  // and so on, just add new Route structs to this array
+	// and so on, just add new Route structs to this array
 }
 
 //Initialise services here

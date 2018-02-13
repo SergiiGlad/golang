@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-team-room/conf"
+	"go-team-room/humstat"
 	"net/http"
 	"strconv"
 
@@ -80,7 +81,8 @@ func HandlerOfGetMessages(writeRespon http.ResponseWriter, r *http.Request) {
 	// return
 	///DEBUG
 
-	currentUserID := GetActionUserID(r)
+	currentUserID := 23 //GetActionUserID(r)
+
 	//fmt.Println(currentUserID)
 	if currentUserID < 1 {
 		writeRespon.WriteHeader(http.StatusUnauthorized)
@@ -208,10 +210,15 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 		//os.Exit(1)
 		writeRespon.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(writeRespon, "Some errors")
+		humstat.SendStat <- map[string]int{
+			"UserSendMessagesErrors": 1,
+		}
 	} else {
 		writeRespon.WriteHeader(http.StatusOK)
-
-		fmt.Fprint(writeRespon, "Post done")
+		humstat.SendStat <- map[string]int{
+			"UserSendMessages": 1,
+		}
+		//fmt.Fprint(writeRespon, "Post done")
 	}
 	//fmt.Println("Successfully added 'The Big someNewMessage' to  table")
 }
