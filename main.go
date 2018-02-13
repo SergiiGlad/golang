@@ -15,7 +15,7 @@ func main() {
 	r.PathPrefix("/logs/").Handler(http.StripPrefix("/logs/", http.FileServer(http.Dir("./logs"))))
   handler := cors.Default().Handler(r)
   http.Handle("/", handler)
-	var err = http.ListenAndServe(conf.Ip+":"+conf.Port, nil)
+	var err = http.ListenAndServe(":"+conf.Port, nil)
 	if err != nil {
 		fmt.Println("Error")
 	}

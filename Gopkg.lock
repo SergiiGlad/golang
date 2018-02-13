@@ -31,6 +31,7 @@
     "private/protocol/xml/xmlutil",
     "service/dynamodb",
     "service/dynamodb/dynamodbattribute",
+    "service/dynamodb/dynamodbiface",
     "service/dynamodb/expression",
     "service/s3",
     "service/s3/s3iface",
@@ -87,6 +88,18 @@
   packages = ["."]
   revision = "53c1911da2b537f792e7cafcb446b05ffe33b996"
   version = "v1.6.1"
+
+[[projects]]
+  name = "github.com/gorilla/securecookie"
+  packages = ["."]
+  revision = "667fe4e3466a040b780561fe9b51a83a3753eefc"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/sessions"
+  packages = ["."]
+  revision = "ca9ada44574153444b00d3fd9c8559e4cc95f896"
+  version = "v1.1"
 
 [[projects]]
   branch = "master"
@@ -282,6 +295,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7bf2236f722c4343a7b221d88d668623afc79e71d1cc2fe55e59a57ff49437f7"
+  inputs-digest = "5692662930c54ad64b2575611b0d6e49d2968e565b36e9fc6e8f1d77baf9e5c1"
   solver-name = "gps-cdcl"
   solver-version = 1
