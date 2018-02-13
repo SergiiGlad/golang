@@ -42,7 +42,7 @@ type RequestUserDto struct {
 
 func (user RequestUserDto) String() string {
   return fmt.Sprintf("User object:\n\tEmail = %s\n\tFirstName = %s\n\tLastName = %s\n\tPhone = %s\n\tPassword = %s\n",
-    user.Email, user.FirstName, user.LastName, user.Phone, user.Password)
+    user.Email, user.FirstName, user.LastName, user.Phone, "XXXXXX")
 }
 
 type ShortUser struct {

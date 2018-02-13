@@ -224,7 +224,7 @@ var (
 //Read sql row to token.
 func scanToken(s rowScanner) (*entity.UserToken, error) {
   log.Debugf("Scanning row for new token with scanner: %s", s)
-  if err := s.Scan(&token_id, &user_email, &token, &is_active, &user_id_token); err != nil {
+  if err := s.Scan(&token_id, &token,  &user_email, &is_active, &user_id_token); err != nil {
     log.Errorf("Failed to scan row for token, error: %s", err)
     return nil, err
   }

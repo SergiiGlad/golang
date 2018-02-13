@@ -21,7 +21,7 @@ type TokenGeneratorMock struct {
 
 func (tg TokenGeneratorMock) ApproveUser(token string) (bool, error) {
   if token == "badToken" {
-    return false, errors.New("Badd token")
+    return false, errors.New("Bad token")
   }
   if token == "usedToken" {
     return false, nil
@@ -30,7 +30,10 @@ func (tg TokenGeneratorMock) ApproveUser(token string) (bool, error) {
 }
 
 func (tg TokenGeneratorMock) GenerateTokenForEmail(email string) (string, error) {
-  return "", nil
+  if email == "email@email.com" {
+    return "newToken", nil
+  }
+  return "", errors.New("Error")
 }
 
 func TestConfirmAccount(t *testing.T) {
@@ -76,7 +79,7 @@ func TestConfirmAccount(t *testing.T) {
     handler.ServeHTTP(rr, req)
 
     if respBody := rr.Body.String();
-      rr.Code != tc.expectedStatusCode{
+      rr.Code != tc.expectedStatusCode {
       t.Errorf("\nDecsription: %s\nExpected response code %v .\nGot code %v with body %s",
         tc.description, tc.expectedStatusCode, rr.Code, respBody)
     }

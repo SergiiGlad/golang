@@ -27,6 +27,7 @@ func setupWorkDir() {
 func addDefaults() {
   setupWorkDir()
   viper.SetDefault("ip", "127.0.0.1")
+  viper.SetDefault("login_url", "http://127.0.0.1:8080")
   viper.SetDefault("port", "8080")
   viper.SetDefault("mysql_db_name", "goteamroom")
   viper.SetDefault("static_dir", viper.GetString("work_dir")+"/client/dist")

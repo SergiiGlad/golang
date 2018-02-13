@@ -152,7 +152,7 @@ func (d *mysqlUserDao) FindUserById(id int64) (entity.User, error) {
 }
 
 
-const findByEmailStatement = `SELECT * FROM users_data WHERE email = ?`
+const findByEmailStatement = `SELECT user_id, first_name, last_name, email, phone, role_in_network, account_status, avatar_ref FROM users_data WHERE email = ?`
 
 func (d *mysqlUserDao) FindUserByEmail(email string) (entity.User, error) {
   user, err := scanUser(d.byemail.QueryRow(email))
@@ -180,21 +180,21 @@ func (d *mysqlUserDao) FindUserByPhone(phone string) (entity.User, error) {
 //scanUser reads a user from a sql.Row or sql.Rows
 
 var (
-  user_id    int64
-  email      sql.NullString
-  firstName  sql.NullString
-  secondName sql.NullString
-  phone      sql.NullString
-  role       sql.NullString
-  accStat    sql.NullString
-  avRef      sql.NullString
+  user_id   int64
+  firstName sql.NullString
+  lastName  sql.NullString
+  email     sql.NullString
+  phone     sql.NullString
+  role      sql.NullString
+  accStat   sql.NullString
+  avRef     sql.NullString
 )
 
 func scanUser(s rowScanner) (entity.User, error) {
 
   user := entity.User{}
 
-  if err := s.Scan(&user_id, &firstName, &secondName, &email, &phone, &role, &accStat, &avRef); err != nil {
+  if err := s.Scan(&user_id, &firstName, &lastName, &email, &phone, &role, &accStat, &avRef); err != nil {
       return user, err
   }
 
@@ -202,7 +202,7 @@ func scanUser(s rowScanner) (entity.User, error) {
     user_id,
     email.String,
     firstName.String,
-    secondName.String,
+    lastName.String,
     phone.String,
     entity.Role(role.String),
     entity.AccountStatus(accStat.String),

@@ -1,8 +1,8 @@
 package mysql
 
 import (
-	"go-team-room/conf"
-	"go-team-room/models/dao/interfaces"
+  "go-team-room/conf"
+  "go-team-room/models/dao/interfaces"
   "database/sql"
   "fmt"
   "github.com/go-sql-driver/mysql"
@@ -60,7 +60,7 @@ func newMySqlConnection() (*sql.DB, error) {
     return nil, err
   }
 
-  conn, err := sql.Open("mysql", conf.MysqlDsn + conf.MysqlDBName)
+  conn, err := sql.Open("mysql", conf.MysqlDsn+conf.MysqlDBName)
 
   if err != nil {
     return nil, fmt.Errorf("mysql: could not get a connection: %v", err)
@@ -81,9 +81,9 @@ var createTableStatements = []string{
 
   `CREATE TABLE IF NOT EXISTS users_data (
     user_id SERIAL PRIMARY KEY,
-    email VARCHAR(100) NOT NULL,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
     role_in_network ENUM('admin', 'user') NOT NULL,
     account_status ENUM('inactive', 'active', 'deleted') NOT NULL,
@@ -126,7 +126,7 @@ func ensureTablesExist() error {
       "could be bad address, or this address is not whitelisted for access.")
   }
 
-  if  _, err := conn.Exec(fmt.Sprintf("USE %s", conf.MysqlDBName)); err != nil {
+  if _, err := conn.Exec(fmt.Sprintf("USE %s", conf.MysqlDBName)); err != nil {
     // MySQL error 1049 is "database does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1049 {
       return createAllTables(conn)

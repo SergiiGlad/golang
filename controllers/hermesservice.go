@@ -15,6 +15,7 @@ var h = hermes.Hermes{
   Product: hermes.Product{
     Name: "GoHum",
     Link: "https://gohum.go",
+    Logo: "https://i.imgur.com/9nTKabV.png",
   },
 }
 
@@ -41,7 +42,7 @@ func (eg HermesEmailBodyGenerator) GenerateWelcomeBody(user dto.RequestUserDto) 
           Button: hermes.Button{
             Color: "#32CD32",
             Text:  "Login",
-            Link:  conf.Ip + "/dist/login", // TODO Add property dns login
+            Link:   conf.LoginUrl, // TODO Add property dns login
           },
         },
       },
@@ -69,7 +70,7 @@ func (eg HermesEmailBodyGenerator) GenerateRegistrationConfirmationEmail(user dt
           Button: hermes.Button{
             Color: "#1AACF5", // Optional action button color
             Text:  "Confirm your email",
-            Link:  conf.Ip + "/confirm/email/" + token, // TODO Add property dns token
+            Link:  conf.Ip + ":" + conf.Port + "/confirm/email/" + token,
           },
         },
       },
@@ -101,7 +102,7 @@ func (eg HermesEmailBodyGenerator) GenerateChangePasswordConfirmationEmail(user 
           Button: hermes.Button{
             Color: "#32CD32",
             Text:  "Login",
-            Link:  conf.Ip + "/dist/login", // TODO Add property dns login
+            Link:  conf.LoginUrl,
           },
         },
       },

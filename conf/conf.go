@@ -2,6 +2,7 @@ package conf
 
 var allConfigs = ReadConfig()
 
+var LoginUrl = allConfigs["login_url"].(string)
 var WorkDir = allConfigs["work_dir"].(string)
 var Ip = allConfigs["ip"].(string)
 var Port = allConfigs["port"].(string)

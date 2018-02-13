@@ -23,10 +23,6 @@ func (ts TokenService) GenerateTokenForEmail(email string) (string, error) {
   }
   user.AccStatus = entity.InActive
   log.Debugf("User fore email: %s", email)
-  _, err = ts.UD.UpdateUser(user.ID, &user)
-  if err != nil {
-    return "", err
-  }
   token := randString(tokenLength)
   log.Debugf("New token %s", token)
   _, err = ts.TD.AddToken(entity.UserToken{
@@ -47,7 +43,7 @@ func (ts TokenService) ApproveUser(token string) (bool, error) {
   if err != nil || t == nil || t.Token != token {
     return false, err
   }
-  user, err := ts.UD.FindUserByEmail(t.Email)
+  user, err := ts.UD.FindUserById(t.UserId)
   if err != nil || &user == nil {
     return false, err
   }
@@ -56,6 +52,12 @@ func (ts TokenService) ApproveUser(token string) (bool, error) {
   if err != nil {
     return false, err
   }
+  t.IsActive = false
+  err = ts.TD.UpdateToken(t.ID, t)
+  if err != nil {
+    return false, err
+  }
+  log.Infof("Successfully approved user %s for token %s", user, t)
   return true, nil
 }
 

@@ -538,6 +538,22 @@ paths:
             $ref: '#/definitions/Connection'
         '403':
           description: User wasnt login or dont have perrmission to delete friend
+  '/confirm/email/{token}':
+    get:
+      summary: Confrim email for token
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: token
+        type: string
+        required: true
+      responses:
+        '200':
+          description: If email was connfirmed
+        '400':
+          description: If error occurred or invalid token was provided.
+
 definitions:
   Profile:
     type: object

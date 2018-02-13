@@ -54,7 +54,7 @@ func (ess *UserEmailService) SendRegistrationConfirmationEmail(user dto.RequestU
   log.Debugf("Sending new Registration Confirmation email for user: %s, subject: %s", user, registrationSubject)
   token, err := ess.TG.GenerateTokenForEmail(user.Email)
   if err != nil {
-    log.Error("Fail to send registration confirmation email for user: {}, err: {}", user, err)
+    log.Errorf("Fail to send registration confirmation email for user: %s, err: %s", user, err)
     return err
   }
   body := ess.BG.GenerateRegistrationConfirmationEmail(user, token)
