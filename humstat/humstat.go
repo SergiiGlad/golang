@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+
 )
 
 // SendStat - chanel there to send your statistic metrics
@@ -28,7 +29,10 @@ func init() {
 func sumStat(inputChan chan map[string]int, outputChan chan map[string]int) {
 	var someMetric map[string]int
 	TotalStat := make(map[string]int)
+<<<<<<< HEAD
 	MinuteStat := make(map[string]int)
+=======
+>>>>>>> d48601a748b073f8d3e7379e4da4fe332019df90
 
 	/* начать рефарториг с этого цыкла! */
 	/* ОЧЕНЬ не єффективно              */
@@ -42,6 +46,7 @@ func sumStat(inputChan chan map[string]int, outputChan chan map[string]int) {
 				} else {
 					TotalStat[key] = value
 				}
+<<<<<<< HEAD
 			}
 			//fmt.Println(TotalStat)
 			for key, value := range someMetric {
@@ -76,6 +81,11 @@ func sumStat(inputChan chan map[string]int, outputChan chan map[string]int) {
 				fmt.Println(err.Error())
 				//os.Exit(1)
 			}
+=======
+
+			}
+			fmt.Println(TotalStat)
+>>>>>>> d48601a748b073f8d3e7379e4da4fe332019df90
 		default:
 			//тут можно ничего не писать, чтобы данные молча отбрасывались
 			//fmt.Println("потрачено")
