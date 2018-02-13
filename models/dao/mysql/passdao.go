@@ -61,7 +61,7 @@ func (d *mysqlPassDaoImpl) InsertPass(pass *entity.Password) (int64, error) {
   lastInsertID, err := r.LastInsertId()
 
   if err != nil {
-    return 0, fmt.Errorf("mysql: could not get last insert ID: %v", err)
+    return 0, fmt.Errorf("mysql: could not get last insertConnection ID: %v", err)
   }
 
   pass.ID = lastInsertID

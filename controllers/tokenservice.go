@@ -7,7 +7,8 @@ import (
 )
 
 type TokenService struct {
-  DB interfaces.MySqlDal
+  UD interfaces.UserDao
+  TD interfaces.UserTokenDao
 }
 
 var _ TokenGeneratorInterface = &TokenService{}
@@ -16,19 +17,19 @@ const tokenLength = 64
 
 func (ts TokenService) GenerateTokenForEmail(email string) (string, error) {
   log.Debug("Start generating token for email {}", email)
-  user, err := ts.DB.FindUserByEmail(email)
+  user, err := ts.UD.FindUserByEmail(email)
   if err != nil {
     return "", err
   }
   user.AccStatus = entity.InActive
   log.Debug("User fore email: {}")
-  _, err = ts.DB.UpdateUser(user.ID, &user)
+  _, err = ts.UD.UpdateUser(user.ID, &user)
   if err != nil {
     return "", err
   }
   token := randString(tokenLength)
   log.Debug("New token {}", token)
-  _, err = ts.tokenDao.AddToken(entity.UserToken{
+  _, err = ts.TD.AddToken(entity.UserToken{
     Token:    token,
     Email:    email,
     IsActive: true,
@@ -42,16 +43,16 @@ func (ts TokenService) GenerateTokenForEmail(email string) (string, error) {
 }
 
 func (ts TokenService) ApproveUser(token string) (bool, error) {
-  t, err := ts.tokenDao.FindTokenByToken(token)
+  t, err := ts.TD.FindTokenByToken(token)
   if err != nil || t == nil || t.Token != token {
     return false, err
   }
-  user, err := ts.userDao.FindUserByEmail(t.Email)
+  user, err := ts.UD.FindUserByEmail(t.Email)
   if err != nil || &user == nil {
     return false, err
   }
   user.AccStatus = entity.Active
-  _, err = ts.userDao.UpdateUser(user.ID, &user)
+  _, err = ts.UD.UpdateUser(user.ID, &user)
   if err != nil {
     return false, err
   }
