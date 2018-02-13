@@ -195,7 +195,7 @@ func TestUserServiceCreate(t *testing.T) {
   }
 
   for _, tc := range tests {
-    userService.DB = tc.db
+    userService.UserDao = tc.db
 
     respDto, _ := userService.CreateUser(&tc.newUser)
 
@@ -213,7 +213,7 @@ func TestUserServiceUpdate(t *testing.T) {
     expectReturn dto.ResponseUserDto
   }{
     {
-      description: "Update user [Should perform successfully]",
+      description: "UpdateStatus user [Should perform successfully]",
       db: mockDb{[]entity.User{
         entity.User{
           ID:        0,
@@ -241,7 +241,7 @@ func TestUserServiceUpdate(t *testing.T) {
       },
     },
     {
-      description: "Update user [Should return unique error]",
+      description: "UpdateStatus user [Should return unique error]",
       db: mockDb{[]entity.User{
         entity.User{
           ID:        0,
@@ -263,7 +263,7 @@ func TestUserServiceUpdate(t *testing.T) {
   }
 
   for _, tc := range tests {
-    userService.DB = tc.db
+    userService.UserDao = tc.db
 
     respDto, _ := userService.UpdateUser(0, &tc.newUser)
 
@@ -281,7 +281,7 @@ func TestUserServiceDelete(t *testing.T) {
     expectReturn dto.ResponseUserDto
   }{
     {
-      description: "Update user [Should perform successfully]",
+      description: "UpdateStatus user [Should perform successfully]",
       db: mockDb{[]entity.User{
         entity.User{
           ID:        0,
@@ -305,7 +305,7 @@ func TestUserServiceDelete(t *testing.T) {
   }
 
   for _, tc := range tests {
-    userService.DB = tc.db
+    userService.UserDao = tc.db
 
     respDto, _ := userService.DeleteUser(0)
 

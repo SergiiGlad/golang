@@ -19,14 +19,12 @@ var log = conf.GetLog()
 func createProfileByAdmin(service controllers.UserServiceInterface) http.HandlerFunc {
   return func (w http.ResponseWriter, r *http.Request) {
     reqUserDto, err := userDtoFromReq(r)
-
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return
     }
 
     respUserDto, err := service.CreateUser(&reqUserDto)
-
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return
@@ -34,7 +32,6 @@ func createProfileByAdmin(service controllers.UserServiceInterface) http.Handler
 
     respBody, err := json.Marshal(respUserDto)
     _, err = w.Write(respBody)
-
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return
@@ -48,7 +45,6 @@ func updateProfileByAdmin(service controllers.UserServiceInterface) http.Handler
   return func (w http.ResponseWriter, r *http.Request) {
 
     userDto, err := userDtoFromReq(r)
-
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return
@@ -56,14 +52,12 @@ func updateProfileByAdmin(service controllers.UserServiceInterface) http.Handler
 
     idStr := mux.Vars(r)["user_id"]
     id, err := strconv.Atoi(idStr)
-
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return
     }
 
     respUserDto, err := service.UpdateUser(int64(id), &userDto)
-
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return
@@ -71,7 +65,6 @@ func updateProfileByAdmin(service controllers.UserServiceInterface) http.Handler
 
     respBody, err := json.Marshal(respUserDto)
     _, err = w.Write(respBody)
-
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return
@@ -92,7 +85,6 @@ func deleteProfileByAdmin(service controllers.UserServiceInterface) http.Handler
     }
 
     respUserDto, err := service.DeleteUser(int64(id))
-
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return
@@ -100,7 +92,6 @@ func deleteProfileByAdmin(service controllers.UserServiceInterface) http.Handler
 
     respBody, err := json.Marshal(respUserDto)
     _, err = w.Write(respBody)
-
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return

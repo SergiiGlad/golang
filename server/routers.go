@@ -88,9 +88,47 @@ var routes = Routes{
     deleteProfileByAdmin(userService),
   },
 
+  Route {
+    "GetUserFriends",
+    "GET",
+    "/profile/{user_id:[0-9]+}/friends",
+    getFriends(friendSerivce),
+  },
+
+  Route {
+    "GetUsersWithRequests",
+    "GET",
+    "/profile/{user_id:[0-9]+}/friends/requests",
+    getUsersWithRequests(friendSerivce),
+  },
+
+  Route {
+    "NewFriendRequest",
+    "POST",
+    "/friend",
+    newFriendRequest(friendSerivce),
+  },
+
+  Route {
+    "ReplyToFriendRequest",
+    "PUT",
+    "/friend",
+    replyToFriendRequest(friendSerivce),
+  },
+
+  Route {
+    "DeleteFriend",
+    "DELETE",
+    "/friend",
+    deleteFriendship(friendSerivce),
+  },
   // and so on, just add new Route structs to this array
 }
 
 //Initialise services here
-var friendSerivce = &controllers.FriendService{mysql.DB}
-var userService = &controllers.UserService{mysql.DB, friendSerivce}
+var friendSerivce = &controllers.FriendService{mysql.FriendshipDao, mysql.UserDao}
+var userService = &controllers.UserService{
+  friendSerivce,
+  mysql.PasswordDao,
+  mysql.UserDao,
+  }

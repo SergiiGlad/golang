@@ -406,7 +406,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/UserDetails'
+              $ref: '#/definitions/ShortUserDetails'
         '403':
           description: User wasnt login or dont have perrmision get friend list
   '/profile/{user_id}/friends/requests':
@@ -425,50 +425,53 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/UserDetails'
+              $ref: '#/definitions/ShortUserDetails'
         '403':
           description: User wasnt login or dont have perrmision to get friend requests
   '/friend':
     post:
       summary: Sends a friend request to user with specified friend_user_id
       parameters:
-        - in: path
-          name: user_id
-          type: integer
+        - in: body
+          name: Connection
           required: true
+          schema:
+            $ref: '#/definitions/Connection'
       responses:
         '200':
           description: If friend request queried successfully
           schema:
-            $ref: '#/definitions/Friend'
+            $ref: '#/definitions/Connection'
         '403':
           description: User wasnt login or dont have perrmision to send friend request
     put:
       summary:  Send a friend response to user with specified friend_user_id
       parameters:
-        - in: path
-          name: user_id
-          type: integer
+        - in: body
+          name: Connection
           required: true
+          schema:
+            $ref: '#/definitions/Connection'
       responses:
         '200':
           description: If friend request queried successfully
           schema:
-            $ref: '#/definitions/Friend'
+            $ref: '#/definitions/Connection'
         '403':
           description: User wasnt login or dont have perrmision to send friend request
     delete:
       summary: delete a user with specified friend_user_id from friends
       parameters:
-        - in: path
-          name: user_id
-          type: integer
+        - in: body
+          name: Connection
           required: true
+          schema:
+            $ref: '#/definitions/Connection'
       responses:
         '200':
           description: If friend deletion queried successfully
           schema:
-            $ref: '#/definitions/Friend'
+            $ref: '#/definitions/Connection'
         '403':
           description: User wasnt login or dont have perrmission to delete friend
 definitions:
@@ -500,12 +503,27 @@ definitions:
         type: string
       phone:
         type: string
+      avatar_ref:
+        type: string
       friends:
-        type: array
-        items:
-          type: integer
-          description: list of friends ids
-  Friend:
+        type: integer
+        description: number of friends
+  ShortUserDetails:
+    type: object
+    required:
+      - id
+      - first_name
+      - last_name
+    properties:
+      id:
+        type: integer
+      first_name:
+        type: string
+      last_name:
+        type: string
+      avatar_ref:
+        type: string
+  Connection:
     type: object
     required:
       - friend_user_id
@@ -534,8 +552,8 @@ definitions:
         type: string
         format: phone
       password:
-        type: integer
-        format: int32
+        type: string
+
   CredentialsForm:
     type: object
     properties:

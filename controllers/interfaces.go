@@ -13,6 +13,11 @@ type UserServiceInterface interface {
 }
 
 type FriendServiceInterface interface {
-  GetUserFriends(id int64) ([]entity.User, error)
-  GetUserFriedsIds(id int64)([]int64, error)
+  GetFriends(id int64) ([]dto.ShortUser, error)
+  GetUsersWithRequests(id int64) ([]dto.ShortUser, error)
+  GetFriendIds(id int64) ([]int64, error)
+  NewFriendRequest(connection *entity.Connection) error
+  ApproveFriendRequest(connection *entity.Connection) error
+  RejectFriendRequest(connection *entity.Connection) error
+  DeleteFriendship(friendship *entity.Connection) error
 }

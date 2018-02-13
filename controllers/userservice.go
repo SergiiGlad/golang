@@ -17,10 +17,11 @@ import (
 // If you want to use only your log message  It will need use own call logs example
 var log = conf.GetLog()
 
-//UserService type implements UserServiceInterface and holds one field DB to access to database
+//UserService type implements UserServiceInterface and holds one field UserDao to access to database
 type UserService struct {
-  DB interfaces.MySqlDal
-  FS *FriendService
+  FriendService FriendServiceInterface
+  PassDao       interfaces.PasswordDao
+  UserDao       interfaces.UserDao
 }
 
 var _ UserServiceInterface = &UserService{}
@@ -28,12 +29,12 @@ var _ UserServiceInterface = &UserService{}
 func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
   var responseUserDto dto.ResponseUserDto
-  err := CheckUniqueEmail(userDto.Email, us.DB)
+  err := CheckUniqueEmail(userDto.Email, us.UserDao)
   if err != nil && err != sql.ErrNoRows {
     return responseUserDto, err
   }
 
-  err = CheckUniquePhone(userDto.Phone, us.DB)
+  err = CheckUniquePhone(userDto.Phone, us.UserDao)
   if err != nil && err != sql.ErrNoRows {
     return responseUserDto, err
   }
@@ -49,7 +50,7 @@ func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUser
 
   userEntity := dto.RequestUserDtoToEntity(userDto)
   NameLetterToUppep(&userEntity)
-  user, err := us.DB.AddUser(&userEntity)
+  user, err := us.UserDao.AddUser(&userEntity)
   if err != nil {
     return responseUserDto, err
   }
@@ -61,9 +62,9 @@ func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUser
     user.ID,
   }
 
-  _, err = us.DB.InsertPass(&newPass)
+  _, err = us.PassDao.InsertPass(&newPass)
   if err != nil {
-    us.DB.ForceDeleteUser(user.ID)
+    us.UserDao.ForceDeleteUser(user.ID)
     return responseUserDto, err
   }
 
@@ -74,7 +75,7 @@ func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUser
 
 func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
-  oldUserData, err := us.DB.FindUserById(id)
+  oldUserData, err := us.UserDao.FindUserById(id)
   var responseUserDto dto.ResponseUserDto
   if err != nil {
     return responseUserDto, err
@@ -89,7 +90,7 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
   }
 
   if len(userDto.Email) != 0 {
-    err = CheckUniqueEmail(userDto.Email, us.DB)
+    err = CheckUniqueEmail(userDto.Email, us.UserDao)
     if err != nil && err != sql.ErrNoRows {
       return responseUserDto, err
     }
@@ -98,7 +99,7 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
   }
 
   if len(userDto.Phone) != 0 {
-    err = CheckUniquePhone(userDto.Phone, us.DB)
+    err = CheckUniquePhone(userDto.Phone, us.UserDao)
     if err != nil && err != sql.ErrNoRows {
       return responseUserDto, err
     }
@@ -114,7 +115,7 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
   newUserData := dto.RequestUserDtoToEntity(userDto)
   NameLetterToUppep(&newUserData)
 
-  _, err = us.DB.UpdateUser(id, &newUserData)
+  _, err = us.UserDao.UpdateUser(id, &newUserData)
   if err != nil {
     log.Println(err)
     return responseUserDto, err
@@ -122,7 +123,8 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
 
   newUserData.ID = id
   responseUserDto = dto.UserEntityToResponseDto(&newUserData)
-  responseUserDto.Friends, _ = us.FS.GetUserFriedsIds(id)
+  friends, _ := us.FriendService.GetFriendIds(id)
+  responseUserDto.Friends = int64(len(friends))
 
   return responseUserDto, nil
 }
@@ -130,9 +132,9 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
 func (us *UserService) DeleteUser(id int64) (dto.ResponseUserDto, error) {
 
   var responseUserDto dto.ResponseUserDto
-  userEntity, err := us.DB.FindUserById(id)
+  userEntity, err := us.UserDao.FindUserById(id)
   if userEntity.Role == entity.AdminRole {
-    admins, err := us.DB.CountByRole(entity.AdminRole)
+    admins, err := us.UserDao.CountByRole(entity.AdminRole)
     if err != nil {
       return responseUserDto, err
     }
@@ -147,9 +149,10 @@ func (us *UserService) DeleteUser(id int64) (dto.ResponseUserDto, error) {
   }
 
   responseUserDto = dto.UserEntityToResponseDto(&userEntity)
-  responseUserDto.Friends, _ = us.FS.GetUserFriedsIds(id)
+  friends, _ := us.FriendService.GetFriendIds(id)
+  responseUserDto.Friends = int64(len(friends))
 
-  return responseUserDto, us.DB.DeleteUser(id)
+  return responseUserDto, us.UserDao.DeleteUser(id)
 }
 
 //CheckUniqueEmail validates email string and queries to database to make sure that email is unique
@@ -264,7 +267,7 @@ func (us *UserService) newPassIfValid(userId int64, password string) error {
     userId,
   }
 
-  _, err = us.DB.InsertPass(&newPass)
+  _, err = us.PassDao.InsertPass(&newPass)
   if err != nil {
     return err
   }

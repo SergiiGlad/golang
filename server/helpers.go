@@ -49,7 +49,7 @@ func dtoFromReq(request *http.Request, dto interface{}) error {
     return err
   }
 
-  err = json.Unmarshal(body, &dto)
+  err = json.Unmarshal(body, dto)
   if err != nil {
     return err
   }
