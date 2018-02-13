@@ -22,6 +22,7 @@ var _ EmailBodyGeneratorInterface = &HermesEmailBodyGenerator{}
 
 // Generate message body for welcome email.
 func (eg HermesEmailBodyGenerator) GenerateWelcomeBody(user dto.RequestUserDto) string {
+  log.Debug("Generating new Welcome Email body for user: {}", user)
   email := hermes.Email{
     Body: hermes.Body{
       Name: user.FirstName + " " + user.LastName,
@@ -55,6 +56,7 @@ func (eg HermesEmailBodyGenerator) GenerateWelcomeBody(user dto.RequestUserDto) 
 
 // Generate message body for registration confirmation email.
 func (eg HermesEmailBodyGenerator) GenerateRegistrationConfirmationEmail(user dto.RequestUserDto, token string) string {
+  log.Debug("Generating new Registration Confirmation Email body for user: {}, token: {}", user, token)
   email := hermes.Email{
     Body: hermes.Body{
       Name: user.FirstName + " " + user.LastName,
@@ -67,7 +69,7 @@ func (eg HermesEmailBodyGenerator) GenerateRegistrationConfirmationEmail(user dt
           Button: hermes.Button{
             Color: "#1AACF5", // Optional action button color
             Text:  "Confirm your email",
-            Link:  conf.Ip + "/confirm/email?token=" + token, // TODO Add property dns token
+            Link:  conf.Ip + "/confirm/email/" + token, // TODO Add property dns token
           },
         },
       },
@@ -82,20 +84,24 @@ func (eg HermesEmailBodyGenerator) GenerateRegistrationConfirmationEmail(user dt
 
 // Generate message body for password change confirmation.
 func (eg HermesEmailBodyGenerator) GenerateChangePasswordConfirmationEmail(user dto.RequestUserDto,
-  token string) string {
+  password string) string {
+  log.Debug("Generating new Change Password body for user: {}", user)
   email := hermes.Email{
     Body: hermes.Body{
       Name: user.FirstName + " " + user.LastName,
       Intros: []string{
-        "Attention! Your About to change your password!",
+        "Attention! This is your new password! Change it after login!",
+      },
+      Dictionary: []hermes.Entry{
+        {Key: "New Password", Value: password},
       },
       Actions: []hermes.Action{
         {
-          Instructions: "To confirm your new password press button. If your not changing password contact as immediately!",
+          Instructions: "Login to your account",
           Button: hermes.Button{
-            Color: "#FF0000", // Optional action button color
-            Text:  "I confirm password change!",
-            Link:  conf.Ip + "/confirm/password?token=" + token,
+            Color: "#32CD32",
+            Text:  "Login",
+            Link:  conf.Ip + "/dist/login", // TODO Add property dns login
           },
         },
       },

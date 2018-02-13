@@ -18,7 +18,7 @@ type EmailServiceInterface interface {
   // Send email with request for email confirmation to User with unconfirmed email.
   SendRegistrationConfirmationEmail(user dto.RequestUserDto) error
   // Send email with confirmation for password change.
-  SendChangePasswordConfirmationEmail(user dto.RequestUserDto) error
+  SendChangePasswordConfirmationEmail(user dto.RequestUserDto, newPassword string) error
 }
 
 type EmailBodyGeneratorInterface interface {
@@ -36,7 +36,7 @@ type TokenGeneratorInterface interface {
   // Change status for token to inActive and update user account status to active
   // If token wasn't found return false
   // If successfully update user status to Active return true
-  ApproveUser(email string, token string) (bool, error)
+  ApproveUser(token string) (bool, error)
 }
 
 type EmailSendInterface interface {

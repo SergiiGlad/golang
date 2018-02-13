@@ -22,8 +22,13 @@
       "type" : "AWS bucket name, represented as string"
     },
     "GO_MYSQL_DSN": {
+      "important": "NO NEED TO PROVIDE DATABASE NAME",
       "description": "https://en.wikipedia.org/wiki/Data_source_name , basically this is string to connect to MYSQL",
       "type": "DSN, example 'username:password@tcp(localhost:3306)/'"
+    },
+    "GOHUM_EAMIL_PASSWORD" : {
+      "description": "Password to gohum email account.",
+      "type" : "String"
     }
   },
   "config.json": {
@@ -57,6 +62,21 @@
       "default": "1000",
       "type": "int",
       "description": "Max number of chatRooms for one user."
+    },
+    "smtp_server":{
+      "default": "smtp.gmail.com",
+      "type": "string",
+      "description": "Smtp server hostname"
+    },
+    "smtp_port":{
+      "default": 587,
+      "type": "int",
+      "description": "Smtp server port"
+    },
+    "gohum_email":{
+      "default": "gohum.assistant@gmail.com",
+      "type": "string",
+      "description": "Email address of gohum."
     },
     "out": {
       "name": {

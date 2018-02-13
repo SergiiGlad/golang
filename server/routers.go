@@ -1,15 +1,15 @@
 package server
 
 import (
-	"fmt"
-	"go-team-room/controllers"
-	"go-team-room/models/dao/mysql"
-	"html/template"
-	"net/http"
+  "fmt"
+  "go-team-room/controllers"
+  "go-team-room/models/dao/mysql"
+  "html/template"
+  "net/http"
 
-	"go-team-room/controllers/messages"
+  "go-team-room/controllers/messages"
 
-	"github.com/gorilla/mux"
+  "github.com/gorilla/mux"
 )
 
 /*
@@ -19,14 +19,13 @@ register a new gorilla route with a matcher for HTTP methods
 and the URL path.
 */
 type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	HandlerFunc http.HandlerFunc
+  Name        string
+  Method      string
+  Pattern     string
+  HandlerFunc http.HandlerFunc
 }
 
 type Routes []Route
-
 
 //NewRouter creates new mux.Router to handle incoming requests
 func NewRouter() *mux.Router {
@@ -51,90 +50,90 @@ func NewRouter() *mux.Router {
 }
 
 func handl(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("client/index.html")
-	if err != nil {
-		fmt.Fprintf(w, "%s", "Error")
-	} else {
-		tmpl.Execute(w, r)
-	}
-	//fmt.Fprintf(w, "Hello Home! %s", r.URL.Path[1:]) )
+  tmpl, err := template.ParseFiles("client/index.html")
+  if err != nil {
+    fmt.Fprintf(w, "%s", "Error")
+  } else {
+    tmpl.Execute(w, r)
+  }
+  //fmt.Fprintf(w, "Hello Home! %s", r.URL.Path[1:]) )
 
-	log.Info(reqtoLog(r))
+  log.Info(reqtoLog(r))
 }
 
 var routes = Routes{
 
-	Route{
-		"Index",
-		"GET",
-		"/",
-		handl,
-	},
+  Route{
+    "Index",
+    "GET",
+    "/",
+    handl,
+  },
 
-  Route {
+  Route{
     "NewProfileByAdmin",
     "POST",
     "/admin/profile",
     createProfileByAdmin(userService),
   },
 
-  Route {
+  Route{
     "UpdateProfileByAdmin",
     "PUT",
     "/admin/profile/{user_id:[0-9]+}",
     updateProfileByAdmin(userService),
   },
 
-  Route {
+  Route{
     "DeleteProfileByAdmin",
     "DELETE",
     "/admin/profile/{user_id:[0-9]+}",
     deleteProfileByAdmin(userService),
   },
 
-  Route {
+  Route{
     "CreateNewPost",
     "POST",
     "/post",
     CreateNewPost,
   },
 
-  Route {
+  Route{
     "DeletePost",
     "DELETE",
     "/post/{post_id}",
     DeletePost,
   },
 
-  Route {
+  Route{
     "GetPostByPostID",
     "GET",
     "/post/{post_id}",
     GetPost,
   },
 
-  Route {
+  Route{
     "GetPostByUserID",
     "GET",
     "/post/user/{user_id}",
     GetPostByUserID,
   },
 
-  Route {
+  Route{
     "UpdatePost",
     "PUT",
     "/post/{post_id}",
     UpdatePost,
   },
 
-  Route {
+  Route{
     "GetFile",
     "GET",
     "/uploads/{file_link}",
     GetFileFromS3,
   },
 
-  Route {
+  Route{
     "Login",
     "POST",
     "/login",
@@ -165,23 +164,37 @@ var routes = Routes{
     messages.HandlerOfPOSTMessages,
   },
 
-  Route {
+  Route{
     "RegisterUser",
     "POST",
     "/registration",
-    registerUser(userService),
+    registerUser(userService, emailService),
   },
 
-  Route {
+  Route{
     "RecoveryPass",
     "GET",
     "/recoveryPass",
-    recoveryPass(userService),
+    recoveryPass(userService, emailService),
   },
 
+  Route{
+    "ConfirmAccount",
+    "Get",
+    "/confirm/email/{token}",
+    ConfirmAccount(tokenService),
+  },
 
   // and so on, just add new Route structs to this array
 }
 
 //Initialise services here
 var userService = &controllers.UserService{mysql.DB}
+var emailService = &controllers.EmailService{
+  &controllers.HermesEmailBodyGenerator{},
+  &controllers.DefaultEmailSend{},
+  &controllers.TokenService{
+      mysql.DB
+  },
+}
+var tokenService = &controllers.TokenService{}

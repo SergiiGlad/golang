@@ -79,7 +79,7 @@ const insertStatement = `INSERT INTO
   users_data (email, first_name, last_name, phone, role_in_network, account_status, avatar_ref)
   VALUES (?, ?, ?, ?, ?, ?, ?)`
 
-func (d *mysqlUserDao) AddUser(user *entity.User) (entity.User, error) {
+func (d *mysqlUserDao)  AddUser(user *entity.User) (entity.User, error) {
   r, err := execAffectingOneRow(d.insert, user.Email, user.FirstName, user.LastName, user.Phone, user.Role,
     user.AccStatus, user.AvatarRef)
 

@@ -1,5 +1,7 @@
 package dto
 
+import "fmt"
+
 type Email struct {
   To      string
   Subject string
@@ -12,4 +14,8 @@ func RequestUserDtoToEmail(user RequestUserDto, subject string, body string) Ema
     Subject: subject,
     Body:    body,
   }
+}
+
+func (e Email) String() string {
+  return fmt.Sprintf("Email objetct: to=%s, subject=%s", e.To, e.Subject)
 }

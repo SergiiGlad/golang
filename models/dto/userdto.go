@@ -57,7 +57,7 @@ func RequestUserDtoToEntity(userDto *RequestUserDto) entity.User {
     userDto.LastName,
     userDto.Phone,
     userDto.Role,
-    entity.Active,
+    entity.InActive,
     "",
   }
 

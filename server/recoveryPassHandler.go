@@ -9,6 +9,7 @@ import (
   "crypto/rand"
   "gopkg.in/hlandau/passlib.v1/hash/bcrypt"
   "time"
+  "go-team-room/models/dto"
 )
 
 var StdChars = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
@@ -19,7 +20,7 @@ func NewPassword(length int) string {
 
 func rand_char(length int, chars []byte) string {
   new_pword := make([]byte, length)
-  random_data := make([]byte, length + (length/4)) // storage for random bytes.
+  random_data := make([]byte, length+(length/4)) // storage for random bytes.
   clen := byte(len(chars))
 
   maxrb := byte(256 - (256 % len(chars)))
@@ -32,7 +33,7 @@ func rand_char(length int, chars []byte) string {
       if c >= maxrb {
         continue
       }
-      new_pword[i] = chars[c % clen]
+      new_pword[i] = chars[c%clen]
       i++
       if i == length {
         return string(new_pword)
@@ -42,14 +43,14 @@ func rand_char(length int, chars []byte) string {
   panic("unreachable")
 }
 
-func recoveryPass(service controllers.UserServiceInterface) http.HandlerFunc {
+func recoveryPass(service controllers.UserServiceInterface, emailService controllers.EmailServiceInterface) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
     r.ParseForm()
     email := r.Form["email"][0]
     user, err := mysql.DB.FindUserByEmail(email)
 
     if err != nil {
-      responseError(w , err, http.StatusForbidden)
+      responseError(w, err, http.StatusForbidden)
       return
     }
     userId := user.ID
@@ -57,7 +58,7 @@ func recoveryPass(service controllers.UserServiceInterface) http.HandlerFunc {
     newPass := NewPassword(6)
     hashPass, err := bcrypt.Crypter.Hash(newPass)
     if err != nil {
-      responseError(w , err, http.StatusForbidden)
+      responseError(w, err, http.StatusForbidden)
       return
     }
 
@@ -69,9 +70,17 @@ func recoveryPass(service controllers.UserServiceInterface) http.HandlerFunc {
     }
     _, err = mysql.DB.InsertPass(&newPassStruct)
     if err != nil {
-      responseError(w , err, http.StatusForbidden)
+      responseError(w, err, http.StatusForbidden)
       return
     }
+    emailService.SendChangePasswordConfirmationEmail(dto.RequestUserDto{
+      Email:     user.Email,
+      FirstName: user.FirstName,
+      LastName:  user.LastName,
+      Phone:     user.Phone,
+      Role:      user.Role,
+      Password:  hashPass,
+    }, newPass)
     log.Println(newPassStruct)
   }
 }

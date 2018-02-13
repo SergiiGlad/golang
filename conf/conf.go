@@ -15,3 +15,8 @@ var MysqlDsn  = allConfigs["mysql_dsn"].(string)
 var MysqlDBName = allConfigs["my_sql_db_name"].(string)
 var MaxMessages = int(allConfigs["max_messages_at_once"].(float64))
 var MaxChatRooms = int(allConfigs["max_chatrooms"].(float64))
+
+var GohumEmail = allConfigs["gohum_email"].(string)
+var GohumEmailPass =allConfigs["gohum_email_password"].(string)
+var SmtpServer  = allConfigs["smtp_server"].(string)
+var SmtpPort = int(allConfigs["smtp_port"].(float64))
