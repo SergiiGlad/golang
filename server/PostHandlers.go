@@ -6,21 +6,15 @@ import (
   "fmt"
   "github.com/aws/aws-sdk-go/aws/session"
   "github.com/aws/aws-sdk-go/aws"
-  "github.com/aws/aws-sdk-go/service/dynamodb"
-  "github.com/aws/aws-sdk-go/aws/awserr"
   "github.com/gorilla/mux"
-  "time"
-  "mime/multipart"
   "github.com/aws/aws-sdk-go/service/s3/s3manager"
-  "io"
-  "crypto/rand"
-  "strings"
   "github.com/aws/aws-sdk-go/service/s3"
   "strconv"
   "go-team-room/conf"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
   "github.com/aws/aws-sdk-go/service/s3/s3iface"
   "go-team-room/controllers"
+  "time"
 )
 
 
@@ -30,20 +24,19 @@ import (
 func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, sess *session.Session) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
 
-    var newPost controllers.Post
+    var post controllers.Post
 
     //Decode request MULTIPART/FORM-DATA
     r.ParseMultipartForm(0)
-    newPost.Title = r.FormValue("post_title")
-    newPost.Text = r.FormValue("post_text")
-    newPost.UserID = r.FormValue("user_id")
+    post.Title = r.FormValue("post_title")
+    post.Text = r.FormValue("post_text")
+    post.UserID = r.FormValue("user_id")
 
     //Set "post_id", "post_like", "file_link"
-    newPost.PostID = time.Now().String()
-    newPost.LastUpdate = newPost.PostID
-    newPost.Like = "0"
-    newPost.FileLink = "NULL"
-
+    post.PostID = time.Now().String()
+    post.LastUpdate = post.PostID
+    post.Like = "0"
+    post.FileLink = "NULL"
     //Check if file exists in request
     //if exists UPLOAD to S3
     //if not - "file_link" remains "NULL"
@@ -60,147 +53,44 @@ func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, sess *session.Session) http.H
       defer file.Close()
 
       //UPLOAD file to S3 and GET link
-      newPost.FileLink = UploadFileToS3(sess, file, handler)
+      post.FileLink = controllers.UploadFileToS3(sess, file, handler)
     }
 
-    //Request to DynamoDB to CREATE new post with KEY_ATTRIBUTE "post_id" (TimeStamp)
-    input := &dynamodb.PutItemInput{
-      Item: map[string]*dynamodb.AttributeValue{
-        "post_id": {
-          S: &newPost.PostID,
-        },
-        "post_title": {
-          S: &newPost.Title,
-        },
-        "post_text": {
-          S: &newPost.Text,
-        },
-        "user_id": {
-          S: &newPost.UserID,
-        },
-        "post_like": {
-          N: &newPost.Like,
-        },
-        "file_link": {
-          S: &newPost.FileLink,
-        },
-        "post_last_update": {
-          S: &newPost.LastUpdate,
-        },
-      },
-      ReturnConsumedCapacity: aws.String("TOTAL"),
-      TableName:              aws.String("Post"), //Name of Table in DynamoDB
-    }
+    resp, err := controllers.CreateNewPost(svcd, post)
 
-    //Get result
-    result, err := svcd.PutItem(input)
-
-    //ERROR block (from AWS SDK GO DynamoDB documentation)
     if err != nil {
-      if aerr, ok := err.(awserr.Error); ok {
-        switch aerr.Code() {
-        case dynamodb.ErrCodeConditionalCheckFailedException:
-          fmt.Println(dynamodb.ErrCodeConditionalCheckFailedException, aerr.Error())
-        case dynamodb.ErrCodeProvisionedThroughputExceededException:
-          fmt.Println(dynamodb.ErrCodeProvisionedThroughputExceededException, aerr.Error())
-        case dynamodb.ErrCodeResourceNotFoundException:
-          fmt.Println(dynamodb.ErrCodeResourceNotFoundException, aerr.Error())
-        case dynamodb.ErrCodeItemCollectionSizeLimitExceededException:
-          fmt.Println(dynamodb.ErrCodeItemCollectionSizeLimitExceededException, aerr.Error())
-        case dynamodb.ErrCodeInternalServerError:
-          fmt.Println(dynamodb.ErrCodeInternalServerError, aerr.Error())
-        default:
-          fmt.Println(aerr.Error())
-        }
-      } else {
-        // Print the error, cast err to awserr.Error to get the Code and
-        // Message from an error.
-        fmt.Println(err.Error())
-      }
-      return
+      w.WriteHeader(http.StatusNoContent)
     }
 
     //Encode response JSON
-    _ = json.NewEncoder(w).Encode(&newPost)
-
-    //Print response in console
-    fmt.Println(result)
+    _ = json.NewEncoder(w).Encode(&resp)
   }
 }
 
 //To DELETE existing post by "post_id" from DynamoDB Table "Post"
 func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
-
-    //Gorilla tool to handle request "/post/{post_id}" with method DELETE
     vars := mux.Vars(r)
-    post_id := vars["post_id"]
 
-    post, err := controllers.GetPost(svcd, post_id)
-
-    if post.FileLink != "NULL" {
-      DeleteFileFromS3(post.FileLink, svcs)
-    }
-
-    //Request to DynamoDB to DELETE post with KEY_ATTRIBUTE "post_id" (TimeStamp)
-    input := &dynamodb.DeleteItemInput{
-      Key: map[string]*dynamodb.AttributeValue{
-        "post_id": {
-          S: &post.PostID,
-        },
-      },
-      TableName: aws.String("Post"),
-    }
-
-    //Get result
-    result, err := svcd.DeleteItem(input)
-
-    //ERROR block (from AWS SDK GO DynamoDB documentation)
-    if err != nil {
-      if aerr, ok := err.(awserr.Error); ok {
-        switch aerr.Code() {
-        case dynamodb.ErrCodeConditionalCheckFailedException:
-          fmt.Println(dynamodb.ErrCodeConditionalCheckFailedException, aerr.Error())
-        case dynamodb.ErrCodeProvisionedThroughputExceededException:
-          fmt.Println(dynamodb.ErrCodeProvisionedThroughputExceededException, aerr.Error())
-        case dynamodb.ErrCodeResourceNotFoundException:
-          fmt.Println(dynamodb.ErrCodeResourceNotFoundException, aerr.Error())
-        case dynamodb.ErrCodeItemCollectionSizeLimitExceededException:
-          fmt.Println(dynamodb.ErrCodeItemCollectionSizeLimitExceededException, aerr.Error())
-        case dynamodb.ErrCodeInternalServerError:
-          fmt.Println(dynamodb.ErrCodeInternalServerError, aerr.Error())
-        default:
-          fmt.Println(aerr.Error())
-        }
-      } else {
-        // Print the error, cast err to awserr.Error to get the Code and
-        // Message from an error.
-        fmt.Println(err.Error())
-      }
-      return
-    }
+    response := controllers.DeletePost(svcd, svcs, vars["post_id"])
 
     //Encode response JSON
-    _ = json.NewEncoder(w).Encode(&post.PostID)
+    _ = json.NewEncoder(w).Encode(&response)
 
-    //Print response in console
-    fmt.Println(result)
   }
 }
 
 //To GET post by "post_id" from DynamoDB Table "Post"
 func GetPost(svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
-    //var post controllers.Post
-
     //Gorilla tool to handle request "/post/{post_id}" with method GET
     vars := mux.Vars(r)
-    post_id := vars["post_id"]
 
-    post, err := controllers.GetPost(svc, post_id)
+    post, err := controllers.GetPost(svc, vars["post_id"])
 
     if err != nil {
-        w.WriteHeader(http.StatusNoContent)
+      w.WriteHeader(http.StatusNoContent)
+      return
     }
 
     //Encode response JSON
@@ -211,22 +101,14 @@ func GetPost(svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
 //To GET posts by "user_id" from DynamoDB Table "Post"
 func GetPostByUserID(svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
-
-    //Gorilla tool to handle request "/post/{user_id}" with method GET
     vars := mux.Vars(r)
-    user_id := vars["user_id"]
-
-    post, err := controllers.GetPostByUserID(svc, user_id)
+    post, err := controllers.GetPostByUserID(svc, vars["user_id"])
 
     if err != nil {
       w.WriteHeader(http.StatusNoContent)
     }
 
-    for i:=0; i < len(post); i++{
-      respPost := post[i]
-      //Encode response JSON
-      _ = json.NewEncoder(w).Encode(&respPost)
-    }
+    _ = json.NewEncoder(w).Encode(&post)
   }
 }
 
@@ -237,6 +119,7 @@ func UpdatePost (svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
 
     //Decode request JSON
     _ = json.NewDecoder(r.Body).Decode(&post)
+    post.LastUpdate = time.Now().String()
 
     //Gorilla tool to handle "/post/{post_id}" with method PUT
     vars := mux.Vars(r)
@@ -247,35 +130,6 @@ func UpdatePost (svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
     //Encode response JSON
     _ = json.NewEncoder(w).Encode(&post)
   }
-}
-
-//To UPLOAD file to S3
-func UploadFileToS3(sess *session.Session, f multipart.File, handl * multipart.FileHeader) string{
-  // Create an uploader with the session and default options
-  uploader := s3manager.NewUploader(sess)
-
-  fileType := handl.Filename[strings.LastIndexAny(handl.Filename, "."):]
-  fileType = strings.ToLower(fileType)
-
-  //Generate UUID for File
-  uuid, err := newUUID()
-  if err != nil{
-    fmt.Printf("error: %v\n", err)
-  }
-
-  // Upload the file to S3.
-  result, err := uploader.Upload(&s3manager.UploadInput{
-    Bucket: aws.String(conf.AwsBucketName),
-    Key:    aws.String(uuid + fileType),
-    Body:   f,
-  })
-  if err != nil{
-    fmt.Errorf("failed to upload file, %v", err)
-    return "failed to upload file"
-  }
-  fmt.Printf("file uploaded to, %s\n", aws.StringValue(&result.Location))
-  link := "/uploads/" + uuid + fileType
-  return link
 }
 
 //To GET file from S3
@@ -320,77 +174,4 @@ func GetFileFromS3(sess *session.Session) http.HandlerFunc  {
 
     w.Write(buff.Bytes())
   }
-}
-//To DELETE file from S3 when DELETE Post
-func DeleteFileFromS3(file string, svc s3iface.S3API) {
-  filename := strings.TrimPrefix(file, "/uploads/")
-
-  input := &s3.DeleteObjectsInput{
-    Bucket: aws.String(conf.AwsBucketName),
-    Delete: &s3.Delete{
-      Objects: []*s3.ObjectIdentifier{
-        {
-          Key: aws.String(filename),
-        },
-      },
-      Quiet: aws.Bool(false),
-    },
-  }
-
-  result, err := svc.DeleteObjects(input)
-  if err != nil {
-    if aerr, ok := err.(awserr.Error); ok {
-      switch aerr.Code() {
-      default:
-        fmt.Println(aerr.Error())
-      }
-    } else {
-      // Print the error, cast err to awserr.Error to get the Code and
-      // Message from an error.
-      fmt.Println(err.Error())
-    }
-    return
-  }
-  fmt.Println(result)
-}
-
-//To GET Post body from Table "Post" in DynamoDB by "post_id". Return Post body
-//func GetPostBody(post Post, svc dynamodbiface.DynamoDBAPI) Post {
-//
-//  //Request to DynamoDB to GET post by "post_id"
-//  input := &dynamodb.GetItemInput{
-//    Key: map[string]*dynamodb.AttributeValue{
-//      "post_id": {
-//        S: &post.PostID,
-//      },
-//    },
-//    TableName: aws.String("Post"),
-//  }
-//
-//  //Get result
-//  result, err := svc.GetItem(input)
-//
-//  //ERROR block (from AWS SDK GO DynamoDB documentation)
-//  if err != nil {
-//    fmt.Println(err)
-//  }
-//
-//  //Unmarshal result to Post structure
-//  err = dynamodbattribute.UnmarshalMap(result.Item, &post)
-//
-//  return post
-//}
-
-//To generate a random UUID according to RFC 4122
-func newUUID() (string, error) {
-  uuid := make([]byte, 16)
-  n, err := io.ReadFull(rand.Reader, uuid)
-  if n != len(uuid) || err != nil {
-    return "", err
-  }
-  // variant bits; see section 4.1.1
-  uuid[8] = uuid[8]&^0xc0 | 0x80
-  // version 4 (pseudo-random); see section 4.1.3
-  uuid[6] = uuid[6]&^0xf0 | 0x40
-  return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
