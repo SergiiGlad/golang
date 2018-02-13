@@ -14,7 +14,7 @@ func ProtectionUserRole(userDto *dto.RequestUserDto) {
   }
 }
 
-func registerUser(service controllers.UserServiceInterface, emailService controllers.EmailServiceInterface) http.HandlerFunc {
+func registerUser(service controllers.UserServiceInterface, emailService controllers.UserEmailServiceInterface) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
     reqUserDto, err := userDtoFromReq(r)
 

@@ -43,11 +43,11 @@ func rand_char(length int, chars []byte) string {
   panic("unreachable")
 }
 
-func recoveryPass(service controllers.UserServiceInterface, emailService controllers.EmailServiceInterface) http.HandlerFunc {
+func recoveryPass(service controllers.UserServiceInterface, emailService controllers.UserEmailServiceInterface) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
     r.ParseForm()
     email := r.Form["email"][0]
-    user, err := mysql.DB.FindUserByEmail(email)
+    user, err := mysql.UserDao.FindUserByEmail(email)
 
     if err != nil {
       responseError(w, err, http.StatusForbidden)
@@ -68,7 +68,7 @@ func recoveryPass(service controllers.UserServiceInterface, emailService control
       time.Now().Format("2006-01-02 15:04:05"),
       userId,
     }
-    _, err = mysql.DB.InsertPass(&newPassStruct)
+    _, err = mysql.PasswordDao.InsertPass(&newPassStruct)
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return

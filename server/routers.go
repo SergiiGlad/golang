@@ -223,7 +223,7 @@ var routes = Routes{
 }
 
 //Initialise services here
-var emailService = &controllers.EmailService{
+var emailService = &controllers.UserEmailService{
   &controllers.HermesEmailBodyGenerator{},
   &controllers.DefaultEmailSend{},
   &controllers.TokenService{

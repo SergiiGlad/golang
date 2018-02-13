@@ -16,19 +16,19 @@ var _ TokenGeneratorInterface = &TokenService{}
 const tokenLength = 64
 
 func (ts TokenService) GenerateTokenForEmail(email string) (string, error) {
-  log.Debug("Start generating token for email {}", email)
+  log.Debugf("Start generating token for email %s", email)
   user, err := ts.UD.FindUserByEmail(email)
   if err != nil {
     return "", err
   }
   user.AccStatus = entity.InActive
-  log.Debug("User fore email: {}")
+  log.Debugf("User fore email: %s", email)
   _, err = ts.UD.UpdateUser(user.ID, &user)
   if err != nil {
     return "", err
   }
   token := randString(tokenLength)
-  log.Debug("New token {}", token)
+  log.Debugf("New token %s", token)
   _, err = ts.TD.AddToken(entity.UserToken{
     Token:    token,
     Email:    email,

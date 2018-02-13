@@ -15,19 +15,19 @@ var _ EmailSendInterface = &DefaultEmailSend{}
 
 // Send email using conf.GohumEmail.
 func (des *DefaultEmailSend) SendEmail(emailDto dto.Email) error {
-  log.Debug("Sending new email: {}", emailDto)
+  log.Debugf("Sending new email: %s", emailDto)
   m := gomail.NewMessage()
   m.SetHeader("From", conf.GohumEmail)
   m.SetHeader("To", emailDto.To)
   m.SetHeader("Subject", emailDto.Subject)
   m.SetBody("text/html", emailDto.Body)
-  log.Debug("Email to send: {}", m)
+  log.Debugf("Email to send: %s", m)
   err := d.DialAndSend(m)
   d.Dial()
   if err != nil {
-    log.Error("Faild to send email: {}, formed email was: {}, error: ", emailDto, m, err)
+    log.Errorf("Faild to send email: %s, formed email was: %s, error: %s", emailDto, m, err)
     return err
   }
-  log.Debug("Successfully send email: {}", emailDto)
+  log.Debugf("Successfully send email: %s", emailDto)
   return nil
 }

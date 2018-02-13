@@ -22,7 +22,7 @@ type FriendServiceInterface interface {
   DeleteFriendship(friendship *entity.Connection) error
 }
 
-type EmailServiceInterface interface {
+type UserEmailServiceInterface interface {
   // Send all emails if at least one fails return error with explanation.
   SendEmails(email ...dto.Email) error
   // Send email with welcome text for user with 'CONFIRMED' email.

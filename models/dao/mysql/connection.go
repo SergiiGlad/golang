@@ -86,7 +86,7 @@ var createTableStatements = []string{
     last_name VARCHAR(50) NOT NULL,
     phone VARCHAR(20),
     role_in_network ENUM('admin', 'user') NOT NULL,
-    account_status ENUM('active', 'deleted') NOT NULL,
+    account_status ENUM('inactive', 'active', 'deleted') NOT NULL,
     avatar_ref MEDIUMTEXT
   );`,
 
