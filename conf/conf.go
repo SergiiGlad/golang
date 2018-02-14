@@ -17,7 +17,7 @@ var MysqlDBName = allConfigs["my_sql_db_name"].(string)
 var MaxMessages = int(allConfigs["max_messages_at_once"].(float64))
 var MaxChatRooms = int(allConfigs["max_chatrooms"].(float64))
 
-var EnableSendMails = allConfigs["enable_email"].(bool)
+var EnableSendMails = allConfigs["send_emails"].(bool)
 var GohumEmail = allConfigs["gohum_email"].(string)
 var GohumEmailPass = allConfigs["gohum_email_password"].(string)
 var SmtpServer = allConfigs["smtp_server"].(string)

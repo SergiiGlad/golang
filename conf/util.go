@@ -34,7 +34,7 @@ func addDefaults() {
   viper.SetDefault("smtp_server", "smtp.gmail.com")
   viper.SetDefault("smtp_port", 587)
   viper.SetDefault("gohume_email", "gohum.assistant@gmail.com")
-  viper.SetDefault("enable_email", false)
+  viper.SetDefault("send_emails", false)
 }
 
 //Read configs from conf json, if cant read error occurred.

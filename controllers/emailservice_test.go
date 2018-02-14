@@ -43,11 +43,6 @@ var es = UserEmailService{
   TokenGeneratorMock{},
 }
 
-func TestUserEmailService_SendEmails(t *testing.T) {
-  email := dto.Email{Subject: "Whatever", To: "email@email.com"}
-  assert.Nil(t, es.SendEmails(email))
-}
-
 func TestUserEmailService_SendChangePasswordConfirmationEmail(t *testing.T) {
   user := dto.RequestUserDto{Email: "email@email.com"}
   assert.Nil(t, es.SendChangePasswordConfirmationEmail(user, "password123"))

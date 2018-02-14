@@ -1,9 +1,9 @@
 package messages
 
 import (
-	"net/http"
-	"net/http/httptest"
-	"testing"
+	//"net/http"
+	//"net/http/httptest"
+	//"testing"
 )
 
 /*
@@ -102,50 +102,50 @@ func TestGetMessageFromDynamoByUserID(t *testing.T) {
 }
 
 */
-func TestHandlerOfGetMessages(t *testing.T) {
-	req, err := http.NewRequest("GET", "/messages/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	respRecorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(HandlerOfGetMessages)
-
-	handler.ServeHTTP(respRecorder, req)
-	if status := respRecorder.Code; status != http.StatusUnauthorized {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusUnauthorized)
-	}
-	//
-	req, err = http.NewRequest("GET", "/messages/?id=777",
-		nil,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	respRecorder = httptest.NewRecorder()
-
-	handler.ServeHTTP(respRecorder, req)
-	if status := respRecorder.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-	//
-	req, err = http.NewRequest("GET", "/messages/?id=777&maxMessages=33", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	respRecorder = httptest.NewRecorder()
-
-	handler.ServeHTTP(respRecorder, req)
-	if status := respRecorder.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-
-	// // More test to checks for  respon body neded
-	// expected := `{"user": "Vasya"}`
-	// if respRecorder.Body.String() != expected {
-	// 	t.Errorf("handler returned unexpected body: got %v want %v",
-	// 		respRecorder.Body.String(), expected)
-	// }
-}
+//func TestHandlerOfGetMessages(t *testing.T) {
+//	req, err := http.NewRequest("GET", "/messages/", nil)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//	respRecorder := httptest.NewRecorder()
+//	handler := http.HandlerFunc(HandlerOfGetMessages)
+//
+//	handler.ServeHTTP(respRecorder, req)
+//	if status := respRecorder.Code; status != http.StatusUnauthorized {
+//		t.Errorf("handler returned wrong status code: got %v want %v",
+//			status, http.StatusUnauthorized)
+//	}
+//	//
+//	req, err = http.NewRequest("GET", "/messages/?id=777",
+//		nil,
+//	)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//	respRecorder = httptest.NewRecorder()
+//
+//	handler.ServeHTTP(respRecorder, req)
+//	if status := respRecorder.Code; status != http.StatusOK {
+//		t.Errorf("handler returned wrong status code: got %v want %v",
+//			status, http.StatusOK)
+//	}
+//	//
+//	req, err = http.NewRequest("GET", "/messages/?id=777&maxMessages=33", nil)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//	respRecorder = httptest.NewRecorder()
+//
+//	handler.ServeHTTP(respRecorder, req)
+//	if status := respRecorder.Code; status != http.StatusOK {
+//		t.Errorf("handler returned wrong status code: got %v want %v",
+//			status, http.StatusOK)
+//	}
+//
+//	// // More test to checks for  respon body neded
+//	// expected := `{"user": "Vasya"}`
+//	// if respRecorder.Body.String() != expected {
+//	// 	t.Errorf("handler returned unexpected body: got %v want %v",
+//	// 		respRecorder.Body.String(), expected)
+//	// }
+//}

@@ -68,6 +68,11 @@
       "type": "int",
       "description": "Max number of chatRooms for one user."
     },
+    "send_emails": {
+      "default": false,
+      "type": "boolean",
+      "description": "Enable or disable email send."
+    },
     "smtp_server":{
       "default": "smtp.gmail.com",
       "type": "string",

@@ -20,11 +20,14 @@ func ConfirmAccount(service controllers.TokenGeneratorInterface) http.HandlerFun
     }
     if !approved {
       log.Warnf("Cant approve user for token: %s", token)
-      responseError(w, errors.New("Cant approve user for token this token." ), http.StatusBadRequest)
+      responseError(w, errors.New("Cant approve user for token this token."), http.StatusBadRequest)
       return
     }
     w.WriteHeader(http.StatusSeeOther)
     w.Header().Set("Location", conf.LoginUrl)
+    w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+    w.Header().Set("Pragma", "no-cache")
+    w.Header().Set("Expires", "0")
     log.Infof("Successfully approve user for token: %s", token)
   }
 }
