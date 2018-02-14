@@ -3,10 +3,12 @@ package messages
 import (
 	"encoding/json"
 	"fmt"
-	"go-team-room/conf"
-	"go-team-room/humstat"
 	"net/http"
 	"strconv"
+
+	"go-team-room/conf"
+	"go-team-room/humaws"
+	"go-team-room/humstat"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -47,7 +49,7 @@ func GetMessageFromDynamoByUserID(humUserID int, maxMessages ...int) []HumMessag
 		//  ProjectionExpression:      expr.Projection(),
 		TableName: aws.String("messages"),
 	}
-	result, err := Dyna.Db.Scan(params)
+	result, err := humaws.Dyna.Db.Scan(params)
 	if err != nil {
 		fmt.Println("Query API call failed:")
 		fmt.Println((err.Error()))
@@ -81,7 +83,8 @@ func HandlerOfGetMessages(writeRespon http.ResponseWriter, r *http.Request) {
 	// return
 	///DEBUG
 
-	currentUserID := 23 //GetActionUserID(r)
+	//currentUserID := 23 //GetActionUserID(r)
+	currentUserID := GetActionUserID(r)
 
 	//fmt.Println(currentUserID)
 	if currentUserID < 1 {
@@ -202,7 +205,7 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 		TableName: aws.String("messages"),
 	}
 
-	_, err = Dyna.Db.PutItem(input)
+	_, err = humaws.Dyna.Db.PutItem(input)
 
 	if err != nil {
 		fmt.Println("Got error calling PutItem:")
@@ -299,7 +302,7 @@ func GetChatRoomListByUserID(humUserID int, maxChatRooms ...int) []HumChatRoom {
 		//  ProjectionExpression:      expr.Projection(),
 		TableName: aws.String("chat_rooms"),
 	}
-	result, err := Dyna.Db.Scan(params)
+	result, err := humaws.Dyna.Db.Scan(params)
 	if err != nil {
 		logRus.Info("Query API call failed:")
 		logRus.Error((err.Error()))

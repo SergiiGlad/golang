@@ -2,6 +2,7 @@ package messages
 
 import (
 	"fmt"
+	"go-team-room/humaws"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -16,7 +17,7 @@ import (
 var mock *dynamock.DynaMock
 
 func init() {
-	Dyna.Db, mock = dynamock.New()
+	humaws.Dyna.Db, mock = dynamock.New()
 }
 func TestPutMessageToDynamo(t *testing.T) {
 	//	lets start dynamock in action
