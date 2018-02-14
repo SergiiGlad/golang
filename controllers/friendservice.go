@@ -9,12 +9,12 @@ import (
 )
 
 type FriendService struct {
-  FriendshipDao interfaces.FriendDao
-  UserDao       interfaces.UserDao
+  FriendDao interfaces.FriendDao
+  UserDao   interfaces.UserDao
 }
 
 func (fs *FriendService) GetFriends(id int64) ([]dto.ShortUser, error) {
-  friends, err := fs.FriendshipDao.FriendsByUserID(id)
+  friends, err := fs.FriendDao.FriendsByUserID(id)
   shortFriends := []dto.ShortUser{}
   if err != nil {
     return shortFriends, err
@@ -26,7 +26,7 @@ func (fs *FriendService) GetFriends(id int64) ([]dto.ShortUser, error) {
 }
 
 func (fs *FriendService) GetUsersWithRequests(id int64) ([]dto.ShortUser, error) {
-  friends, err := fs.FriendshipDao.UsersWithRequestsTo(id)
+  friends, err := fs.FriendDao.UsersWithRequestsTo(id)
   shortFriends := []dto.ShortUser{}
   if err != nil {
     return shortFriends, err
@@ -50,7 +50,7 @@ func usersToShortUsers(users []entity.User) []dto.ShortUser {
 
 
 func (fs *FriendService) GetFriendIds(id int64) ([]int64, error) {
-  friends, err := fs.FriendshipDao.FriendsByUserID(id)
+  friends, err := fs.FriendDao.FriendsByUserID(id)
   if err != nil {
     return []int64{}, err
   }
@@ -99,7 +99,7 @@ func (fs *FriendService) setConnection(connection *entity.Connection) (entity.Co
     return *connection, errors.New("Connection already exists")
   }
 
-  if err := fs.FriendshipDao.InsertConnection(connection); err != nil {
+  if err := fs.FriendDao.InsertConnection(connection); err != nil {
     return *connection, err
   }
 
@@ -123,7 +123,7 @@ func (fs *FriendService) ApproveFriendRequest(connection *entity.Connection) err
 
   connection.Status = entity.Approved
 
-  err = fs.FriendshipDao.UpdateStatus(connection)
+  err = fs.FriendDao.UpdateStatus(connection)
   if err != nil {
     return err
   }
@@ -152,7 +152,7 @@ func (fs *FriendService) RejectFriendRequest(connection *entity.Connection) erro
     return errors.New("Unable to reject non existing connection")
   }
 
-  return fs.FriendshipDao.Delete(connection)
+  return fs.FriendDao.Delete(connection)
 }
 
 func (fs *FriendService) DeleteFriendship(friendship *entity.Connection) error {
@@ -170,7 +170,7 @@ func (fs *FriendService) DeleteFriendship(friendship *entity.Connection) error {
     return errors.New("Unable to delete non existing friendship")
   }
 
-  return fs.FriendshipDao.Delete(friendship)
+  return fs.FriendDao.Delete(friendship)
 }
 
 func (fs *FriendService) validateConnectionUsers(connection *entity.Connection) error {
@@ -195,7 +195,7 @@ func (fs *FriendService) validateConnectionUsers(connection *entity.Connection) 
 }
 
 func (fs *FriendService) connectionExists(connection *entity.Connection) (bool, error) {
-  _, err := fs.FriendshipDao.FindConnection(connection)
+  _, err := fs.FriendDao.FindConnection(connection)
   switch err {
   case sql.ErrNoRows:
     return false, nil
