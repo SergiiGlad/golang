@@ -18,9 +18,9 @@ type friendDaoImpl struct {
   requestsToId     *sql.Stmt
 }
 
-var _ interfaces.FriendshipDao = &friendDaoImpl{}
+var _ interfaces.FriendDao = &friendDaoImpl{}
 
-func newMySqlFriendshipDao(conn *sql.DB) (interfaces.FriendshipDao, error) {
+func newMySqlFriendshipDao(conn *sql.DB) (interfaces.FriendDao, error) {
 
   if err := conn.Ping(); err != nil {
     conn.Close()

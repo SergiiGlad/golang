@@ -26,8 +26,8 @@ var userQueriesRegexes []string = []string{
   `SELECT COUNT\(\*\) FROM users_data WHERE role_in_network =(.+)`,
 }
 
-var tokenPreps map[string]*sqlmock.ExpectedPrepare = make(map[string]*sqlmock.ExpectedPrepare)
 
+var userPreps map[string]*sqlmock.ExpectedPrepare = make(map[string]*sqlmock.ExpectedPrepare)
 
 func TestAddUser(t *testing.T) {
   user := entity.User{
@@ -52,10 +52,10 @@ func TestAddUser(t *testing.T) {
   var prep *sqlmock.ExpectedPrepare
   for _, query := range userQueriesRegexes {
     prep = mock.ExpectPrepare(query)
-    tokenPreps[query] = prep
+    userPreps[query] = prep
   }
 
-  tokenPreps[query].ExpectExec().WithArgs(user.Email, user.FirstName,
+  userPreps[query].ExpectExec().WithArgs(user.Email, user.FirstName,
     user.LastName, user.Phone, user.Role, user.AccStatus, user.AvatarRef).WillReturnResult(sqlmock.NewResult(1, 1))
 
   userRepository, err := newMySqlUserDao(db)
@@ -66,6 +66,72 @@ func TestAddUser(t *testing.T) {
   insertedUser, err := userRepository.AddUser(&user)
   assert.NoError(t, err)
   assert.Equal(t, int64(1), insertedUser.ID)
+}
+
+func TestUpdateUser(t *testing.T) {
+  user := entity.User {
+    1,
+    "email@gmail.com",
+    "Name",
+    "Surname",
+    "+3805436857",
+    entity.UserRole,
+    entity.Active,
+    "",
+  }
+
+  db, mock, err := sqlmock.New()
+  if err != nil {
+    t.Fatalf("an error:\n'%s'\nwas not expected when opening a stub database connection", err)
+  }
+  defer db.Close()
+
+  query := `UPDATE users_data SET email =(.+), first_name =(.+), last_name =(.+), phone =(.+), role_in_network =(.+), account_status =(.+), avatar_ref =(.+) WHERE user_id =(.+)`
+
+  var prep *sqlmock.ExpectedPrepare
+  for _, query := range userQueriesRegexes {
+    prep = mock.ExpectPrepare(query)
+    preps[query] = prep
+  }
+
+  preps[query].ExpectExec().WithArgs(user.Email, user.FirstName,
+    user.LastName, user.Phone, user.Role, user.AccStatus, user.AvatarRef, user.ID).WillReturnResult(sqlmock.NewResult(1, 1))
+
+  userRepository, err := newMySqlUserDao(db)
+  if err != nil {
+    t.Fatalf("an error:\n'%s'\nwas not expected when opening a stub database connection", err)
+  }
+
+  updatedUser, err := userRepository.UpdateUser(1, &user)
+  assert.NoError(t, err)
+  assert.Equal(t, int64(1), updatedUser.ID)
+}
+
+func TestDeleteUser(t *testing.T) {
+
+  db, mock, err := sqlmock.New()
+  if err != nil {
+    t.Fatalf("an error:\n'%s'\nwas not expected when opening a stub database connection", err)
+  }
+  defer db.Close()
+
+  query := `UPDATE users_data SET account_status = 'deleted' WHERE user_id =(.+)`
+
+  var prep *sqlmock.ExpectedPrepare
+  for _, query := range userQueriesRegexes {
+    prep = mock.ExpectPrepare(query)
+    preps[query] = prep
+  }
+
+  preps[query].ExpectExec().WithArgs(1).WillReturnResult(sqlmock.NewResult(1, 1))
+
+  userRepository, err := newMySqlUserDao(db)
+  if err != nil {
+    t.Fatalf("an error:\n'%s'\nwas not expected when opening a stub database connection", err)
+  }
+
+  err = userRepository.DeleteUser(1)
+  assert.NoError(t, err)
 }
 
 func TestFindUserById(t *testing.T) {
@@ -84,10 +150,10 @@ func TestFindUserById(t *testing.T) {
   var prep *sqlmock.ExpectedPrepare
   for _, query := range userQueriesRegexes {
     prep = mock.ExpectPrepare(query)
-    tokenPreps[query] = prep
+    userPreps[query] = prep
   }
 
-  tokenPreps[query].ExpectQuery().WillReturnRows(rows)
+  userPreps[query].ExpectQuery().WillReturnRows(rows)
 
   userRepo, err := newMySqlUserDao(db)
   if err != nil {
@@ -115,10 +181,10 @@ func TestFindUserByEmail(t *testing.T) {
   var prep *sqlmock.ExpectedPrepare
   for _, query := range userQueriesRegexes {
     prep = mock.ExpectPrepare(query)
-    tokenPreps[query] = prep
+    userPreps[query] = prep
   }
 
-  tokenPreps[query].ExpectQuery().WillReturnRows(rows)
+  userPreps[query].ExpectQuery().WillReturnRows(rows)
 
   userRepo, err := newMySqlUserDao(db)
   if err != nil {
@@ -146,10 +212,10 @@ func TestFindUserByPhone(t *testing.T) {
   var prep *sqlmock.ExpectedPrepare
   for _, query := range userQueriesRegexes {
     prep = mock.ExpectPrepare(query)
-    tokenPreps[query] = prep
+    userPreps[query] = prep
   }
 
-  tokenPreps[query].ExpectQuery().WillReturnRows(rows)
+  userPreps[query].ExpectQuery().WillReturnRows(rows)
 
   userRepo, err := newMySqlUserDao(db)
   if err != nil {

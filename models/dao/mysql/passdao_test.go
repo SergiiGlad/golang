@@ -16,7 +16,7 @@ var passQueriesRegexes []string = []string {
   `SELECT (.+) FROM users_passwords WHERE user_id =(.+)`,
 }
 
-var passPreps map [string] *sqlmock.ExpectedPrepare = make(map[string] *sqlmock.ExpectedPrepare)
+var passPreps = make(map[string] *sqlmock.ExpectedPrepare)
 
 func TestInsertPass(t *testing.T) {
   password := entity.Password{
