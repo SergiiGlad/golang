@@ -15,7 +15,8 @@
     },
     "AWS_DEFAULT_REGION" : {
       "description": "Region of your DynamoDB instance, NOTE THIS IS NOT REGION NAME",
-      "type": "REGION column from https://docs.aws.amazon.com/general/latest/gr/rande.html#ddb_region as string"
+      "type": "REGION column from https://docs.aws.amazon.com/general/latest/gr/rande.html#ddb_region as string",
+      "default": "eu-central-1"
     },
     "AWS_BUCKET_NAME" : {
       "description" : "AWS S3 bucket name, where files are stored",
@@ -23,7 +24,8 @@
     },
     "GO_MYSQL_DSN": {
       "description": "https://en.wikipedia.org/wiki/Data_source_name , basically this is string to connect to MYSQL",
-      "type": "DSN, example 'username:password@tcp(localhost:3306)/'"
+      "type": "DSN, example 'username:password@tcp(localhost:3306)/'",
+      "default": "root:@tcp(localhost:3306)/"
     }
   },
   "config.json": {
