@@ -8,6 +8,7 @@ import (
   "net/http"
 
   "github.com/gorilla/mux"
+  "go-team-room/controllers/messages"
 )
 
 /*
