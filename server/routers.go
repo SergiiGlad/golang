@@ -7,8 +7,6 @@ import (
   "html/template"
   "net/http"
 
-  "go-team-room/controllers/messages"
-
   "github.com/gorilla/mux"
 )
 
@@ -71,154 +69,170 @@ var routes = Routes{
   },
 
   Route{
-    "NewProfileByAdmin",
-    "POST",
-    "/admin/profile",
-    createProfileByAdmin(userService),
-  },
+  "NewProfileByAdmin",
+  "POST",
+  "/admin/profile",
+  createProfileByAdmin(userService),
+},
 
   Route{
-    "UpdateProfileByAdmin",
-    "PUT",
-    "/admin/profile/{user_id:[0-9]+}",
-    updateProfileByAdmin(userService),
-  },
+  "UpdateProfileByAdmin",
+  "PUT",
+  "/admin/profile/{user_id:[0-9]+}",
+  updateProfileByAdmin(userService),
+},
 
   Route{
-    "DeleteProfileByAdmin",
-    "DELETE",
-    "/admin/profile/{user_id:[0-9]+}",
-    deleteProfileByAdmin(userService),
-  },
+  "DeleteProfileByAdmin",
+  "DELETE",
+  "/admin/profile/{user_id:[0-9]+}",
+  deleteProfileByAdmin(userService),
+},
 
   Route{
-    "CreateNewPost",
-    "POST",
-    "/post",
-    CreateNewPost,
-  },
+  "CreateNewPost",
+  "POST",
+  "/post",
+  CreateNewPost,
+},
 
   Route{
-    "DeletePost",
-    "DELETE",
-    "/post/{post_id}",
-    DeletePost,
-  },
+  "DeletePost",
+  "DELETE",
+  "/post/{post_id}",
+  DeletePost,
+},
 
   Route{
-    "GetPostByPostID",
-    "GET",
-    "/post/{post_id}",
-    GetPost,
-  },
+  "GetPostByPostID",
+  "GET",
+  "/post/{post_id}",
+  GetPost,
+},
 
   Route{
-    "GetPostByUserID",
-    "GET",
-    "/post/user/{user_id}",
-    GetPostByUserID,
-  },
+  "GetPostByUserID",
+  "GET",
+  "/post/user/{user_id}",
+  GetPostByUserID,
+},
 
   Route{
-    "UpdatePost",
-    "PUT",
-    "/post/{post_id}",
-    UpdatePost,
-  },
+  "UpdatePost",
+  "PUT",
+  "/post/{post_id}",
+  UpdatePost,
+},
 
   Route{
-    "GetFile",
-    "GET",
-    "/uploads/{file_link}",
-    GetFileFromS3,
-  },
+  "GetFile",
+  "GET",
+  "/uploads/{file_link}",
+  GetFileFromS3,
+},
 
   Route{
-    "Login",
-    "POST",
-    "/login",
-    loginhandler,
-  },
+  "Login",
+  "POST",
+  "/login",
+  loginhandler,
+},
 
   Route{
-    "Logout",
-    "GET",
-    "/logout",
-    logout,
-  },
+  "Logout",
+  "GET",
+  "/logout",
+  logout,
+},
 
   Route{
-    "GetMessage",
-    "GET",
-    "/messages",
-    //Test this rout by next string
-    //curl -X GET "http://localhost:8080/messages?id=33&numberOfMessages=1" -H  "accept: application/json"
-    messages.HandlerOfGetMessages,
-  },
+  "GetMessage",
+  "GET",
+  "/messages",
+  //Test this rout by next string
+  //curl -X GET "http://localhost:8080/messages?id=33&numberOfMessages=1" -H  "accept: application/json"
+  messages.HandlerOfGetMessages,
+},
   Route{
-    "PutMessage",
-    "POST",
-    "/messages",
-    //Test this rout by next string
-    //curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"message_chat_room_id": "997","message_data": {"binary_parts": [{"bin_data": null,"bin_name": null }],"text": "0 A lot of text and stupid smiles :)))))","type": "TypeOfHumMessage-UNDEFINED FOR NOW"},"message_id": "20180110155343150","message_parent_id": "","message_social_status": {"Dislike": 10,"Like": 222,"Views": 303 },"message_timestamp": "20180110155533111","message_user": {"id_sql": 13,"name_sql": "Vasya" }}' 'http://localhost:8080/messages'
-    messages.HandlerOfPOSTMessages,
-  },
+  "PutMessage",
+  "POST",
+  "/messages",
+  //Test this rout by next string
+  //curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"message_chat_room_id": "997","message_data": {"binary_parts": [{"bin_data": null,"bin_name": null }],"text": "0 A lot of text and stupid smiles :)))))","type": "TypeOfHumMessage-UNDEFINED FOR NOW"},"message_id": "20180110155343150","message_parent_id": "","message_social_status": {"Dislike": 10,"Like": 222,"Views": 303 },"message_timestamp": "20180110155533111","message_user": {"id_sql": 13,"name_sql": "Vasya" }}' 'http://localhost:8080/messages'
+  messages.HandlerOfPOSTMessages,
+},
 
   Route{
-    "RegisterUser",
-    "POST",
-    "/registration",
-    registerUser(userService, emailService),
-  },
+  "RegisterUser",
+  "POST",
+  "/registration",
+  registerUser(userService, emailService),
+},
 
   Route{
-    "RecoveryPass",
-    "GET",
-    "/recoveryPass",
-    recoveryPass(userService, emailService),
-  },
+  "RecoveryPass",
+  "GET",
+  "/recoveryPass",
+  recoveryPass(userService, emailService),
+},
 
   Route{
-    "ConfirmAccount",
-    "GET",
-    "/confirm/email/{token}",
-    ConfirmAccount(tokenService),
-  },
+  "ConfirmAccount",
+  "GET",
+  "/confirm/email/{token}",
+  ConfirmAccount(tokenService),
+},
 
   Route{
-    "GetUserFriends",
-    "GET",
-    "/profile/{user_id:[0-9]+}/friends",
-    getFriends(friendSerivce),
-  },
+  "GetUserFriends",
+  "GET",
+  "/profile/{user_id:[0-9]+}/friends",
+  getFriends(friendSerivce),
+},
 
   Route{
-    "GetUsersWithRequests",
-    "GET",
-    "/profile/{user_id:[0-9]+}/friends/requests",
-    getUsersWithRequests(friendSerivce),
-  },
+  "GetUsersWithRequests",
+  "GET",
+  "/profile/{user_id:[0-9]+}/friends/requests",
+  getUsersWithRequests(friendSerivce),
+},
 
   Route{
-    "NewFriendRequest",
-    "POST",
-    "/friend",
-    newFriendRequest(friendSerivce),
-  },
+  "NewFriendRequest",
+  "POST",
+  "/friend",
+  newFriendRequest(friendSerivce),
+},
 
   Route{
-    "ReplyToFriendRequest",
-    "PUT",
-    "/friend",
-    replyToFriendRequest(friendSerivce),
-  },
+  "ReplyToFriendRequest",
+  "PUT",
+  "/friend",
+  replyToFriendRequest(friendSerivce),
+},
 
   Route{
-    "DeleteFriend",
-    "DELETE",
-    "/friend",
-    deleteFriendship(friendSerivce),
-  },
+  "DeleteFriend",
+  "DELETE",
+  "/friend",
+  deleteFriendship(friendSerivce),
+},
+  Route{
+  "GetMessage",
+  "GET",
+  "/messages",
+  //Test this rout by next string
+  //curl -X GET "http://localhost:8080/messages?id=33&numberOfMessages=1" -H  "accept: application/json"
+  messages.HandlerOfGetMessages,
+},
+  Route{
+  "PutMessage",
+  "POST",
+  "/messages",
+  //Test this rout by next string
+  //curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"message_chat_room_id": "997","message_data": {"binary_parts": [{"bin_data": null,"bin_name": null }],"text": "0 A lot of text and stupid smiles :)))))","type": "TypeOfHumMessage-UNDEFINED FOR NOW"},"message_id": "20180110155343150","message_parent_id": "","message_social_status": {"Dislike": 10,"Like": 222,"Views": 303 },"message_timestamp": "20180110155533111","message_user": {"id_sql": 13,"name_sql": "Vasya" }}' 'http://localhost:8080/messages'
+  messages.HandlerOfPOSTMessages,
+},
   // and so on, just add new Route structs to this array
 }
 
