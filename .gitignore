@@ -23,4 +23,5 @@ main.exe
 logs
 *.log
 /main
+go-team-room
 Gopkg.lock

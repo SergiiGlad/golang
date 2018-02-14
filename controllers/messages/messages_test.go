@@ -98,7 +98,6 @@ func TestGetMessageFromDynamoByUserID(t *testing.T) {
 		t.Errorf("Test TestGetMessageFromDynamoByUserID Fail!")
 	}
 }
-
 func TestHandlerOfGetMessages(t *testing.T) {
 	req, err := http.NewRequest("GET", "/messages/", nil)
 	if err != nil {
@@ -146,3 +145,4 @@ func TestHandlerOfGetMessages(t *testing.T) {
 	// 		respRecorder.Body.String(), expected)
 	// }
 }
+
