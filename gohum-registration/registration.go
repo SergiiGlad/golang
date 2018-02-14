@@ -165,12 +165,12 @@ func RestoreRouterHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write(jsonValue)
 	}
 }
-
-func main() {
-	http.HandleFunc("/restore", RestoreRouterHandler)
-	http.HandleFunc("/register", RegisterNewUserHandler) // установим роутер
-	err := http.ListenAndServe(":9000", nil)             // задаем слушать порт
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
-}
+//
+//func main() {
+//	http.HandleFunc("/restore", RestoreRouterHandler)
+//	http.HandleFunc("/register", RegisterNewUserHandler) // установим роутер
+//	err := http.ListenAndServe(":9000", nil)             // задаем слушать порт
+//	if err != nil {
+//		log.Fatal("ListenAndServe: ", err)
+//	}
+//}
