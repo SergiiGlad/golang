@@ -18,7 +18,7 @@ var (
   Conn          *sql.DB
   UserDao       interfaces.UserDao
   PasswordDao   interfaces.PasswordDao
-  FriendshipDao interfaces.FriendshipDao
+  FriendshipDao interfaces.FriendDao
 )
 
 func init() {

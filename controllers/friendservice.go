@@ -9,7 +9,7 @@ import (
 )
 
 type FriendService struct {
-  FriendshipDao interfaces.FriendshipDao
+  FriendshipDao interfaces.FriendDao
   UserDao       interfaces.UserDao
 }
 
