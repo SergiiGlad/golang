@@ -105,7 +105,7 @@ var createTableStatements = []string{
   user_id INTEGER REFERENCES users_data(user_id)
   );`,
 
-  `CREATE TABLE friend_list (
+  `CREATE TABLE IF NOT EXISTS friend_list (
   friend_user_id INTEGER REFERENCES users_data(user_id),
   user_id INTEGER REFERENCES users_data(user_id),
   connection_status ENUM('approved', 'rejected', 'waiting') NOT NULL,
@@ -136,7 +136,7 @@ func ensureTablesExist() error {
   if _, err := conn.Exec("DESCRIBE users_data"); err != nil {
     // MySQL error 1146 is "table does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1146 {
-      return fmt.Errorf("mysql: could not connect to the database table: users_data")
+      return createAllTables(conn)
     }
 
     return fmt.Errorf("mysql: could not connect to the database: %v", err)
@@ -145,7 +145,7 @@ func ensureTablesExist() error {
   if _, err := conn.Exec("DESCRIBE users_passwords"); err != nil {
     // MySQL error 1146 is "table does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1146 {
-      return fmt.Errorf("mysql: could not connect to the database table: users_passwords")
+      return createAllTables(conn)
     }
 
     return fmt.Errorf("mysql: could not connect to the database: %v", err)
@@ -154,7 +154,7 @@ func ensureTablesExist() error {
   if _, err := conn.Exec("DESCRIBE friend_list"); err != nil {
     // MySQL error 1146 is "table does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1146 {
-      return fmt.Errorf("mysql: could not connect to the database table: friend_list")
+      return createAllTables(conn)
     }
 
     return fmt.Errorf("mysql: could not connect to the database: %v", err)
@@ -163,7 +163,7 @@ func ensureTablesExist() error {
   if _, err := conn.Exec("DESCRIBE user_tokens"); err != nil {
     // MySQL error 1146 is "table does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1146 {
-      return fmt.Errorf("mysql: could not connect to the database table: user_tokenst")
+      return createAllTables(conn)
     }
 
     return fmt.Errorf("mysql: could not connect to the database: %v", err)
