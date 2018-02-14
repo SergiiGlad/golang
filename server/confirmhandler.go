@@ -5,6 +5,7 @@ import (
   "github.com/gorilla/mux"
   "go-team-room/controllers"
   "github.com/pkg/errors"
+  "go-team-room/conf"
 )
 
 func ConfirmAccount(service controllers.TokenGeneratorInterface) http.HandlerFunc {
@@ -22,6 +23,8 @@ func ConfirmAccount(service controllers.TokenGeneratorInterface) http.HandlerFun
       responseError(w, errors.New("Cant approve user for token this token." ), http.StatusBadRequest)
       return
     }
+    w.WriteHeader(http.StatusSeeOther)
+    w.Header().Set("Location", conf.LoginUrl)
     log.Infof("Successfully approve user for token: %s", token)
   }
 }

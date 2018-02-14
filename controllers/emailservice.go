@@ -2,8 +2,7 @@ package controllers
 
 import (
   "go-team-room/models/dto"
-  "errors"
-  "fmt"
+  "go-team-room/conf"
 )
 
 const (
@@ -23,22 +22,20 @@ type UserEmailService struct {
 
 var _ UserEmailServiceInterface = &UserEmailService{}
 
-// Send all emails if at least one fails return error with explanation.
-func (ess *UserEmailService) SendEmails(emails ...dto.Email) error {
+func (ess *UserEmailService) SendEmails(emails ...dto.Email) {
   log.Debugf("Start sending emails: %s", emails)
   for _, e := range emails {
     if !ValidEmail(e.To) {
       log.Errorf("Email address of email is invalid, email: %s, address: %s", e, e.To)
-      return errors.New(fmt.Sprintf(invalidEmail, e.To))
     }
-    err := ess.ES.SendEmail(e)
-    if err != nil {
-      log.Errorf("Fail to send email: %s, error: %s", e, err)
-      return errors.New(serverNoResponse)
+    if conf.EnableSendMails {
+      err := ess.ES.SendEmail(e)
+      if err != nil {
+        log.Errorf("Fail to send email: %s, error: %s", e, err)
+      }
     }
   }
   log.Infof("Successfully send emails: %s", emails)
-  return nil
 }
 
 // Send email with welcome text for user with 'CONFIRMED' email.
@@ -46,7 +43,8 @@ func (ess *UserEmailService) SendWelcomeEmail(user dto.RequestUserDto) error {
   log.Debugf("Sending new Welcome email for user: %s, subject: %s", user, welcomeSubject)
   body := ess.BG.GenerateWelcomeBody(user)
   email := dto.RequestUserDtoToEmail(user, welcomeSubject, body)
-  return ess.SendEmails(email)
+  go ess.SendEmails(email)
+  return nil
 }
 
 // Send email with request for email confirmation to User with unconfirmed email.
@@ -59,7 +57,8 @@ func (ess *UserEmailService) SendRegistrationConfirmationEmail(user dto.RequestU
   }
   body := ess.BG.GenerateRegistrationConfirmationEmail(user, token)
   email := dto.RequestUserDtoToEmail(user, registrationSubject, body)
-  return ess.SendEmails(email)
+  go ess.SendEmails(email)
+  return nil
 }
 
 // Send email with confirmation for password change.
@@ -67,5 +66,6 @@ func (ess *UserEmailService) SendChangePasswordConfirmationEmail(user dto.Reques
   log.Debugf("Sending new Password Confirmation email for user: %s, subject: %s", user, passwordSubject)
   body := ess.BG.GenerateChangePasswordConfirmationEmail(user, newPassword)
   email := dto.RequestUserDtoToEmail(user, passwordSubject, body)
-  return ess.SendEmails(email)
+  go ess.SendEmails(email)
+  return nil
 }

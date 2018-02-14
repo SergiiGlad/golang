@@ -47,7 +47,7 @@ func TestConfirmAccount(t *testing.T) {
       description:
       "If token not used and no error occurred [Should return 200 OK]",
       handlerFunc:        ConfirmAccount(&TokenGeneratorMock{}),
-      expectedStatusCode: http.StatusOK,
+      expectedStatusCode: http.StatusSeeOther,
       pathToken:          "token",
     },
     {

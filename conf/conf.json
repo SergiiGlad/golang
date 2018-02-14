@@ -2,6 +2,7 @@
   "ip": "127.0.0.1",
   "port": "8080",
   "login_url": "http://127.0.0.1:8080",
+  "send_emails": false,
 
   "my_sql_db_name": "goteamroom",
 
@@ -15,7 +16,7 @@
   "out": {
     "name": "stdout"
   },
-  "level": "debug",
+  "level": "info",
   "formatter": {
     "name": "text"
   },

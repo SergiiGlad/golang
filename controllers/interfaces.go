@@ -23,8 +23,8 @@ type FriendServiceInterface interface {
 }
 
 type UserEmailServiceInterface interface {
-  // Send all emails if at least one fails return error with explanation.
-  SendEmails(email ...dto.Email) error
+  // Send all emails attended to use in go routines, as async operation.
+  SendEmails(email ...dto.Email)
   // Send email with welcome text for user with 'CONFIRMED' email.
   SendWelcomeEmail(user dto.RequestUserDto) error
   // Send email with request for email confirmation to User with unconfirmed email.
