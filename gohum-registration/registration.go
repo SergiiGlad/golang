@@ -10,7 +10,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql" // Дополнительный модуль для mysql
 	"gopkg.in/hlandau/passlib.v1/hash/bcrypt"
-	"fmt"
 )
 
 // Данные юзера для восстановления пароля
@@ -63,7 +62,7 @@ func insertNewPass(db *sql.DB, user *UserToRestore, hashPass string){
 	if err != nil {
 		log.Fatal(err)
 	}
-	res, err := stmt.Exec(hashPass)
+	_, err = stmt.Exec(hashPass)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,7 +78,7 @@ func writeGenerPass(user UserToRestore) {
 	var db *sql.DB
 	openDataBase(&db)
 	defer db.Close()
-	insertNewPass(db, user, hashPass)
+	insertNewPass(db, &user, hashPass)
 	fmt.Println(hashPass)
 
 }
