@@ -358,4 +358,3 @@ func TestUserServiceDelete(t *testing.T) {
     }
   }
 }
-

@@ -282,3 +282,4 @@ func TestDeleteFriendship(t *testing.T) {
     }
   }
 }
+

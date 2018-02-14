@@ -1,7 +1,6 @@
 package controllers
 
 import (
-  "regexp"
   "errors"
   "gopkg.in/hlandau/passlib.v1/hash/bcrypt"
   "database/sql"
@@ -41,6 +40,7 @@ func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUser
 
   if ValidPasswordLength(userDto.Password) == false {
     return responseUserDto, errors.New("Password too short.")
+
   }
 
   hashPass, err := bcrypt.Crypter.Hash(userDto.Password)
@@ -205,47 +205,7 @@ func CheckUniquePhone(phone string, dao interfaces.UserDao) error {
   return nil
 }
 
-//ValidRegexItem is helper function that is used by ValidEmail and ValidPhone as common logic for both.
-func ValidRegexItem(item string, pattern string) bool {
 
-  itemRegex := regexp.MustCompile(pattern)
-  if isItemOk := itemRegex.MatchString(item); isItemOk == false {
-    return false
-  }
-
-  return true
-}
-
-//ValidEmail return ValidRegexItem function result that checks email string argument
-// matches the email regex pattern
-func ValidEmail(email string) bool {
-  return ValidRegexItem(email, "^[a-z0-9]+@[a-z]+[.][a-z]+$")
-}
-
-//ValidPhone return ValidRegexItem function result that checks phone string argument
-// matches the phone regex pattern
-func ValidPhone(phone string) bool {
-  return ValidRegexItem(phone, "^[+][0-9]{12}$")
-}
-
-//ValidCyrillicName return ValidRegexItem result that checks if name string is valid cyrillic name pattern
-func ValidCyrillicName(name string) bool {
-  return ValidRegexItem(name, "^[А-Я][а-я]{1,49}$")
-}
-
-//ValidLatinName return ValidRegexItem result that checks if name string is valid latin name pattern
-func ValidLatinName(name string) bool {
-  return ValidRegexItem(name, "^[A-Z][a-z]{1,49}$")
-}
-
-//ValidPasswordLength checks password length is bigger than 6 symbols
-func ValidPasswordLength(password string) bool {
-  if len(password) < 6 {
-    return false
-  }
-
-  return true
-}
 
 //newPassIfValid method validate and create new password. It just checks password length and
 //if length ok then password should be hashed and written into database
@@ -280,4 +240,3 @@ func NameLetterToUppep(user *entity.User) {
   user.FirstName = strings.ToUpper(string([]rune(user.FirstName)[0])) + string([]rune(user.FirstName)[1:])
   user.LastName = strings.ToUpper(string([]rune(user.LastName)[0])) + string([]rune(user.LastName)[1:])
 }
-

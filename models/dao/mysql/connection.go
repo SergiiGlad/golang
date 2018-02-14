@@ -1,8 +1,8 @@
 package mysql
 
 import (
-	"go-team-room/conf"
-	"go-team-room/models/dao/interfaces"
+  "go-team-room/conf"
+  "go-team-room/models/dao/interfaces"
   "database/sql"
   "fmt"
   "github.com/go-sql-driver/mysql"
@@ -19,6 +19,7 @@ var (
   UserDao       interfaces.UserDao
   PasswordDao   interfaces.PasswordDao
   FriendshipDao interfaces.FriendDao
+  TokenDao      interfaces.UserTokenDao
 )
 
 func init() {
@@ -45,9 +46,11 @@ func init() {
     log.Fatal(err)
   }
 
+  TokenDao, err = newMySqlTokenDao(Conn)
   if err != nil {
-    log.Fatalf("Could not connect Conn: %s", err)
+    log.Fatal(err)
   }
+
 }
 
 func newMySqlConnection() (*sql.DB, error) {
@@ -57,7 +60,7 @@ func newMySqlConnection() (*sql.DB, error) {
     return nil, err
   }
 
-  conn, err := sql.Open("mysql", conf.MysqlDsn + conf.MysqlDBName)
+  conn, err := sql.Open("mysql", conf.MysqlDsn+conf.MysqlDBName)
 
   if err != nil {
     return nil, fmt.Errorf("mysql: could not get a connection: %v", err)
@@ -78,12 +81,12 @@ var createTableStatements = []string{
 
   `CREATE TABLE IF NOT EXISTS users_data (
     user_id SERIAL PRIMARY KEY,
-    email VARCHAR(100) NOT NULL,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
     role_in_network ENUM('admin', 'user') NOT NULL,
-    account_status ENUM('active', 'deleted') NOT NULL,
+    account_status ENUM('inactive', 'active', 'deleted') NOT NULL,
     avatar_ref MEDIUMTEXT
   );`,
 
@@ -94,7 +97,15 @@ var createTableStatements = []string{
     user_id INTEGER REFERENCES users_data(user_id)
   );`,
 
-  `CREATE TABLE friend_list (
+  `CREATE TABLE IF NOT EXISTS user_tokens (
+  token_id SERIAL PRIMARY KEY,
+  token VARCHAR(128) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  is_active BOOLEAN,
+  user_id INTEGER REFERENCES users_data(user_id)
+  );`,
+
+  `CREATE TABLE IF NOT EXISTS friend_list (
   friend_user_id INTEGER REFERENCES users_data(user_id),
   user_id INTEGER REFERENCES users_data(user_id),
   connection_status ENUM('approved', 'rejected', 'waiting') NOT NULL,
@@ -115,7 +126,7 @@ func ensureTablesExist() error {
       "could be bad address, or this address is not whitelisted for access.")
   }
 
-  if  _, err := conn.Exec(fmt.Sprintf("USE %s", conf.MysqlDBName)); err != nil {
+  if _, err := conn.Exec(fmt.Sprintf("USE %s", conf.MysqlDBName)); err != nil {
     // MySQL error 1049 is "database does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1049 {
       return createAllTables(conn)
@@ -125,7 +136,7 @@ func ensureTablesExist() error {
   if _, err := conn.Exec("DESCRIBE users_data"); err != nil {
     // MySQL error 1146 is "table does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1146 {
-      return fmt.Errorf("mysql: could not connect to the database table: users_data")
+      return createAllTables(conn)
     }
 
     return fmt.Errorf("mysql: could not connect to the database: %v", err)
@@ -134,7 +145,7 @@ func ensureTablesExist() error {
   if _, err := conn.Exec("DESCRIBE users_passwords"); err != nil {
     // MySQL error 1146 is "table does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1146 {
-      return fmt.Errorf("mysql: could not connect to the database table: users_passwords")
+      return createAllTables(conn)
     }
 
     return fmt.Errorf("mysql: could not connect to the database: %v", err)
@@ -143,12 +154,20 @@ func ensureTablesExist() error {
   if _, err := conn.Exec("DESCRIBE friend_list"); err != nil {
     // MySQL error 1146 is "table does not exist"
     if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1146 {
-      return fmt.Errorf("mysql: could not connect to the database table: friend_list")
+      return createAllTables(conn)
     }
 
     return fmt.Errorf("mysql: could not connect to the database: %v", err)
   }
 
+  if _, err := conn.Exec("DESCRIBE user_tokens"); err != nil {
+    // MySQL error 1146 is "table does not exist"
+    if mErr, ok := err.(*mysql.MySQLError); ok && mErr.Number == 1146 {
+      return createAllTables(conn)
+    }
+
+    return fmt.Errorf("mysql: could not connect to the database: %v", err)
+  }
 
   return nil
 }

@@ -6,7 +6,15 @@ import (
   "go-team-room/models/dao/entity"
 )
 
-//ResponseUserDto is used in converting user data to json structure that is sent in response
+type LoginDto struct {
+  PhoneOrEmail string `json:"phoneOrEmail"`
+  Password     string `json:"password"`
+}
+
+func (login LoginDto) String() string {
+  return fmt.Sprint("Login object:\n\tLogin = %s\n\tPassword = %s\n\t", login.PhoneOrEmail, login.Password)
+}
+
 type ResponseUserDto struct {
   ID        int64   `json:"id"`
   Email     string  `json:"email"`
@@ -34,7 +42,7 @@ type RequestUserDto struct {
 
 func (user RequestUserDto) String() string {
   return fmt.Sprintf("User object:\n\tEmail = %s\n\tFirstName = %s\n\tLastName = %s\n\tPhone = %s\n\tPassword = %s\n",
-    user.Email, user.FirstName, user.LastName, user.Phone, user.Password)
+    user.Email, user.FirstName, user.LastName, user.Phone, "XXXXXX")
 }
 
 type ShortUser struct {
@@ -66,7 +74,7 @@ func RequestUserDtoToEntity(userDto *RequestUserDto) entity.User {
     userDto.LastName,
     userDto.Phone,
     userDto.Role,
-    entity.Active,
+    entity.InActive,
     "",
   }
 

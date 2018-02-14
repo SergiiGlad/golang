@@ -26,10 +26,11 @@ var userQueriesRegexes []string = []string{
   `SELECT COUNT\(\*\) FROM users_data WHERE role_in_network =(.+)`,
 }
 
-var preps = make(map[string] *sqlmock.ExpectedPrepare)
+
+var userPreps map[string]*sqlmock.ExpectedPrepare = make(map[string]*sqlmock.ExpectedPrepare)
 
 func TestAddUser(t *testing.T) {
-  user := entity.User {
+  user := entity.User{
     0,
     "email@gmail.com",
     "Name",
@@ -51,10 +52,10 @@ func TestAddUser(t *testing.T) {
   var prep *sqlmock.ExpectedPrepare
   for _, query := range userQueriesRegexes {
     prep = mock.ExpectPrepare(query)
-    preps[query] = prep
+    userPreps[query] = prep
   }
 
-  preps[query].ExpectExec().WithArgs(user.Email, user.FirstName,
+  userPreps[query].ExpectExec().WithArgs(user.Email, user.FirstName,
     user.LastName, user.Phone, user.Role, user.AccStatus, user.AvatarRef).WillReturnResult(sqlmock.NewResult(1, 1))
 
   userRepository, err := newMySqlUserDao(db)
@@ -149,10 +150,10 @@ func TestFindUserById(t *testing.T) {
   var prep *sqlmock.ExpectedPrepare
   for _, query := range userQueriesRegexes {
     prep = mock.ExpectPrepare(query)
-    preps[query] = prep
+    userPreps[query] = prep
   }
 
-  preps[query].ExpectQuery().WillReturnRows(rows)
+  userPreps[query].ExpectQuery().WillReturnRows(rows)
 
   userRepo, err := newMySqlUserDao(db)
   if err != nil {
@@ -180,10 +181,10 @@ func TestFindUserByEmail(t *testing.T) {
   var prep *sqlmock.ExpectedPrepare
   for _, query := range userQueriesRegexes {
     prep = mock.ExpectPrepare(query)
-    preps[query] = prep
+    userPreps[query] = prep
   }
 
-  preps[query].ExpectQuery().WillReturnRows(rows)
+  userPreps[query].ExpectQuery().WillReturnRows(rows)
 
   userRepo, err := newMySqlUserDao(db)
   if err != nil {
@@ -211,10 +212,10 @@ func TestFindUserByPhone(t *testing.T) {
   var prep *sqlmock.ExpectedPrepare
   for _, query := range userQueriesRegexes {
     prep = mock.ExpectPrepare(query)
-    preps[query] = prep
+    userPreps[query] = prep
   }
 
-  preps[query].ExpectQuery().WillReturnRows(rows)
+  userPreps[query].ExpectQuery().WillReturnRows(rows)
 
   userRepo, err := newMySqlUserDao(db)
   if err != nil {

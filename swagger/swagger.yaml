@@ -1,8 +1,8 @@
 swagger: '2.0'
 info:
   description: Social network for file sharing
-  version: 1.0.0
-  title: File Sharing Socila Network
+  version: 1.0.1
+  title: File Sharing Social Network
 host: 'localhost:8080'
 basePath: /
 schemes:
@@ -94,6 +94,23 @@ paths:
           description: Cant register user
           schema:
             $ref: '#/definitions/InvalidRegistrationResponse'
+  /recoveryPass:
+      get:
+        summary: User forgot password
+        consumes:
+          - application/json
+        produces:
+          - application/json
+        parameters:
+          - in: query
+            name: email
+            type: string
+            required: true
+        responses:
+          '200':
+            description: Email with password was sent
+          '400':
+            description: Cant found email
   /login:
     post:
       summary: Login User
@@ -169,6 +186,11 @@ paths:
     get:
       summary: Retrn all/'number of latest messages' of logined user.
       parameters:
+        - name: id
+          in: query
+          description: Current user id
+          required: true
+          type: integer
         - name: numberOfMessages
           in: query
           description: Number of latest messages to be returned if not present return all
@@ -181,7 +203,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Message'
-        '403':
+        '401':
           description: User wasnt login
     post:
       summary: Send message from current logined user to specified chat room.
@@ -194,7 +216,7 @@ paths:
           name: Message
           required: true
           schema:
-            $ref: '#/definitions/MessageBody'
+            $ref: '#/definitions/Message'
       responses:
         '200':
           description: If succesfully send message.
@@ -202,16 +224,26 @@ paths:
             $ref: '#/definitions/Message'
         '400':
           description: If failed to send message.
-        '403':
+        '401':
           description: User wasnt login
   /messages/new:
     get:
-      summary: Return all/'number of latest messages' to logined user with isNew = true
+      summary: Return all/'number of latest messages' to logined user witha are newer than lastDate
       parameters:
+        - name: id
+          in: query
+          description: Current user id (later move it to cookie)
+          required: true
+          type: integer
+        - name: lastDate
+          in: query
+          description: Date to start search new msg
+          required: true
+          type: string
         - name: numberOfMessages
           in: query
           description: Number of latest messages to be returned if not present return all
-          required: true
+          required: false
           type: string
       responses:
         '200':
@@ -220,19 +252,19 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Message'
-        '403':
+        '401':
           description: User wasnt login
-  '/posts/{userId}':
+  '/post/user/{user_id}':
     get:
       summary: Retrun all posts of specified user
       produces:
         - application/json
       parameters:
-        - name: userId
+        - name: user_id
           in: path
           description: Id of user
           required: true
-          type: integer
+          type: string
         - name: numberOfPosts
           in: query
           description: Number of latest posts to be returned if not present return all
@@ -250,15 +282,27 @@ paths:
   /post:
     post:
       consumes:
-        - application/json
+        - multipart/form-data
       produces:
         - application/json
       parameters:
-        - in: body
-          name: Post
-          required: true
-          schema:
-            $ref: '#/definitions/PostBody'
+         - in: formData
+           name: post_title
+           type: string
+           description: Post Title
+         - in: formData
+           name: post_text
+           type: string
+           description: Post Text
+         - in: formData
+           name: user_id
+           type: string
+           description: User ID
+         - in: formData
+           name: upfile
+           type: file
+           description: Upload File
+
       summary: Create post for current logined user.
       responses:
         '200':
@@ -269,22 +313,24 @@ paths:
           description: If failed to create post.
         '403':
           description: User wasnt login
-  '/post/{postId}':
+  '/post/{post_id}':
     get:
       summary: Retrun specified post.
       produces:
         - application/json
       parameters:
-        - name: postId
+        - name: post_id
           in: path
           description: Id of post
           required: true
-          type: integer
+          type: string
       responses:
         '200':
           description: Post representation.
           schema:
             $ref: '#/definitions/Post'
+        '204':
+          description: Post does not exist
         '403':
           description: User wasnt login or dont have permition to see this posts
     put:
@@ -294,9 +340,9 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: postId
+          name: post_id
           required: true
-          type: integer
+          type: string
           description: Post id
         - in: body
           name: Post
@@ -318,8 +364,8 @@ paths:
         - application/json
       parameters:
         - in: path
-          name: postId
-          type: integer
+          name: post_id
+          type: string
           required: true
       summary: Delete post with given id
       responses:
@@ -390,6 +436,24 @@ paths:
             $ref: '#/definitions/Post'
         '403':
           description: User wasnt login or dont have perrmision to like comment
+  '/uploads/{file_link}':
+    get:
+      summary: Retrun specified file.
+      produces:
+        - application/octet-stream
+      parameters:
+        - name: file_link
+          in: path
+          description: File link
+          required: true
+          type: string
+      responses:
+        '200':
+          description: the file to retrieve
+          schema:
+            type: file
+        '400':
+          description: Couldn't download file
   '/profile/{user_id}/friends':
     get:
       summary: Returns user friend list
@@ -474,6 +538,22 @@ paths:
             $ref: '#/definitions/Connection'
         '403':
           description: User wasnt login or dont have perrmission to delete friend
+  '/confirm/email/{token}':
+    get:
+      summary: Confrim email for token
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: token
+        type: string
+        required: true
+      responses:
+        '200':
+          description: If email was connfirmed
+        '400':
+          description: If error occurred or invalid token was provided.
+
 definitions:
   Profile:
     type: object
@@ -560,15 +640,14 @@ definitions:
       phoneOrEmail:
         type: string
       password:
-        type: integer
-        format: int32
+        type: string
   Message:
     type: object
     properties:
       id:
         type: integer
         format: int64
-      sendDate:
+      MessageTimestamp:
         type: string
         description: UserId of reciver
       isNew:
@@ -607,34 +686,31 @@ definitions:
   Post:
     type: object
     properties:
-      id:
-        type: integer
-      owner:
-        type: integer
+      post_id:
+        type: string
       body:
         allOf:
           - $ref: '#/definitions/PostBody'
-      likes:
-        type: integer
+      post_like:
+        type: string
       comments:
         type: array
         items:
           $ref: '#/definitions/Comment'
-      lastUpdateDate:
+      post_last_update:
         type: string
-        format: date
   PostBody:
     type: object
     properties:
-      title:
+      post_title:
         type: string
-      message:
+      post_text:
         type: string
-      files:
-        type: array
-        items:
-          type: string
-          format: binary
+      user_id:
+        type: string
+      file_link:
+        type: string
+
   Comment:
     type: object
     properties:

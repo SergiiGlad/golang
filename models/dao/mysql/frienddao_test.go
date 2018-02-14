@@ -225,3 +225,4 @@ func TestUsersWithRequestsTo(t *testing.T) {
   _, err = friendRepo.UsersWithRequestsTo(1)
   assert.NoError(t, err)
 }
+
