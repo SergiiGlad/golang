@@ -20,7 +20,6 @@ type mysqlUserDao struct {
   byid        *sql.Stmt
   byemail     *sql.Stmt
   byphone     *sql.Stmt
-  friends     *sql.Stmt
 }
 
 var _ interfaces.UserDao = &mysqlUserDao{}
@@ -61,9 +60,6 @@ func newMySqlUserDao(conn *sql.DB) (interfaces.UserDao, error) {
   if db.byphone, err = conn.Prepare(findByPhoneStatement); err != nil {
     return nil, fmt.Errorf("mysql: prepare list: %v", err)
   }
-  if db.friends, err = conn.Prepare(findFriendsByUserId); err != nil {
-    return nil, fmt.Errorf("mysql: prepare list: %v", err)
-  }
   if db.countByRole, err = conn.Prepare(coundByRoleStatement); err != nil {
     return nil, fmt.Errorf("mysql: prepare list: %v", err)
   }
@@ -79,7 +75,7 @@ const insertStatement = `INSERT INTO
   users_data (email, first_name, last_name, phone, role_in_network, account_status, avatar_ref)
   VALUES (?, ?, ?, ?, ?, ?, ?)`
 
-func (d *mysqlUserDao) AddUser(user *entity.User) (entity.User, error) {
+func (d *mysqlUserDao)  AddUser(user *entity.User) (entity.User, error) {
   r, err := execAffectingOneRow(d.insert, user.Email, user.FirstName, user.LastName, user.Phone, user.Role,
     user.AccStatus, user.AvatarRef)
 
@@ -90,7 +86,7 @@ func (d *mysqlUserDao) AddUser(user *entity.User) (entity.User, error) {
   lastInsertID, err := r.LastInsertId()
 
   if err != nil {
-    return *user, fmt.Errorf("mysql: could not get last insert ID: %v", err)
+    return *user, fmt.Errorf("mysql: could not get last insertConnection ID: %v", err)
   }
 
   user.ID = lastInsertID
@@ -156,7 +152,7 @@ func (d *mysqlUserDao) FindUserById(id int64) (entity.User, error) {
 }
 
 
-const findByEmailStatement = `SELECT * FROM users_data WHERE email = ?`
+const findByEmailStatement = `SELECT user_id, first_name, last_name, email, phone, role_in_network, account_status, avatar_ref FROM users_data WHERE email = ?`
 
 func (d *mysqlUserDao) FindUserByEmail(email string) (entity.User, error) {
   user, err := scanUser(d.byemail.QueryRow(email))
@@ -181,48 +177,24 @@ func (d *mysqlUserDao) FindUserByPhone(phone string) (entity.User, error) {
   return user, nil
 }
 
-const findFriendsByUserId = `SELECT friend_id FROM friend_list WHERE user_id = ?`
-
-func (d *mysqlUserDao) FriendsByUserID(id int64) ([]int64, error) {
-  rows, err := d.friends.Query()
-
-  if err != nil {
-    return nil, err
-  }
-  defer rows.Close()
-
-  friendIds := []int64{}
-  var friendId int64
-  for rows.Next() {
-    err = rows.Scan(&friendId)
-    if err != nil {
-      return nil, fmt.Errorf("mysql: could not read row: %v", err)
-    }
-
-    friendIds = append(friendIds, friendId)
-  }
-
-  return friendIds, nil
-}
-
 //scanUser reads a user from a sql.Row or sql.Rows
 
 var (
-  user_id    int64
-  email      sql.NullString
-  firstName  sql.NullString
-  secondName sql.NullString
-  phone      sql.NullString
-  role       sql.NullString
-  accStat    sql.NullString
-  avRef      sql.NullString
+  user_id   int64
+  firstName sql.NullString
+  lastName  sql.NullString
+  email     sql.NullString
+  phone     sql.NullString
+  role      sql.NullString
+  accStat   sql.NullString
+  avRef     sql.NullString
 )
 
 func scanUser(s rowScanner) (entity.User, error) {
 
   user := entity.User{}
 
-  if err := s.Scan(&user_id, &firstName, &secondName, &email, &phone, &role, &accStat, &avRef); err != nil {
+  if err := s.Scan(&user_id, &firstName, &lastName, &email, &phone, &role, &accStat, &avRef); err != nil {
       return user, err
   }
 
@@ -230,7 +202,7 @@ func scanUser(s rowScanner) (entity.User, error) {
     user_id,
     email.String,
     firstName.String,
-    secondName.String,
+    lastName.String,
     phone.String,
     entity.Role(role.String),
     entity.AccountStatus(accStat.String),

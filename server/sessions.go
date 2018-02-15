@@ -10,7 +10,7 @@ var (
 )
 
 func Authorize(next http.Handler) http.Handler {
-  return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     session, err := store.Get(r, "name")
 
     if err != nil {
@@ -24,7 +24,8 @@ func Authorize(next http.Handler) http.Handler {
       next.ServeHTTP(w, r)
     } else {
       // add session flashes when UI will be ready
-      if r.URL.Path == "/login" || r.URL.Path == "/registration" || r.URL.Path == "/" || r.URL.Path == "/logout" {
+      if r.URL.Path == "/login" || r.URL.Path == "/registration" || r.URL.Path == "/" || r.URL.Path == "/logout" ||
+        r.URL.Path == "/confirm/email/{token}" {
         next.ServeHTTP(w, r)
       } else {
         http.Redirect(w, r, "/login", 301)
