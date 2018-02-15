@@ -2,7 +2,7 @@
   <div id="app">
     <top-menu v-show="currentPath != '/'"></top-menu>
     <div class="container">
-    <router-view class="view"></router-view>
+      <router-view class="view"></router-view>
     </div>
 
   </div>
@@ -39,7 +39,6 @@ export default {
     }
     .container{
       margin-top: 90px;
-      max-width: 700px;
-      background-color: aliceblue;
+      max-width: 1000px;
 }
 </style>

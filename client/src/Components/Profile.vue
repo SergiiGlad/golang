@@ -61,10 +61,13 @@
             }
         },
         asyncComputed: {
-            profile() {
-                let id = this.$route.params.id;
+            profile: {
+                get() {
+                    let id = this.$route.params.id;
                 return axios.get(`http://localhost:8080/profile/${id}`)
                     .then(resp => resp.data);
+                },
+                default: {avatar_ref: 'https://unsplash.it/150/150'}
             },
             posts: {
                 get() {
@@ -117,7 +120,7 @@
         height: 300px;
         position: relative;
         width: 100%;
-        max-width: 700px;
+        max-width: 1000px;
     }
 
     figure.profile-banner {

@@ -1,6 +1,8 @@
 <template>
-  <div >
-      Messages
+  <div class="container">
+    <Friends></Friends>
+
+      
 
   </div>
 </template>
@@ -17,9 +19,12 @@ export default {
 </script>
 
 <style scoped>
-div {
-    margin-top: 150px;
-    font-size: 50px;
+.container {
+    margin-top: 80px;
+    max-width: 1000px;
+    width: 100%;
+    box-shadow: 1px 1px 1px 1px black;
+    height: auto;
 }
 
 </style>

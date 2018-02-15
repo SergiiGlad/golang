@@ -1,0 +1,7 @@
+.container {
+    margin-top: 80px;
+    max-width: 100px;
+    width: 100%;
+    box-shadow: 1px 1px 1px 1px black;
+    height: auto;
+}

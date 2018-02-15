@@ -7,12 +7,6 @@
             </div>
         </header>
         <div class="menu">
-            <!-- <b-nav pills>
-                <b-nav-item active><router-link :to="'/profile/:id'">My profile</router-link></b-nav-item>
-                <b-nav-item><router-link :to="'/friends'">Friends</router-link></b-nav-item>
-                <b-nav-item><router-link :to="'/messages'">Messages</router-link></b-nav-item>
-                <b-nav-item><router-link :to="'/photos'">Photos</router-link></b-nav-item>
-            </b-nav> -->
             <div class="container-2">
             <router-link :to="'/profile/:id'">My profile</router-link>
             <router-link :to="'/friends'">Friends</router-link>
@@ -36,9 +30,6 @@ export default {
 </script>
 
 <style scoped>
-.router-link{
-    background-color: black;
-}
 header {
     background-color: rgb(245, 235, 235);
     box-shadow: 1px 1px 1px 1px gray ;
@@ -65,15 +56,16 @@ button {
 .menu {
     position: fixed;
     top: 50px;
-    height: 40px;
+    height: 30px;
     width: 100%;
     background-color: white;
     margin-bottom: 20px;
     display: flex;
     justify-content: center;
-}
+    border-bottom: 1px gray;
+    }
 .container{
-    max-width: 700px;
+    max-width: 1000px;
 }
 .container-2 {
     margin-right: auto;
