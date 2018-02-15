@@ -12,16 +12,16 @@ func Login(phoneOrEmail string, password string) (*entity.User, error) {
   var err error
 
   if ValidPhone(phoneOrEmail) {
-    user, err = mysql.DB.FindUserByPhone(phoneOrEmail)
+    user, err = mysql.UserDao.FindUserByPhone(phoneOrEmail)
   } else {
-    user, err = mysql.DB.FindUserByEmail(phoneOrEmail)
+    user, err = mysql.UserDao.FindUserByEmail(phoneOrEmail)
   }
 
   if err != nil {
     return nil, errors.New("wrong credentials")
   }
 
-  pass, err := mysql.DB.LastPassByUserId(user.ID)
+  pass, err := mysql.PasswordDao.LastPassByUserId(user.ID)
 
   if err != nil {
     return nil, err

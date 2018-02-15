@@ -1,8 +1,14 @@
 {
   "ip": "127.0.0.1",
   "port": "8080",
+  "login_url": "http://127.0.0.1:8080",
+  "send_emails": false,
 
   "my_sql_db_name": "goteamroom",
+
+  "smtp_server": "smtp.gmail.com",
+  "smtp_port": 587,
+  "gohum_email": "gohum.assistant@gmail.com",
 
   "MAX_MESSAGES_AT_ONCE": 1000,
   "MAX_CHATROOMS": 1000,

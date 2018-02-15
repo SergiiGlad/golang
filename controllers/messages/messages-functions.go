@@ -3,9 +3,12 @@ package messages
 import (
 	"encoding/json"
 	"fmt"
-	"go-team-room/conf"
 	"net/http"
 	"strconv"
+
+	"go-team-room/conf"
+	"go-team-room/humaws"
+	"go-team-room/humstat"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -16,13 +19,17 @@ import (
 //GetMessageFromDynamoByUserID - return an slise of latest
 //messages but not more then MAX_MESSAGES_AT_ONCE
 func GetMessageFromDynamoByUserID(humUserID int, maxMessages ...int) []HumMessage {
+
 	var resultMessages []HumMessage
 	maxMes := conf.MaxMessages
 	if maxMessages != nil && maxMessages[0] < maxMes {
 		maxMes = maxMessages[0]
 	}
 	if humUserID < 1 {
+
+		logRus.Debug("Some one tryed to get messages without ID.")
 		return resultMessages //emty array
+
 	}
 	// Create the Expression to fill the input struct with.
 	filt := expression.Name("message_user.id_sql").Equal(expression.Value(humUserID))
@@ -42,7 +49,7 @@ func GetMessageFromDynamoByUserID(humUserID int, maxMessages ...int) []HumMessag
 		//  ProjectionExpression:      expr.Projection(),
 		TableName: aws.String("messages"),
 	}
-	result, err := Dyna.Db.Scan(params)
+	result, err := humaws.Dyna.Db.Scan(params)
 	if err != nil {
 		fmt.Println("Query API call failed:")
 		fmt.Println((err.Error()))
@@ -69,9 +76,16 @@ func GetMessageFromDynamoByUserID(humUserID int, maxMessages ...int) []HumMessag
 }
 
 //HandlerOfGetMessages - handler for
-//"/messages/" endpoint
+//"/messages" endpoint
 func HandlerOfGetMessages(writeRespon http.ResponseWriter, r *http.Request) {
+	///Debug
+	// GetChatRoomListByUserID(23, 23)
+	// return
+	///DEBUG
+
+	//currentUserID := 23 //GetActionUserID(r)
 	currentUserID := GetActionUserID(r)
+
 	//fmt.Println(currentUserID)
 	if currentUserID < 1 {
 		writeRespon.WriteHeader(http.StatusUnauthorized)
@@ -155,6 +169,7 @@ func ValidateDataFromUser(m *HumMessage) {
 	//go home
 }
 
+//ReadReqBodyPOST - reads all POST request body to HumMessage
 func ReadReqBodyPOST(req *http.Request, humMess *HumMessage) {
 	// body, err := ioutil.ReadAll(req.Body)
 	//  if err != nil {
@@ -190,22 +205,28 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 		TableName: aws.String("messages"),
 	}
 
-	_, err = Dyna.Db.PutItem(input)
+	_, err = humaws.Dyna.Db.PutItem(input)
 
 	if err != nil {
 		fmt.Println("Got error calling PutItem:")
 		fmt.Println(err.Error())
 		//os.Exit(1)
-		fmt.Fprint(writeRespon, "400 Some errors")
+		writeRespon.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(writeRespon, "Some errors")
+		humstat.SendStat <- map[string]int{
+			"UserSendMessagesErrors": 1,
+		}
 	} else {
-
-		fmt.Fprint(writeRespon, "200 Post done")
+		writeRespon.WriteHeader(http.StatusOK)
+		humstat.SendStat <- map[string]int{
+			"UserSendMessages": 1,
+		}
+		//fmt.Fprint(writeRespon, "Post done")
 	}
-
 	//fmt.Println("Successfully added 'The Big someNewMessage' to  table")
 }
 
-//HandlerOfMessages This func should process any messages end point
+//HandlerOfPOSTMessages This func should process any messages end point
 func HandlerOfPOSTMessages(w http.ResponseWriter, r *http.Request) {
 
 	//DEBUG
@@ -251,5 +272,54 @@ func HandlerOfPOSTMessages(w http.ResponseWriter, r *http.Request) {
 	//and it is safe to put it into a Dynamo
 
 	PutMessageToDynamo(w, &inputMessage)
+}
 
+//GetChatRoomListByUserID - obviously, return lost of chatrooms, where userId inlisted
+func GetChatRoomListByUserID(humUserID int, maxChatRooms ...int) []HumChatRoom {
+	var resultChatRooms []HumChatRoom
+	maxChats := conf.MaxChatRooms
+	if maxChatRooms != nil && maxChatRooms[0] < maxChats {
+		maxChats = maxChatRooms[0]
+	}
+	if humUserID < 1 {
+		return resultChatRooms //emty array
+	}
+	// Create the Expression to fill the input struct with.
+	filt := expression.Name("chat_users_list[0].id_sql").Equal(expression.Value(humUserID))
+	expr, err := expression.NewBuilder().WithFilter(filt).Build()
+
+	if err != nil {
+		logRus.Info("Got error building Dynamo expression")
+		logRus.Error(err.Error()) //DEBUG output
+		//os.Exit(1)
+		return resultChatRooms //emty array
+	}
+	// Build the query input parameters
+	params := &dynamodb.ScanInput{
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		FilterExpression:          expr.Filter(),
+		//  ProjectionExpression:      expr.Projection(),
+		TableName: aws.String("chat_rooms"),
+	}
+	result, err := humaws.Dyna.Db.Scan(params)
+	if err != nil {
+		logRus.Info("Query API call failed:")
+		logRus.Error((err.Error()))
+		//fmt.Println(params)
+		//os.Exit(1)
+		return resultChatRooms //empty
+	}
+	var humChatHolder HumChatRoom
+	for _, i := range result.Items {
+		err = dynamodbattribute.UnmarshalMap(i, &humChatHolder)
+		if err != nil {
+			fmt.Println(err) //panic(err)
+		} else {
+			resultChatRooms = append(resultChatRooms, humChatHolder)
+		}
+		fmt.Println("item.ChatID: ", i)
+		//fmt.Println("item.ChatUsersList", i.ChatUsersList)
+	}
+	return resultChatRooms
 }

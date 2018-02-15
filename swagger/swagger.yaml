@@ -8,25 +8,7 @@ basePath: /
 schemes:
   - http
 paths:
-  /admin:
-    post:
-      summary: Register User with status admin. Can only be done by admin.
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: Credentials
-          required: true
-          schema:
-            $ref: '#/definitions/RegistrationForm'
-      responses:
-        '200':
-          description: User was registred
-        '403':
-          description: No permission.
-  /admin/profile:
+  '/admin/profile':
     post:
       summary: Register User from admin console. Can only be done by admin.
       consumes:
@@ -42,6 +24,8 @@ paths:
       responses:
         '200':
           description: User was registred
+          schema:
+            $ref: '#/definitions/UserDetails'
         '400':
           description: Error ocured
           schema:
@@ -470,6 +454,106 @@ paths:
             type: file
         '400':
           description: Couldn't download file
+  '/profile/{user_id}/friends':
+    get:
+      summary: Returns user friend list
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: user_id
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: If friends queried successfully
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ShortUserDetails'
+        '403':
+          description: User wasnt login or dont have perrmision get friend list
+  '/profile/{user_id}/friends/requests':
+    get:
+      summary: Returns friend request list for user with specified id
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: user_id
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: If friend requests queried successfully
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ShortUserDetails'
+        '403':
+          description: User wasnt login or dont have perrmision to get friend requests
+  '/friend':
+    post:
+      summary: Sends a friend request to user with specified friend_user_id
+      parameters:
+        - in: body
+          name: Connection
+          required: true
+          schema:
+            $ref: '#/definitions/Connection'
+      responses:
+        '200':
+          description: If friend request queried successfully
+          schema:
+            $ref: '#/definitions/Connection'
+        '403':
+          description: User wasnt login or dont have perrmision to send friend request
+    put:
+      summary:  Send a friend response to user with specified friend_user_id
+      parameters:
+        - in: body
+          name: Connection
+          required: true
+          schema:
+            $ref: '#/definitions/Connection'
+      responses:
+        '200':
+          description: If friend request queried successfully
+          schema:
+            $ref: '#/definitions/Connection'
+        '403':
+          description: User wasnt login or dont have perrmision to send friend request
+    delete:
+      summary: delete a user with specified friend_user_id from friends
+      parameters:
+        - in: body
+          name: Connection
+          required: true
+          schema:
+            $ref: '#/definitions/Connection'
+      responses:
+        '200':
+          description: If friend deletion queried successfully
+          schema:
+            $ref: '#/definitions/Connection'
+        '403':
+          description: User wasnt login or dont have perrmission to delete friend
+  '/confirm/email/{token}':
+    get:
+      summary: Confrim email for token
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: token
+        type: string
+        required: true
+      responses:
+        '200':
+          description: If email was connfirmed
+        '400':
+          description: If error occurred or invalid token was provided.
+
 definitions:
   Profile:
     type: object
@@ -486,22 +570,50 @@ definitions:
         type: string
   UserDetails:
     type: object
+    required:
+      - id
+      - first_name
+      - last_name
     properties:
       id:
         type: integer
-      email:
-        type: string
       first_name:
         type: string
       last_name:
         type: string
       phone:
         type: string
+      avatar_ref:
+        type: string
       friends:
-        type: array
-        items:
-          type: integer
-          description: list of friends ids
+        type: integer
+        description: number of friends
+  ShortUserDetails:
+    type: object
+    required:
+      - id
+      - first_name
+      - last_name
+    properties:
+      id:
+        type: integer
+      first_name:
+        type: string
+      last_name:
+        type: string
+      avatar_ref:
+        type: string
+  Connection:
+    type: object
+    required:
+      - friend_user_id
+    properties:
+      friend_user_id:
+        type: integer
+      user_id:
+        type: integer
+      connection_status:
+        type: string
   RegistrationForm:
     type: object
     required:
@@ -520,8 +632,8 @@ definitions:
         type: string
         format: phone
       password:
-        type: integer
-        format: int32
+        type: string
+
   CredentialsForm:
     type: object
     properties:
