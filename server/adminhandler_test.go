@@ -47,8 +47,6 @@ func (usm UserServiceMock) DeleteUser(id int64) (dto.ResponseUserDto, error) {
   respUser = dto.UserEntityToResponseDto(&entity.User{})
   respUser.Friends = []int64{}
   return respUser, nil
-
-  return respUser, errors.New("user could be found")
 }
 
 func (usm UserServiceMock) GetUserFriends(id int64) ([]int64, error) {
