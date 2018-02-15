@@ -1,6 +1,6 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo1.png">
+  <div id="start">
+    <img src="../assets/logo1.png">
     <div class="block">
       <div class="head">
         <button class="btn-top" :class="{active: isactive1}" @click="showForm(1)"><span>Sign in</span></button>
@@ -19,7 +19,7 @@
 
 <script>
 export default {
-  name: 'app',
+  name: 'start',
   data () {
     return {
       state: 'sign-in',
@@ -57,14 +57,6 @@ export default {
   }
 </style>
 <style scoped>
-    #app {
-      font-family: 'Avenir', Helvetica, Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-align: center;
-      color: #2c3e50;
-      margin-top: 20px;
-    }
     .block{
       box-shadow: 1px 1px 1px 1px gray;
       max-width: 500px;

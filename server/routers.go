@@ -50,7 +50,7 @@ func NewRouter() *mux.Router {
   return router
 }
 
-func handl(w http.ResponseWriter, r *http.Request) {
+func Handl(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("client/index.html")
 	if err != nil {
 		fmt.Fprintf(w, "%s", "Error")
@@ -63,13 +63,6 @@ func handl(w http.ResponseWriter, r *http.Request) {
 }
 
 var routes = Routes{
-
-	Route{
-		"Index",
-		"GET",
-		"/",
-		handl,
-	},
 
   Route {
     "NewProfileByAdmin",

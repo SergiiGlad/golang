@@ -58,13 +58,15 @@ export default {
           let that = this;
           axios.post('http://localhost:8080/login', this.user, {
             headers: {
-              "Access-Control-Allow-Origin": "*",
+            //   "Access-Control-Allow-Origin": "*",
               "accept": "application/json",
               "Content-Type": "application/json"
             }
           })
             .then(function (response) {
               console.log(response.data);
+              let id = response.data.id;
+              that.$router.push(`/profile/${id}`);
             })
             .catch(function (error) {
                 that.error = true,

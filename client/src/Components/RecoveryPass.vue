@@ -38,23 +38,23 @@ export default {
            if (!(/^[a-z0-9]+@[a-z]+[.][a-z]+$/.test(this.user.email))) {
              this.error = true;
              return;
-           } else{
+           } else {
              this.success = true;
+
+             var axios = require('axios');
+
+             var recoveryPass = 'http://localhost:8080/recoveryPass?email=' + this.user.email;
+             let that = this;
+
+             axios.get(recoveryPass, {headers: {'Access-Control-Allow-Origin': '*'}})
+               .then(function (response) {
+                 console.log(response.data);
+                 that.success = true;
+               })
+               .catch(function (error) {
+                 console.log(error.message);
+               });
            }
-
-           var axios = require('axios');
-
-           var recoveryPass = 'http://localhost:8080/recoveryPass?email=' + this.user.email;
-           let that = this;
-
-           axios.get(recoveryPass, {headers: { 'Access-Control-Allow-Origin': '*'}})
-             .then(function (response) {
-               console.log(response.data);
-               that.success = true;
-             })
-             .catch(function (error) {
-               console.log(error.message);
-             });
          }
     }
 }
