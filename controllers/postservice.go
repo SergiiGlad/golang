@@ -9,7 +9,6 @@ import (
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
   "github.com/aws/aws-sdk-go/service/dynamodb/expression"
   "os"
-  "github.com/aws/aws-sdk-go/aws/session"
   "mime/multipart"
   "strings"
   "github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -32,9 +31,8 @@ type Post struct{
   LastUpdate string `json:"post_last_update"`
 }
 
-
+//To CREATE new Post in DynamoDB
 func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error)  {
-
 
   //Request to DynamoDB to CREATE new post with KEY_ATTRIBUTE "post_id" (TimeStamp)
   input := &dynamodb.PutItemInput{
@@ -97,6 +95,7 @@ func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error)  {
   return post, nil
 }
 
+//To GET Post by POST_ID from DynamoDB
 func GetPost(svc dynamodbiface.DynamoDBAPI, post_id string) (Post, error){
   var post Post
   post.PostID = post_id
@@ -146,6 +145,7 @@ func GetPost(svc dynamodbiface.DynamoDBAPI, post_id string) (Post, error){
   return post, nil
 }
 
+//To GET Posts by USER_ID from DynamoDB
 func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, error){
   var post Post
   var outputPost []Post
@@ -197,6 +197,7 @@ func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, err
   return outputPost, nil
 }
 
+//To UPDATE Post TITLE and TEXT in DynamoDB
 func UpdatePost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error){
 
   //Request to DynamoDB to UPDATE Item in table
@@ -261,6 +262,7 @@ func UpdatePost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error){
   return post, nil
 }
 
+//To DELETE Post in DynamoDB
 func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post_id string) string{
 
   post, err := GetPost(svcd, post_id)
@@ -313,9 +315,9 @@ func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post_id stri
 }
 
 //To UPLOAD file to S3
-func UploadFileToS3(sess *session.Session, f multipart.File, handl * multipart.FileHeader) string{
+func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl * multipart.FileHeader) string{
   // Create an uploader with the session and default options
-  uploader := s3manager.NewUploader(sess)
+  uploader := s3manager.NewUploaderWithClient(svc)
 
   fileType := handl.Filename[strings.LastIndexAny(handl.Filename, "."):]
   fileType = strings.ToLower(fileType)
@@ -325,7 +327,6 @@ func UploadFileToS3(sess *session.Session, f multipart.File, handl * multipart.F
   if err != nil{
     fmt.Printf("error: %v\n", err)
   }
-
   // Upload the file to S3.
   result, err := uploader.Upload(&s3manager.UploadInput{
     Bucket: aws.String(conf.AwsBucketName),
@@ -372,6 +373,27 @@ func DeleteFileFromS3(file_link string, svc s3iface.S3API) {
     return
   }
   fmt.Println(result)
+}
+
+//To DOWNLOAD file from S3
+func DownloadFileFromS3(svc s3iface.S3API, fileName string) (*aws.WriteAtBuffer, error){
+  // Create a downloader with the session and default options
+  downloader := s3manager.NewDownloaderWithClient(svc)
+
+  var b []byte
+  buff := aws.NewWriteAtBuffer(b)
+
+  // Write the contents of S3 Object to the file
+  n, err := downloader.Download(buff, &s3.GetObjectInput{
+    Bucket: aws.String(conf.AwsBucketName),
+    Key:    aws.String(fileName),
+  })
+  if err != nil {
+    fmt.Errorf("failed to download file, %v", err)
+    return buff, errors.New("Error")
+  }
+  fmt.Printf("file downloaded, %d bytes\n", n)
+  return buff, nil
 }
 
 //To generate a random UUID according to RFC 4122

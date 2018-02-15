@@ -93,7 +93,7 @@ var routes = Routes{
     "CreateNewPost",
     "POST",
     "/post",
-    CreateNewPost(Amazon.Dynamo.Db, Amazon.SESS),
+    CreateNewPost(Amazon.Dynamo.Db, Amazon.S3.S3API),
   },
 
   Route {
@@ -128,7 +128,7 @@ var routes = Routes{
     "GetFile",
     "GET",
     "/uploads/{file_link}",
-    GetFileFromS3(Amazon.SESS),
+    GetFileFromS3(Amazon.S3.S3API),
   },
   // and so on, just add new Route structs to this array
 }

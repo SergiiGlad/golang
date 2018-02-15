@@ -4,24 +4,16 @@ import (
   "net/http"
   "encoding/json"
   "fmt"
-  "github.com/aws/aws-sdk-go/aws/session"
-  "github.com/aws/aws-sdk-go/aws"
   "github.com/gorilla/mux"
-  "github.com/aws/aws-sdk-go/service/s3/s3manager"
-  "github.com/aws/aws-sdk-go/service/s3"
   "strconv"
-  "go-team-room/conf"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
   "github.com/aws/aws-sdk-go/service/s3/s3iface"
   "go-team-room/controllers"
   "time"
 )
 
-
-
-
 //To CREATE new post in DynamoDB Table "Post"
-func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, sess *session.Session) http.HandlerFunc {
+func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
 
     var post controllers.Post
@@ -53,7 +45,7 @@ func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, sess *session.Session) http.H
       defer file.Close()
 
       //UPLOAD file to S3 and GET link
-      post.FileLink = controllers.UploadFileToS3(sess, file, handler)
+      post.FileLink = controllers.UploadFileToS3(svcs, file, handler)
     }
 
     resp, err := controllers.CreateNewPost(svcd, post)
@@ -133,29 +125,17 @@ func UpdatePost (svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
 }
 
 //To GET file from S3
-func GetFileFromS3(sess *session.Session) http.HandlerFunc  {
+func GetFileFromS3(svc s3iface.S3API) http.HandlerFunc  {
   return func(w http.ResponseWriter, r *http.Request) {
 
     //Gorilla tool to handle request "/post/{post_id}" with method DELETE
     vars := mux.Vars(r)
     fileName := vars["file_link"]
+    buff, err := controllers.DownloadFileFromS3(svc, fileName)
 
-    // Create a downloader with the session and default options
-    downloader := s3manager.NewDownloader(sess)
-
-    var b []byte
-    buff := aws.NewWriteAtBuffer(b)
-
-    // Write the contents of S3 Object to the file
-    n, err := downloader.Download(buff, &s3.GetObjectInput{
-      Bucket: aws.String(conf.AwsBucketName),
-      Key:    aws.String(fileName),
-    })
     if err != nil {
-      fmt.Errorf("failed to download file, %v", err)
-      return
+      fmt.Println("Error")
     }
-    fmt.Printf("file downloaded, %d bytes\n", n)
 
     //Get the Content-Type of the file
     //Create a buffer to store the header of the file in

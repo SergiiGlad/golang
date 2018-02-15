@@ -5,17 +5,18 @@ import (
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
   "testing"
   "fmt"
-  "github.com/aws/aws-sdk-go/service/s3/s3iface"
   "strings"
+  "github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
 
 type mockDynamoDBClient struct {
   dynamodbiface.DynamoDBAPI
 }
 
-type mockS3Client struct{
+type mockS3Client struct {
   s3iface.S3API
 }
+
 
 
 
@@ -240,4 +241,3 @@ func TestUpdatePost(t *testing.T) {
     fmt.Println("Error")
   }
 }
-

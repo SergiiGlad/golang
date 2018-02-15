@@ -12,7 +12,7 @@ import (
 )
 var SVCD *dynamodb.DynamoDB
 var SVCS *s3.S3
-var SESS *session.Session
+
 
 type MyDynamo struct {
   Db dynamodbiface.DynamoDBAPI
@@ -21,7 +21,6 @@ type MyDynamo struct {
 type MyS3 struct{
   S3API s3iface.S3API
 }
-
 
 var Dynamo MyDynamo
 var S3 MyS3
