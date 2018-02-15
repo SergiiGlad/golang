@@ -15,15 +15,21 @@
     },
     "AWS_DEFAULT_REGION" : {
       "description": "Region of your DynamoDB instance, NOTE THIS IS NOT REGION NAME",
-      "type": "REGION column from https://docs.aws.amazon.com/general/latest/gr/rande.html#ddb_region as string"
+      "type": "REGION column from https://docs.aws.amazon.com/general/latest/gr/rande.html#ddb_region as string",
+      "default": "eu-central-1"
     },
     "AWS_BUCKET_NAME" : {
       "description" : "AWS S3 bucket name, where files are stored",
       "type" : "AWS bucket name, represented as string"
     },
     "GO_MYSQL_DSN": {
+      "important": "NO NEED TO PROVIDE DATABASE NAME",
       "description": "https://en.wikipedia.org/wiki/Data_source_name , basically this is string to connect to MYSQL",
       "type": "DSN, example 'username:password@tcp(localhost:3306)/'"
+    },
+    "GOHUM_EAMIL_PASSWORD" : {
+      "description": "Password to gohum email account.",
+      "type" : "String"
     }
   },
   "config.json": {
@@ -38,6 +44,11 @@
       "type": "string",
       "description": "port that will be used to run our server"
     },
+    "login_url": {
+      "default": "http://127.0.0.1:8080",
+      "type": "ip or domain name",
+      "description": "Path to login page of GoHum"
+    },
     "work_dir": {
       "default": "$GOPATH/src/go-team-room",
       "type": "string, path to directory",
@@ -47,6 +58,36 @@
       "default": "$GOPATH/src/go-team-room/client/dist",
       "type": "string, path to directory",
       "description": "Absolute path to directory with static files."
+    },
+    "MAX_MESSAGES_AT_ONCE": {
+      "default": "1000",
+      "type": "int",
+      "description": "Max messages returned by once req."
+    },
+    "MAX_CHATROOMS": {
+      "default": "1000",
+      "type": "int",
+      "description": "Max number of chatRooms for one user."
+    },
+    "send_emails": {
+      "default": false,
+      "type": "boolean",
+      "description": "Enable or disable email send."
+    },
+    "smtp_server":{
+      "default": "smtp.gmail.com",
+      "type": "string",
+      "description": "Smtp server hostname"
+    },
+    "smtp_port":{
+      "default": 587,
+      "type": "int",
+      "description": "Smtp server port"
+    },
+    "gohum_email":{
+      "default": "gohum.assistant@gmail.com",
+      "type": "string",
+      "description": "Email address of gohum."
     },
     "out": {
       "name": {

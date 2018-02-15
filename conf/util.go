@@ -27,9 +27,14 @@ func setupWorkDir() {
 func addDefaults() {
   setupWorkDir()
   viper.SetDefault("ip", "127.0.0.1")
+  viper.SetDefault("login_url", "http://127.0.0.1:8080")
   viper.SetDefault("port", "8080")
   viper.SetDefault("mysql_db_name", "goteamroom")
   viper.SetDefault("static_dir", viper.GetString("work_dir")+"/client/dist")
+  viper.SetDefault("smtp_server", "smtp.gmail.com")
+  viper.SetDefault("smtp_port", 587)
+  viper.SetDefault("gohume_email", "gohum.assistant@gmail.com")
+  viper.SetDefault("send_emails", false)
 }
 
 //Read configs from conf json, if cant read error occurred.
@@ -55,6 +60,7 @@ func readEnvVariables() {
   readVar("dynamo_region", "AWS_DEFAULT_REGION")
   readVar("mysql_dsn", "GO_MYSQL_DSN")
   readVar("aws_bucket_name", "AWS_BUCKET_NAME")
+  readVar("gohum_email_password", "GOHUM_EMAIL_PASSWORD")
 }
 
 func readVar(key, name string) {
