@@ -164,7 +164,7 @@ func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, err
   filt := expression.Name("user_id").Equal(expression.Value(post.UserID))
 
   //Make projection: displays all expression.Name with equal "user_id"
-  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"))
+  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"), expression.Name("last_update"))
 
   //Build expression with filter and projection
   expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
