@@ -38,7 +38,7 @@ func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.Hand
       file, handler, err := r.FormFile("upfile")
 
       if err != nil {
-        fmt.Println(err)
+        log.Debug("Error to get file")
         return
       }
 
@@ -53,7 +53,7 @@ func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.Hand
     if err != nil {
       w.WriteHeader(http.StatusNoContent)
     }
-
+    log.Debug("Post created")
     //Encode response JSON
     _ = json.NewEncoder(w).Encode(&resp)
   }

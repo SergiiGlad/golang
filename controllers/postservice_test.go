@@ -17,9 +17,6 @@ type mockS3Client struct {
   s3iface.S3API
 }
 
-
-
-
 func (m *mockDynamoDBClient) GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error){
   test := make(map[string]*dynamodb.AttributeValue)
   s1 := "title"
@@ -241,3 +238,14 @@ func TestUpdatePost(t *testing.T) {
     fmt.Println("Error")
   }
 }
+
+func TestNewUUID(t *testing.T) {
+  expectedResult := 36
+  result, err := NewUUID()
+
+  if err != nil || expectedResult != len(result){
+    fmt.Println("Error")
+  }
+}
+
+

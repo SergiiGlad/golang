@@ -18,6 +18,7 @@ import (
   "github.com/pkg/errors"
   "github.com/aws/aws-sdk-go/service/s3/s3iface"
   "github.com/aws/aws-sdk-go/service/s3"
+  "go-team-room/humstat"
 )
 
 //Post structure
@@ -88,10 +89,13 @@ func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error)  {
       // Message from an error.
       fmt.Println(err.Error())
     }
-    return post, err
+    return post, errors.New("Error")
   }
-  fmt.Println(result)
-
+  _ = result
+  log.Info("Post created successfully")
+  humstat.SendStat <- map[string]int {
+    "Post created": 1,
+  }
   return post, nil
 }
 
@@ -134,14 +138,18 @@ func GetPost(svc dynamodbiface.DynamoDBAPI, post_id string) (Post, error){
 
   //Check if POST exists in table, if not: RESPONSE 204 - "No Content"
   if len(result.Item) == 0 {
+    log.Info("No content")
     return post, errors.New("No content")
   }
 
   //Unmarshal result to Post structure
   err = dynamodbattribute.UnmarshalMap(result.Item, &post)
 
-  //Print result in console
-  fmt.Println(result)
+  _ = result
+  log.Info("Get post by post id successfully")
+  humstat.SendStat <- map[string]int{
+    "Get post by post id": 1,
+  }
   return post, nil
 }
 
@@ -192,8 +200,11 @@ func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, err
       os.Exit(1)
     }
   }
-  //Print result in console
-  fmt.Print(result)
+  _ = result
+  log.Info("Get post by user id successfully")
+  humstat.SendStat <- map[string]int {
+    "Get post by user id": 1,
+  }
   return outputPost, nil
 }
 
@@ -257,8 +268,11 @@ func UpdatePost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error){
     return post, err
   }
 
-  //Print result in console
-  fmt.Println(result)
+  _ = result
+  log.Info("Update post successfully")
+  humstat.SendStat <- map[string]int {
+    "Update post": 1,
+  }
   return post, nil
 }
 
@@ -309,7 +323,11 @@ func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post_id stri
     return "Error"
   }
 
-  fmt.Println(result)
+  _ = result
+  log.Info("Delete post successfully")
+  humstat.SendStat <- map[string]int {
+    "Delete post": 1,
+  }
 
   return post_id
 }
@@ -318,12 +336,11 @@ func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post_id stri
 func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl * multipart.FileHeader) string{
   // Create an uploader with the session and default options
   uploader := s3manager.NewUploaderWithClient(svc)
-
   fileType := handl.Filename[strings.LastIndexAny(handl.Filename, "."):]
   fileType = strings.ToLower(fileType)
 
   //Generate UUID for File
-  uuid, err := newUUID()
+  uuid, err := NewUUID()
   if err != nil{
     fmt.Printf("error: %v\n", err)
   }
@@ -337,7 +354,12 @@ func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl * multipart.FileH
     fmt.Errorf("failed to upload file, %v", err)
     return "failed to upload file"
   }
-  fmt.Printf("file uploaded to, %s\n", aws.StringValue(&result.Location))
+
+  _ = result
+  log.Info("File uploaded successfully")
+  humstat.SendStat <- map[string]int {
+    "File upload": 1,
+  }
   link := "/uploads/" + uuid + fileType
   return link
 }
@@ -372,7 +394,11 @@ func DeleteFileFromS3(file_link string, svc s3iface.S3API) {
     }
     return
   }
-  fmt.Println(result)
+  _ = result
+  log.Info("File deleted")
+  humstat.SendStat <- map[string]int {
+    "File deleted": 1,
+  }
 }
 
 //To DOWNLOAD file from S3
@@ -392,12 +418,15 @@ func DownloadFileFromS3(svc s3iface.S3API, fileName string) (*aws.WriteAtBuffer,
     fmt.Errorf("failed to download file, %v", err)
     return buff, errors.New("Error")
   }
-  fmt.Printf("file downloaded, %d bytes\n", n)
+  log.Info("File downloaded, %d bytes\n", n)
+  humstat.SendStat <- map[string]int {
+    "File downloaded": 1,
+  }
   return buff, nil
 }
 
 //To generate a random UUID according to RFC 4122
-func newUUID() (string, error) {
+func NewUUID() (string, error) {
   uuid := make([]byte, 16)
   n, err := io.ReadFull(rand.Reader, uuid)
   if n != len(uuid) || err != nil {
@@ -407,5 +436,10 @@ func newUUID() (string, error) {
   uuid[8] = uuid[8]&^0xc0 | 0x80
   // version 4 (pseudo-random); see section 4.1.3
   uuid[6] = uuid[6]&^0xf0 | 0x40
+  log.Info("New UUID has generated")
   return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
+
+
+
+
