@@ -107,9 +107,19 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
     userDto.Phone = oldUserData.Phone
   }
 
-  err = us.newPassIfValid(id, userDto.Password)
-  if err != nil {
-    return responseUserDto, err
+  if len(userDto.Avatar) == 0 {
+    userDto.Avatar = oldUserData.AvatarRef
+  }
+
+  if len(userDto.Password) != 0 {
+    if len(userDto.Password) > 6 {
+      err = us.newPassIfValid(id, userDto.Password)
+      if err != nil {
+        return responseUserDto, err
+      }
+    } else {
+      return responseUserDto, errors.New("Password too short. [updating]")
+    }
   }
 
   newUserData := dto.RequestUserDtoToEntity(userDto)

@@ -182,6 +182,30 @@ paths:
             $ref: '#/definitions/UserDetails'
         '403':
           description: User wasnt login or dont have permission to get this profile.
+  '/profile/{user_id}/avatar':
+    put:
+      summary: Put user avatar to S3 and avatar link to MySQL
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: user_id
+          type: string
+          description: User ID
+          required: true
+        - in: formData
+          name: upfile
+          type: file
+          description: Upload File
+      responses:
+        '200':
+          description: User profile
+          schema:
+            $ref: '#/definitions/UserDetails'
+        '403':
+          description: User wasnt login or dont have permission to get this profile.
   /messages:
     get:
       summary: Retrn all/'number of latest messages' of logined user.

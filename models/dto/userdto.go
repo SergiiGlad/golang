@@ -38,6 +38,7 @@ type RequestUserDto struct {
   Phone     string      `json:"phone"`
   Role      entity.Role `json:"role"`
   Password  string      `json:"password"`
+  Avatar    string      `json:"avatar_ref"`
 }
 
 func (user RequestUserDto) String() string {
@@ -75,7 +76,7 @@ func RequestUserDtoToEntity(userDto *RequestUserDto) entity.User {
     userDto.Phone,
     userDto.Role,
     entity.InActive,
-    "",
+    userDto.Avatar,
   }
 
   return userDao
