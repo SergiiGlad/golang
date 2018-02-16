@@ -3,17 +3,15 @@ package server
 import (
   "github.com/gorilla/sessions"
   "net/http"
-  "fmt"
 )
 
 var (
-  store = sessions.NewCookieStore([]byte("secretkey"), []byte("encryptionkey"))
+  store = sessions.NewCookieStore([]byte("secretkey"))
 )
 
 func Authorize(next http.Handler) http.Handler {
   return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
     session, err := store.Get(r, "name")
-    fmt.Println(session.Values["loginned"])
 
     if err != nil {
       session.Options.MaxAge = -1
