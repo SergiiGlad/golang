@@ -11,6 +11,16 @@ var (
 
 func Authorize(next http.Handler) http.Handler {
   return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+    // add session flashes when UI will be ready
+    paths := []string{"/", "/login", "/logout", "/registration"} //paths no needed to check authorization
+
+    for _, path := range paths {
+      if r.URL.Path == path {
+        next.ServeHTTP(w, r)
+        return
+      }
+    }
+
     session, err := store.Get(r, "name")
 
     if err != nil {
@@ -22,18 +32,10 @@ func Authorize(next http.Handler) http.Handler {
 
     if session.Values["loginned"] == true {
       next.ServeHTTP(w, r)
+      return
     } else {
-      // add session flashes when UI will be ready
-      paths := []string{"/", "/login", "/logout", "/registration"} //paths no needed to check authorization
-
-      for _, path := range paths {
-        if r.URL.Path == path {
-          next.ServeHTTP(w, r)
-          return
-        }
-      }
-
       http.Error(w, "Forbidden", http.StatusForbidden)
+      return
     }
   })
 }

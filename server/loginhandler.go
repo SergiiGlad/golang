@@ -44,6 +44,10 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
   }
 
   session, err := store.Get(r, "name")
+  session.Options = &sessions.Options {
+    MaxAge:   24*60*60,
+    HttpOnly: true,
+  }
 
   if err != nil {
     responseError(w, err, http.StatusBadRequest)
@@ -105,12 +109,6 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
   }
 
   fmt.Println(res)
-
-  store.Options = &sessions.Options {
-    MaxAge:   24*60*60,
-    Secure:   true,
-    HttpOnly: true,
-      }
 
   session.Save(r, w)
   w.Write(userResMarsh)
