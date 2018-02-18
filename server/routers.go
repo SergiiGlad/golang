@@ -241,6 +241,22 @@ var routes = Routes{
     "/profile/{user_id}/avatar",
     UploadAvatar(userService, Amazon.S3.S3API),
   },
+
+  Route{
+    "DeleteAvatar",
+    "DELETE",
+    "/profile/{user_id}/avatar",
+    DeleteAvatar(userService, Amazon.S3.S3API),
+  },
+
+  Route{
+    "GetProfile",
+    "GET",
+    "/profile/{user_id}",
+    GetProfile(userService),
+  },
+
+
   // and so on, just add new Route structs to this array
 }
 

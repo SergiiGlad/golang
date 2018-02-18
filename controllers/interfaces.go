@@ -10,6 +10,7 @@ type UserServiceInterface interface {
   CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error)
   UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, error)
   DeleteUser(id int64) (dto.ResponseUserDto, error)
+  GetUser (id int64) (dto.ResponseUserDto, error)
 }
 
 type FriendServiceInterface interface {

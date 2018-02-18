@@ -206,6 +206,23 @@ paths:
             $ref: '#/definitions/UserDetails'
         '403':
           description: User wasnt login or dont have permission to get this profile.
+    delete:
+      summary: Delete user avatar from S3 and MySQL
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: user_id
+          type: string
+          required: true
+          description: User ID
+      responses:
+        '200':
+          description: Avatar Deleted
+        '403':
+          description: User wasnt login or dont have permission to delete this avatar.
   /messages:
     get:
       summary: Retrn all/'number of latest messages' of logined user.
