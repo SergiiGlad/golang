@@ -179,7 +179,6 @@ var routes = Routes{
     recoveryPass(userService),
   },
 
-
   // and so on, just add new Route structs to this array
 }
 

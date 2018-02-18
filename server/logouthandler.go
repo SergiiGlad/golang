@@ -13,6 +13,11 @@ func logout(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  if session.Values["loginned"] != true {
+    fmt.Fprintf(w, "You are not loginned in!")
+    return
+  }
+
   session.Values["loginned"] = false
   session.Options.MaxAge = -1
   session.Save(r, w)

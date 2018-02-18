@@ -520,8 +520,7 @@ definitions:
         type: string
         format: phone
       password:
-        type: integer
-        format: int32
+        type: string
   CredentialsForm:
     type: object
     properties:
