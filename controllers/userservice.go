@@ -116,7 +116,7 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
   }
 
   if len(userDto.Password) != 0 {
-    if len(userDto.Password) > 6 {
+    if len(userDto.Password) >= 6 {
       err = us.newPassIfValid(id, userDto.Password)
       if err != nil {
         return responseUserDto, err
