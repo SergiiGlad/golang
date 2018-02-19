@@ -25,13 +25,13 @@ import (
 
 //Post structure
 type Post struct{
-  Title string `json:"post_title"`
-  Text string	`json:"post_text"`
-  PostID string `json:"post_id"`
-  UserID string `json:"user_id"`
-  Like string `json:"post_like"`
-  FileLink string `json:"file_link"`
-  LastUpdate string `json:"post_last_update"`
+  Title string `json:"post_title,omitempty"`
+  Text string	`json:"post_text,omitempty"`
+  PostID string `json:"post_id,omitempty"`
+  UserID string `json:"user_id,omitempty"`
+  Like string `json:"post_like,omitempty"`
+  FileLink string `json:"file_link,omitempty"`
+  LastUpdate string `json:"post_last_update,omitempty"`
 }
 
 //To CREATE new post in DynamoDB Table "Post"
@@ -288,7 +288,7 @@ func GetPostByUserID(w http.ResponseWriter, r *http.Request){
   filt := expression.Name("user_id").Equal(expression.Value(post.UserID))
 
   //Make projection: displays all expression.Name with equal "user_id"
-  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"))
+  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"), expression.Name("post_last_update"))
 
   //Build expression with filter and projection
   expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
@@ -310,7 +310,7 @@ func GetPostByUserID(w http.ResponseWriter, r *http.Request){
     w.WriteHeader(http.StatusNoContent)
     return
   }
-
+  postList := make([]Post, 0)
   //Loop for encoding multiples post which was made by "user_id"
   for _, i := range result.Items {
     post := Post{}
@@ -324,10 +324,11 @@ func GetPostByUserID(w http.ResponseWriter, r *http.Request){
       fmt.Println(err.Error())
       os.Exit(1)
     }
-
+    postList = append(postList, post)
     //Encode response JSON
-    _ = json.NewEncoder(w).Encode(&post)
+
   }
+  _ = json.NewEncoder(w).Encode(&postList)
 
   //Print result in console
   fmt.Print(result)

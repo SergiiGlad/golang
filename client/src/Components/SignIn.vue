@@ -26,7 +26,7 @@
 
 <script>
 export default {
-    name: 'sign in',
+    name: 'sign-in',
     data(){
         return {
             user:{
@@ -66,6 +66,7 @@ export default {
             .then(function (response) {
               console.log(response.data);
               let id = response.data.id;
+              localStorage.setItem("id", id);
               that.$router.push(`/profile/${id}`);
             })
             .catch(function (error) {
@@ -80,8 +81,7 @@ export default {
 </script>
 
 <style scoped>
-
-    input{
+ input{
       background-color: rgb(234, 241, 234);
     }
     .btn {

@@ -40,7 +40,7 @@
   import axsios from 'axios'
 
   export default {
-      name: 'sign up',
+      name: 'sign-up',
       data(){
           return {
               user:{

@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="container"> 
         <header>
             <figure class="profile-banner">
                 <img src="https://unsplash.it/975/300" alt="Profile banner"/>
@@ -19,7 +19,7 @@
         </header>
         <body>
         <b-card>
-            <b-media v-for="post in posts">
+            <b-media v-for="post in posts" :key="post.post_id"> 
                 <b-img slot="aside" :src="post.avatar_ref" height="64px" width="64" alt="placeholder" />
                 <h5 class="mt-0">{{ post.post_title }}</h5>
                 <h6>{{ post.user_name }}
@@ -79,7 +79,7 @@
                             // Some magic костьіли
                             return Promise.all(postList.map(p => {
                                 const i = p.user_id;
-                                axios.get(`http://localhost:8080/api/profile/${i}`)
+                                axios.get(`http://localhost:8080/profile/${i}`)
                                     .then(resp => {
                                         p["user_name"] = resp.data.first_name;
                                         p["post_last_update"] = p.post_last_update.slice(0, 16);
@@ -95,10 +95,14 @@
 </script>
 
 <style scoped>
-    body {
+.container {
+    margin-top: 100px;
+    padding: 0px;
+}
+    /* body {
         font-family: Arial, Helvetica, sans-serif;
         margin-bottom: 100px;
-    }
+    } */
 
     h5 {
         font-size: 30px;
@@ -129,6 +133,7 @@
         position: absolute;
         top: 0;
         z-index: 1;
+        width: 100%;
     }
 
     figure.profile-picture {

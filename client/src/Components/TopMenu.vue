@@ -8,11 +8,13 @@
         </header>
         <div class="menu">
             <div class="container-2">
-            <router-link :to="'/profile/:id'">My profile</router-link>
+                <router-link :to="{ name: 'Profile', params: {id: user_id}}">Profile</router-link>
+
+            <!-- <router-link :to="'/profile/1'">My profile</router-link> -->
             <router-link :to="'/friends'">Friends</router-link>
             <router-link :to="'/messages'">Messages</router-link>
             <router-link :to="'/photos'">Photos</router-link>
-            </div>
+            </div> 
         </div>
     </div>
 </template>
@@ -25,6 +27,12 @@ export default {
 
     }
   },
+  computed:{
+     user_id(){
+         console.log(localStorage.getItem("id"));
+          return localStorage.getItem("id");
+      }
+  }
  
 }
 </script>
@@ -32,7 +40,7 @@ export default {
 <style scoped>
 header {
     background-color: rgb(245, 235, 235);
-    box-shadow: 1px 1px 1px 1px gray ;
+    box-shadow: 0px 0px 15px -1px gray ;
     height: 50px;
     position: fixed;
     top:0;
@@ -49,14 +57,15 @@ button {
     float: right;
     border-radius: 4px;
     background-color: white;
-    border: 1px solid black;
     color: black;
     margin-top: 10px;
+    outline: none;
+    cursor: pointer;
 }
 .menu {
     position: fixed;
     top: 50px;
-    height: 30px;
+    height: 40px;
     width: 100%;
     background-color: white;
     margin-bottom: 20px;
@@ -66,6 +75,7 @@ button {
     }
 .container{
     max-width: 1000px;
+    width: auto;
 }
 .container-2 {
     margin-right: auto;
@@ -78,7 +88,14 @@ button {
     justify-content: space-around;
     margin: auto;
     }
-    .container-2 a {
-        color: black;
-    }   
+a{
+    text-decoration: none;
+    color:black;
+    cursor: pointer;
+    text-shadow: black;
+}
+
+a.router-link-exact-active.router-link-active{
+    font-weight: bold;
+}
 </style>

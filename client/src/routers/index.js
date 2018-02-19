@@ -47,21 +47,21 @@ export default new VueRouter({
         name: 'StartPage',
         component: AppStartPage
       },
-    {
-        path: '/login',
-        name: 'Login',
-        component: AppSignIn
-    },
-    {
-        path: '/register',
-        name: 'Register',
-        component: AppSignUp
-    },
-    {
-        path: '/recoveryPass',
-        name: 'RecoveryPass',
-        component: AppRecoveryPass
-    },
+    // {
+    //     path: '/login',
+    //     name: 'Login',
+    //     component: AppSignIn
+    // },
+    // {
+    //     path: '/register',
+    //     name: 'Register',
+    //     component: AppSignUp
+    // },
+    // {
+    //     path: '/recoveryPass',
+    //     name: 'RecoveryPass',
+    //     component: AppRecoveryPass
+    // },
     // inside pages
     {
       path: '/friends',

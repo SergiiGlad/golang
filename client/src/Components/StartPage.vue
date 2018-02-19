@@ -1,5 +1,5 @@
 <template>
-  <div id="start">
+  <div class="start">
     <img src="../assets/logo1.png">
     <div class="block">
       <div class="head">
@@ -51,14 +51,13 @@ export default {
 }
 </script>
 
-<style>
-  body {
-    background-color: rgb(234, 241, 234);
-  }
-</style>
+
 <style scoped>
+    .start {
+      text-align: center;
+    }
     .block{
-      box-shadow: 1px 1px 1px 1px gray;
+      box-shadow: 7px 7px 10px -3px gray;
       max-width: 500px;
       width: auto;
       height: auto;
