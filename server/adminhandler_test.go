@@ -15,6 +15,10 @@ import (
 type UserServiceMock struct {
 }
 
+func (usm UserServiceMock) GetUser (id int64) (dto.ResponseUserDto, error){
+  return dto.ResponseUserDto{}, nil
+}
+
 func (usm UserServiceMock) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
   dao := dto.RequestUserDtoToEntity(userDto)
   resp := dto.UserEntityToResponseDto(&dao)
