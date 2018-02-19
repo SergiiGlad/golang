@@ -218,7 +218,7 @@ func TestDeletePost(t *testing.T) {
       handlerFunc:        DeletePost(mocksvcd, mocksvcs),
       expectedStatusCode: http.StatusOK,
       reqBody: `{
-        "post_id": "post id",
+        "",
         }`,
       expectRespBody:
       `{"post_id": "post id"}`,
@@ -257,7 +257,7 @@ func TestUpdatePost(t *testing.T) {
     url                string
   }{
     {
-      description:        "GET Post [Should return 200 OK]",
+      description:        "Update Post [Should return 200 OK]",
       handlerFunc:        UpdatePost(mockSVC),
       expectedStatusCode: http.StatusOK,
       reqBody: "",
