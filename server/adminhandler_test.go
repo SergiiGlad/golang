@@ -16,7 +16,12 @@ type UserServiceMock struct {
 }
 
 func (usm UserServiceMock) GetUser (id int64) (dto.ResponseUserDto, error){
-  return dto.ResponseUserDto{}, nil
+  respUser := dto.ResponseUserDto{}
+  if id < 1 {
+    return respUser, errors.New("negative id")
+  }
+  respUser = dto.UserEntityToResponseDto(&entity.User{ID:id})
+  return respUser, nil
 }
 
 func (usm UserServiceMock) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
