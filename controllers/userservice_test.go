@@ -306,7 +306,6 @@ func TestUserServiceUpdate(t *testing.T) {
         LastName:  "surname",
         Phone:     "+380509684212",
         Password:  "123456",
-        Avatar:    "",
       },
     },
   }
@@ -316,7 +315,7 @@ func TestUserServiceUpdate(t *testing.T) {
 
     respDto, _ := userService.UpdateUser(0, &tc.newUser)
 
-    if respDto.String() != tc.expectReturn.String() {
+    if respDto != tc.expectReturn {
       t.Errorf("\nExpected: %s\nGot: %s", tc.expectReturn, respDto)
     }
   }
@@ -338,7 +337,6 @@ func TestUserServiceDelete(t *testing.T) {
           FirstName: "Name",
           LastName:  "surname",
           Phone:     "+380509684212",
-          AvatarRef: "",
         },
       },
       },
@@ -349,7 +347,6 @@ func TestUserServiceDelete(t *testing.T) {
         FirstName: "Name",
         LastName:  "surname",
         Phone:     "+380509684212",
-        Avatar:    "",
         Friends: 0,
       },
     },
