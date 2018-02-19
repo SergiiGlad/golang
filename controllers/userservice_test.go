@@ -249,6 +249,74 @@ func TestUserServiceCreate(t *testing.T) {
   }
 }
 
+func TestUserServiceUpdate(t *testing.T) {
+  tests := [] struct {
+    description  string
+    db           interfaces.UserDao
+    newUser      dto.RequestUserDto
+    expectReturn dto.ResponseUserDto
+  }{
+    {
+      description: "UpdateStatus user [Should perform successfully]",
+      db: userDaoMock{[]entity.User{
+        entity.User{
+          ID:        0,
+          Email:     "email@gmail.com",
+          FirstName: "Name",
+          LastName:  "surname",
+          Phone:     "+380509684212",
+        },
+      },
+      },
+      newUser: dto.RequestUserDto{
+        Email:     "newemail@gmail.com",
+        FirstName: "Name",
+        LastName:  "surname",
+        Phone:     "+380509684211",
+        Password:  "123456",
+      },
+      expectReturn: dto.ResponseUserDto{
+        ID:        0,
+        Email:     "newemail@gmail.com",
+        FirstName: "Name",
+        LastName:  "Surname",
+        Phone:     "+380509684211",
+        Friends: 0,
+      },
+    },
+    {
+      description: "UpdateStatus user [Should return unique error]",
+      db: userDaoMock{[]entity.User{
+        entity.User{
+          ID:        0,
+          Email:     "email@gmail.com",
+          FirstName: "Name",
+          LastName:  "surname",
+          Phone:     "+380509684212",
+        },
+      },
+      },
+      newUser: dto.RequestUserDto{
+        Email:     "email@gmail.com",
+        FirstName: "Name",
+        LastName:  "surname",
+        Phone:     "+380509684212",
+        Password:  "123456",
+      },
+    },
+  }
+
+  for _, tc := range tests {
+    userService.UserDao = tc.db
+
+    respDto, _ := userService.UpdateUser(0, &tc.newUser)
+
+    if respDto.String() != tc.expectReturn.String() {
+      t.Errorf("\nExpected: %s\nGot: %s", tc.expectReturn, respDto)
+    }
+  }
+}
+
 //Test FAILS
 //func TestUserServiceUpdate(t *testing.T) {
 //  tests := [] struct {
