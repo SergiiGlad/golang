@@ -107,9 +107,23 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
     userDto.Phone = oldUserData.Phone
   }
 
-  err = us.newPassIfValid(id, userDto.Password)
-  if err != nil {
-    return responseUserDto, err
+  if len(userDto.Avatar) == 0 {
+    userDto.Avatar = oldUserData.AvatarRef
+  }
+
+  if strings.EqualFold(userDto.Avatar, "NULL"){
+    userDto.Avatar = ""
+  }
+
+  if len(userDto.Password) != 0 {
+    if len(userDto.Password) >= 6 {
+      err = us.newPassIfValid(id, userDto.Password)
+      if err != nil {
+        return responseUserDto, err
+      }
+    } else {
+      return responseUserDto, errors.New("Password too short. [updating]")
+    }
   }
 
   newUserData := dto.RequestUserDtoToEntity(userDto)
@@ -153,6 +167,21 @@ func (us *UserService) DeleteUser(id int64) (dto.ResponseUserDto, error) {
   responseUserDto.Friends = int64(len(friends))
 
   return responseUserDto, us.UserDao.DeleteUser(id)
+}
+
+func (us *UserService) GetUser(id int64) (dto.ResponseUserDto, error) {
+  var responseUserDTO dto.ResponseUserDto
+
+  userEntity, err := us.UserDao.FindUserById(id)
+
+  if err != nil {
+    log.Error(err)
+  }
+  responseUserDTO = dto.UserEntityToResponseDto(&userEntity)
+  friends, _ := us.FriendService.GetFriendIds(id)
+  responseUserDTO.Friends = int64(len(friends))
+
+  return responseUserDTO, nil
 }
 
 //CheckUniqueEmail validates email string and queries to database to make sure that email is unique

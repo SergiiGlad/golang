@@ -273,7 +273,7 @@ func TestUserServiceUpdate(t *testing.T) {
         FirstName: "Name",
         LastName:  "surname",
         Phone:     "+380509684211",
-        Password:  "123456",
+        Password:  "1234567",
       },
       expectReturn: dto.ResponseUserDto{
         ID:        0,
@@ -301,7 +301,7 @@ func TestUserServiceUpdate(t *testing.T) {
         FirstName: "Name",
         LastName:  "surname",
         Phone:     "+380509684212",
-        Password:  "123456",
+        Password:  "1234567",
       },
     },
   }
@@ -310,7 +310,6 @@ func TestUserServiceUpdate(t *testing.T) {
     userService.UserDao = tc.db
 
     respDto, _ := userService.UpdateUser(0, &tc.newUser)
-
     if respDto.String() != tc.expectReturn.String() {
       t.Errorf("\nExpected: %s\nGot: %s", tc.expectReturn, respDto)
     }

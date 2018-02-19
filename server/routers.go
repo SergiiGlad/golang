@@ -188,35 +188,35 @@ var routes = Routes{
     "GetUserFriends",
     "GET",
     "/profile/{user_id:[0-9]+}/friends",
-    getFriends(friendSerivce),
+    getFriends(friendService),
   },
 
   Route{
     "GetUsersWithRequests",
     "GET",
     "/profile/{user_id:[0-9]+}/friends/requests",
-    getUsersWithRequests(friendSerivce),
+    getUsersWithRequests(friendService),
   },
 
   Route{
     "NewFriendRequest",
     "POST",
     "/friend",
-    newFriendRequest(friendSerivce),
+    newFriendRequest(friendService),
   },
 
   Route{
     "ReplyToFriendRequest",
     "PUT",
     "/friend",
-    replyToFriendRequest(friendSerivce),
+    replyToFriendRequest(friendService),
   },
 
   Route{
     "DeleteFriend",
     "DELETE",
     "/friend",
-    deleteFriendship(friendSerivce),
+    deleteFriendship(friendService),
   },
   Route{
     "GetMessage",
@@ -234,6 +234,29 @@ var routes = Routes{
     //curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"message_chat_room_id": "997","message_data": {"binary_parts": [{"bin_data": null,"bin_name": null }],"text": "0 A lot of text and stupid smiles :)))))","type": "TypeOfHumMessage-UNDEFINED FOR NOW"},"message_id": "20180110155343150","message_parent_id": "","message_social_status": {"Dislike": 10,"Like": 222,"Views": 303 },"message_timestamp": "20180110155533111","message_user": {"id_sql": 13,"name_sql": "Vasya" }}' 'http://localhost:8080/messages'
     messages.HandlerOfPOSTMessages,
   },
+
+  Route{
+    "UploadAvatar",
+    "PUT",
+    "/profile/{user_id}/avatar",
+    UploadAvatar(userService, Amazon.S3.S3API),
+  },
+
+  Route{
+    "DeleteAvatar",
+    "DELETE",
+    "/profile/{user_id}/avatar",
+    DeleteAvatar(userService, Amazon.S3.S3API),
+  },
+
+  Route{
+    "GetProfile",
+    "GET",
+    "/profile/{user_id}",
+    GetProfile(userService),
+  },
+
+
   // and so on, just add new Route structs to this array
 }
 
@@ -250,9 +273,9 @@ var tokenService = &controllers.TokenService{
   mysql.UserDao,
   mysql.TokenDao,
 }
-var friendSerivce = &controllers.FriendService{mysql.FriendshipDao, mysql.UserDao}
+var friendService = &controllers.FriendService{mysql.FriendshipDao, mysql.UserDao}
 var userService = &controllers.UserService{
-  friendSerivce,
+  friendService,
   mysql.PasswordDao,
   mysql.UserDao,
 }
