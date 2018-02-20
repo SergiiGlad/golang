@@ -55,9 +55,11 @@ export default {
 <style scoped>
     .start {
       text-align: center;
+      margin-top: -50px;
     }
     .block{
-      box-shadow: 7px 7px 10px -3px gray;
+      box-shadow: 0px 0px 34px -3px grey;
+      border-radius: 4px;
       max-width: 500px;
       width: auto;
       height: auto;

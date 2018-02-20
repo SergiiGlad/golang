@@ -45,7 +45,7 @@ header {
     position: fixed;
     top:0;
     width: 100%;
-    z-index: 10;    
+    z-index: 21;    
 }
 img {
     height: 40px;
@@ -67,11 +67,12 @@ button {
     top: 50px;
     height: 40px;
     width: 100%;
-    background-color: white;
+    background-color: #fafafa;
     margin-bottom: 20px;
     display: flex;
     justify-content: center;
     border-bottom: 1px gray;
+    z-index: 20;
     }
 .container{
     max-width: 1000px;

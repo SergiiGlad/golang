@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <div class="people-list">
            <!-- <div class="search">
             <input type="text" placeholder="search" />
@@ -7,7 +8,7 @@
           </div> -->
           <ul class="list">
             <li class="chat-title">
-              <img class="avatar" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"/>                   
+              <img class="avatar" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"/>
               <div class="about">
                 <div class="name">
                   Tetyana Prysiazhniuk
@@ -19,7 +20,7 @@
             </li>
 
              <li class="chat-title">
-              <img class="avatar" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"/>                   
+              <img class="avatar" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"/>
               <div class="about">
                 <div class="name">
                   Tetyana Prysiazhniuk
@@ -33,7 +34,7 @@
       </div>
       <div class="chat">
         <div class="chat-header">
-              <img class="avatar" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"/>                   
+              <img class="avatar" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"/>
               <div class="chat-about">
                 <div class="chat-with">
                   Tetyana Prysiazhniuk
@@ -67,24 +68,41 @@
               </div>
 
             </li>
+            <li>
+              <div class="message-data float-left">
+                <span class="message-data-name">Alina Biletska
+                  <i class="fa fa-circle online"></i>
+                </span>
+                <span class="message-data-time">12.12.2017</span>
+              </div>
+              <div class="message my-message float-left">
+                Are we meeting today? Project has been already finished and I have results to show you.
+              </div>
+
+            </li>
           </ul>
+        </div>
+        <div class="chat-message clearfix">
+          <textarea name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="3"></textarea>
+
+          <i class="fa fa-file-o"></i> &nbsp;&nbsp;&nbsp;
+          <i class="fa fa-file-image-o"></i>
+
+          <button>Send</button>
+
         </div>
 
       </div>
-     
-  <link rel=“stylesheet” href=“https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css“/>
-  
-  </div>
+    </div>
 
 </template>
-
 <script>
 
 export default {
   name: 'app',
   data () {
     return {
-      
+
     }
   }
 }
@@ -170,6 +188,7 @@ ul {
     padding: 30px;
     overflow-y: scroll;
     height: auto;
+  border-bottom: 2px solid white;
 }
 .chat .chat-history .message-data {
     margin-bottom: 15px;
@@ -224,5 +243,39 @@ ul {
 .me {
   color: #94C2ED;
 }
+
+.chat .chat-message {
+  border: #3b4151;
+  padding: 30px;
+}
+.chat .chat-message textarea {
+  width: 100%;
+  border: none;
+  padding: 10px 20px;
+  font: 14px/22px "Lato", Arial, sans-serif;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  resize: none;
+}
+.chat .chat-message .fa-file-o, .chat .chat-message .fa-file-image-o {
+  font-size: 16px;
+  color: gray;
+  cursor: pointer;
+}
+.chat .chat-message button {
+  float: right;
+  color: #94C2ED;
+  font-size: 16px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  background: #F2F5F8;
+}
+.chat .chat-message button:hover {
+  color: #75b1e8;
+}
+
+
 
 </style>

@@ -66,83 +66,83 @@ var routes = Routes{
   Route {
     "NewProfileByAdmin",
     "POST",
-    "/admin/profile",
+    "/api/admin/profile",
     createProfileByAdmin(userService),
   },
 
   Route{
   "UpdateProfileByAdmin",
   "PUT",
-  "/admin/profile/{user_id:[0-9]+}",
+  "/api/admin/profile/{user_id:[0-9]+}",
   updateProfileByAdmin(userService),
 },
 
   Route{
   "DeleteProfileByAdmin",
   "DELETE",
-  "/admin/profile/{user_id:[0-9]+}",
+  "/api/admin/profile/{user_id:[0-9]+}",
   deleteProfileByAdmin(userService),
 },
 
   Route {
     "CreateNewPost",
     "POST",
-    "/post",
+    "/api/post",
     CreateNewPost(Amazon.Dynamo.Db, Amazon.S3.S3API),
   },
 
   Route {
     "DeletePost",
     "DELETE",
-    "/post/{post_id}",
+    "/api/post/{post_id}",
     DeletePost(Amazon.Dynamo.Db, Amazon.S3.S3API),
   },
 
   Route {
     "GetPostByPostID",
     "GET",
-    "/post/{post_id}",
+    "/api/post/{post_id}",
     GetPost(Amazon.Dynamo.Db),
   },
 
   Route {
     "GetPostByUserID",
     "GET",
-    "/post/user/{user_id}",
+    "/api/post/user/{user_id}",
     GetPostByUserID(Amazon.Dynamo.Db),
   },
 
   Route {
     "UpdatePost",
     "PUT",
-    "/post/{post_id}",
+    "/api/post/{post_id}",
     UpdatePost(Amazon.Dynamo.Db),
   },
 
   Route {
     "GetFile",
     "GET",
-    "/uploads/{file_link}",
+    "/api/uploads/{file_link}",
     GetFileFromS3(Amazon.S3.S3API),
   },
   Route{
     "Login",
     "POST",
-    "/login",
+    "/api/login",
     loginhandler,
   },
 
   Route{
     "Logout",
     "GET",
-    "/logout",
+    "/api/logout",
     logout,
   },
 
   Route{
     "GetMessage",
     "GET",
-    "/messages",
+    "/api/messages",
     //Test this rout by next string
     //curl -X GET "http://localhost:8080/messages?id=33&numberOfMessages=1" -H  "accept: application/json"
     messages.HandlerOfGetMessages,
@@ -150,7 +150,7 @@ var routes = Routes{
   Route{
     "PutMessage",
     "POST",
-    "/messages",
+    "/api/messages",
     //Test this rout by next string
     //curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"message_chat_room_id": "997","message_data": {"binary_parts": [{"bin_data": null,"bin_name": null }],"text": "0 A lot of text and stupid smiles :)))))","type": "TypeOfHumMessage-UNDEFINED FOR NOW"},"message_id": "20180110155343150","message_parent_id": "","message_social_status": {"Dislike": 10,"Like": 222,"Views": 303 },"message_timestamp": "20180110155533111","message_user": {"id_sql": 13,"name_sql": "Vasya" }}' 'http://localhost:8080/messages'
     messages.HandlerOfPOSTMessages,
@@ -159,62 +159,62 @@ var routes = Routes{
   Route{
     "RegisterUser",
     "POST",
-    "/registration",
+    "/api/registration",
     registerUser(userService, emailService),
   },
 
   Route{
     "RecoveryPass",
     "GET",
-    "/recoveryPass",
+    "/api/recoveryPass",
     recoveryPass(userService, emailService),
   },
 
   Route{
     "ConfirmAccount",
     "GET",
-    "/confirm/email/{token}",
+    "/api/confirm/email/{token}",
     ConfirmAccount(tokenService),
   },
 
   Route{
     "GetUserFriends",
     "GET",
-    "/profile/{user_id:[0-9]+}/friends",
+    "/api/profile/{user_id:[0-9]+}/friends",
     getFriends(friendService),
   },
 
   Route{
     "GetUsersWithRequests",
     "GET",
-    "/profile/{user_id:[0-9]+}/friends/requests",
+    "/api/profile/{user_id:[0-9]+}/friends/requests",
     getUsersWithRequests(friendService),
   },
 
   Route{
     "NewFriendRequest",
     "POST",
-    "/friend",
+    "/api/friend",
     newFriendRequest(friendService),
   },
 
   Route{
     "ReplyToFriendRequest",
     "PUT",
-    "/friend",
+    "/api/friend",
     replyToFriendRequest(friendService),
   },
 
   Route{
     "DeleteFriend",
     "DELETE",
-    "/friend",
+    "/api/friend",
     deleteFriendship(friendService),
   },
   Route{
     "GetMessage",
     "GET",
-    "/messages",
+    "/api/messages",
     //Test this rout by next string
     //curl -X GET "http://localhost:8080/messages?id=33&numberOfMessages=1" -H  "accept: application/json"
     messages.HandlerOfGetMessages,
@@ -222,7 +222,7 @@ var routes = Routes{
   Route{
     "PutMessage",
     "POST",
-    "/messages",
+    "/api/messages",
     //Test this rout by next string
     //curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{"message_chat_room_id": "997","message_data": {"binary_parts": [{"bin_data": null,"bin_name": null }],"text": "0 A lot of text and stupid smiles :)))))","type": "TypeOfHumMessage-UNDEFINED FOR NOW"},"message_id": "20180110155343150","message_parent_id": "","message_social_status": {"Dislike": 10,"Like": 222,"Views": 303 },"message_timestamp": "20180110155533111","message_user": {"id_sql": 13,"name_sql": "Vasya" }}' 'http://localhost:8080/messages'
     messages.HandlerOfPOSTMessages,
@@ -231,21 +231,21 @@ var routes = Routes{
   Route{
     "UploadAvatar",
     "PUT",
-    "/profile/{user_id}/avatar",
+    "/api/profile/{user_id}/avatar",
     UploadAvatar(userService, Amazon.S3.S3API),
   },
 
   Route{
     "DeleteAvatar",
     "DELETE",
-    "/profile/{user_id}/avatar",
+    "/api/profile/{user_id}/avatar",
     DeleteAvatar(userService, Amazon.S3.S3API),
   },
 
   Route{
     "GetProfile",
     "GET",
-    "/profile/{user_id}",
+    "/api/profile/{user_id}",
     GetProfile(userService),
   },
 

@@ -33,7 +33,7 @@ export default {
 
 <style>
   body {
-    background-color: rgb(234, 241, 234);
+    background-color: #fafafa;
   }
 </style>
 <style scoped>

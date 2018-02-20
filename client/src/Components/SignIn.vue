@@ -56,7 +56,7 @@ export default {
 
           var axios = require('axios');
           let that = this;
-          axios.post('http://localhost:8080/login', this.user, {
+          axios.post('http://localhost:8080/api/login', this.user, {
             headers: {
             //   "Access-Control-Allow-Origin": "*",
               "accept": "application/json",

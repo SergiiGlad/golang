@@ -4,6 +4,8 @@ import router  from './routers'
 import BootstrapVue from 'bootstrap-vue'
 import AsyncComputed from 'vue-async-computed'
 
+
+
 Vue.use(BootstrapVue);
 Vue.use(AsyncComputed);
 

@@ -43,7 +43,7 @@ export default {
 
              var axios = require('axios');
 
-             var recoveryPass = 'http://localhost:8080/recoveryPass?email=' + this.user.email;
+             var recoveryPass = 'http://localhost:8080/api/recoveryPass?email=' + this.user.email;
              let that = this;
 
              axios.get(recoveryPass, {headers: {'Access-Control-Allow-Origin': '*'}})

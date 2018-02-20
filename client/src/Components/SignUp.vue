@@ -93,8 +93,8 @@
 
               var axios = require('axios');
               let that = this;
-              axios.post('http://localhost:8080/registration', this.user, {
-                headers: { 
+              axios.post('http://localhost:8080/api/registration', this.user, {
+                headers: {
                   // "Access-Control-Allow-Origin": "*",
                             "accept": "application/json",
                             "Content-Type": "application/json" }
