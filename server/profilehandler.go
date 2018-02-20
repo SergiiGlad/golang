@@ -12,7 +12,7 @@ import (
   "strings"
 )
 
-func GetProfile (service controllers.UserServiceInterface) http.HandlerFunc {
+func GetProfile(service controllers.UserServiceInterface) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
     idStr := mux.Vars(r)["user_id"]
     id, err := strconv.Atoi(idStr)
