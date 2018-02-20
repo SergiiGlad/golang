@@ -21,15 +21,15 @@ func main() {
 
 	c := make(chan int)
 
-	go summary(arr, c)
-	go summary(arr[:1], c)
-	go summary(arr[:2], c)
-	go summary(arr[len(arr)/2:], c)
+	go summary(arr, c)              //45
+	go summary(arr[:1], c)          //1
+	go summary(arr[:2], c)          //3
+	go summary(arr[len(arr)/2:], c) //30
 
-	x := <-c
-	y := <-c
-	x = <-c
+	x := <-c // 45
+	y := <-c // 1
+	x = <-c  //3
 
-	fmt.Printf("x :%x  y : %d\n", x, y)
+	fmt.Printf("x :%x  y : %d\n", x, y) // 3 1 or 1 45
 
 }
