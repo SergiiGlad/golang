@@ -1,7 +1,6 @@
 package controllers
 
 import (
-  "regexp"
   "errors"
   "gopkg.in/hlandau/passlib.v1/hash/bcrypt"
   "database/sql"
@@ -17,9 +16,11 @@ import (
 // If you want to use only your log message  It will need use own call logs example
 var log = conf.GetLog()
 
-//UserService type implements UserServiceInterface and holds one field DB to access to database
+//UserService type implements UserServiceInterface and holds one field UserDao to access to database
 type UserService struct {
-  DB interfaces.MySqlDal
+  FriendService FriendServiceInterface
+  PassDao       interfaces.PasswordDao
+  UserDao       interfaces.UserDao
 }
 
 var _ UserServiceInterface = &UserService{}
@@ -27,18 +28,19 @@ var _ UserServiceInterface = &UserService{}
 func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
   var responseUserDto dto.ResponseUserDto
-  err := CheckUniqueEmail(userDto.Email, us.DB)
+  err := CheckUniqueEmail(userDto.Email, us.UserDao)
   if err != nil && err != sql.ErrNoRows {
     return responseUserDto, err
   }
 
-  err = CheckUniquePhone(userDto.Phone, us.DB)
+  err = CheckUniquePhone(userDto.Phone, us.UserDao)
   if err != nil && err != sql.ErrNoRows {
     return responseUserDto, err
   }
 
   if ValidPasswordLength(userDto.Password) == false {
     return responseUserDto, errors.New("Password too short.")
+
   }
 
   hashPass, err := bcrypt.Crypter.Hash(userDto.Password)
@@ -48,7 +50,7 @@ func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUser
 
   userEntity := dto.RequestUserDtoToEntity(userDto)
   NameLetterToUppep(&userEntity)
-  user, err := us.DB.AddUser(&userEntity)
+  user, err := us.UserDao.AddUser(&userEntity)
   if err != nil {
     return responseUserDto, err
   }
@@ -60,9 +62,9 @@ func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUser
     user.ID,
   }
 
-  _, err = us.DB.InsertPass(&newPass)
+  _, err = us.PassDao.InsertPass(&newPass)
   if err != nil {
-    us.DB.ForceDeleteUser(user.ID)
+    us.UserDao.ForceDeleteUser(user.ID)
     return responseUserDto, err
   }
 
@@ -73,7 +75,7 @@ func (us *UserService) CreateUser(userDto *dto.RequestUserDto) (dto.ResponseUser
 
 func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.ResponseUserDto, error) {
 
-  oldUserData, err := us.DB.FindUserById(id)
+  oldUserData, err := us.UserDao.FindUserById(id)
   var responseUserDto dto.ResponseUserDto
   if err != nil {
     return responseUserDto, err
@@ -88,7 +90,7 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
   }
 
   if len(userDto.Email) != 0 {
-    err = CheckUniqueEmail(userDto.Email, us.DB)
+    err = CheckUniqueEmail(userDto.Email, us.UserDao)
     if err != nil && err != sql.ErrNoRows {
       return responseUserDto, err
     }
@@ -97,7 +99,7 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
   }
 
   if len(userDto.Phone) != 0 {
-    err = CheckUniquePhone(userDto.Phone, us.DB)
+    err = CheckUniquePhone(userDto.Phone, us.UserDao)
     if err != nil && err != sql.ErrNoRows {
       return responseUserDto, err
     }
@@ -105,15 +107,29 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
     userDto.Phone = oldUserData.Phone
   }
 
-  err = us.newPassIfValid(id, userDto.Password)
-  if err != nil {
-    return responseUserDto, err
+  if len(userDto.Avatar) == 0 {
+    userDto.Avatar = oldUserData.AvatarRef
+  }
+
+  if strings.EqualFold(userDto.Avatar, "NULL"){
+    userDto.Avatar = ""
+  }
+
+  if len(userDto.Password) != 0 {
+    if len(userDto.Password) >= 6 {
+      err = us.newPassIfValid(id, userDto.Password)
+      if err != nil {
+        return responseUserDto, err
+      }
+    } else {
+      return responseUserDto, errors.New("Password too short. [updating]")
+    }
   }
 
   newUserData := dto.RequestUserDtoToEntity(userDto)
   NameLetterToUppep(&newUserData)
 
-  _, err = us.DB.UpdateUser(id, &newUserData)
+  _, err = us.UserDao.UpdateUser(id, &newUserData)
   if err != nil {
     log.Println(err)
     return responseUserDto, err
@@ -121,7 +137,8 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
 
   newUserData.ID = id
   responseUserDto = dto.UserEntityToResponseDto(&newUserData)
-  responseUserDto.Friends, _ = us.GetUserFriends(id)
+  friends, _ := us.FriendService.GetFriendIds(id)
+  responseUserDto.Friends = int64(len(friends))
 
   return responseUserDto, nil
 }
@@ -129,9 +146,9 @@ func (us *UserService) UpdateUser(id int64, userDto *dto.RequestUserDto) (dto.Re
 func (us *UserService) DeleteUser(id int64) (dto.ResponseUserDto, error) {
 
   var responseUserDto dto.ResponseUserDto
-  userEntity, err := us.DB.FindUserById(id)
+  userEntity, err := us.UserDao.FindUserById(id)
   if userEntity.Role == entity.AdminRole {
-    admins, err := us.DB.CountByRole(entity.AdminRole)
+    admins, err := us.UserDao.CountByRole(entity.AdminRole)
     if err != nil {
       return responseUserDto, err
     }
@@ -146,19 +163,25 @@ func (us *UserService) DeleteUser(id int64) (dto.ResponseUserDto, error) {
   }
 
   responseUserDto = dto.UserEntityToResponseDto(&userEntity)
-  responseUserDto.Friends, _ = us.GetUserFriends(id)
+  friends, _ := us.FriendService.GetFriendIds(id)
+  responseUserDto.Friends = int64(len(friends))
 
-  return responseUserDto, us.DB.DeleteUser(id)
+  return responseUserDto, us.UserDao.DeleteUser(id)
 }
 
-func (us *UserService) GetUserFriends(id int64) ([]int64, error) {
+func (us *UserService) GetUser(id int64) (dto.ResponseUserDto, error) {
+  var responseUserDTO dto.ResponseUserDto
 
-  _, err := us.DB.FindUserById(id)
+  userEntity, err := us.UserDao.FindUserById(id)
+
   if err != nil {
-    return nil, err
+    log.Error(err)
   }
+  responseUserDTO = dto.UserEntityToResponseDto(&userEntity)
+  friends, _ := us.FriendService.GetFriendIds(id)
+  responseUserDTO.Friends = int64(len(friends))
 
-  return us.DB.FriendsByUserID(id)
+  return responseUserDTO, nil
 }
 
 //CheckUniqueEmail validates email string and queries to database to make sure that email is unique
@@ -211,47 +234,7 @@ func CheckUniquePhone(phone string, dao interfaces.UserDao) error {
   return nil
 }
 
-//ValidRegexItem is helper function that is used by ValidEmail and ValidPhone as common logic for both.
-func ValidRegexItem(item string, pattern string) bool {
 
-  itemRegex := regexp.MustCompile(pattern)
-  if isItemOk := itemRegex.MatchString(item); isItemOk == false {
-    return false
-  }
-
-  return true
-}
-
-//ValidEmail return ValidRegexItem function result that checks email string argument
-// matches the email regex pattern
-func ValidEmail(email string) bool {
-  return ValidRegexItem(email, "^[a-z0-9]+@[a-z]+[.][a-z]+$")
-}
-
-//ValidPhone return ValidRegexItem function result that checks phone string argument
-// matches the phone regex pattern
-func ValidPhone(phone string) bool {
-  return ValidRegexItem(phone, "^[+][0-9]{12}$")
-}
-
-//ValidCyrillicName return ValidRegexItem result that checks if name string is valid cyrillic name pattern
-func ValidCyrillicName(name string) bool {
-  return ValidRegexItem(name, "^[А-Я][а-я]{1,49}$")
-}
-
-//ValidLatinName return ValidRegexItem result that checks if name string is valid latin name pattern
-func ValidLatinName(name string) bool {
-  return ValidRegexItem(name, "^[A-Z][a-z]{1,49}$")
-}
-
-//ValidPasswordLength checks password length is bigger than 6 symbols
-func ValidPasswordLength(password string) bool {
-  if len(password) < 6 {
-    return false
-  }
-
-  return true
-}
 
 //newPassIfValid method validate and create new password. It just checks password length and
 //if length ok then password should be hashed and written into database
@@ -273,7 +256,7 @@ func (us *UserService) newPassIfValid(userId int64, password string) error {
     userId,
   }
 
-  _, err = us.DB.InsertPass(&newPass)
+  _, err = us.PassDao.InsertPass(&newPass)
   if err != nil {
     return err
   }
@@ -286,4 +269,3 @@ func NameLetterToUppep(user *entity.User) {
   user.FirstName = strings.ToUpper(string([]rune(user.FirstName)[0])) + string([]rune(user.FirstName)[1:])
   user.LastName = strings.ToUpper(string([]rune(user.LastName)[0])) + string([]rune(user.LastName)[1:])
 }
-

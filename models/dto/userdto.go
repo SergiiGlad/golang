@@ -21,7 +21,8 @@ type ResponseUserDto struct {
   FirstName string  `json:"first_name"`
   LastName  string  `json:"last_name"`
   Phone     string  `json:"phone"`
-  Friends   []int64 `json:"friends"`
+  Avatar    string  `json:"avatar_ref"`
+  Friends   int64   `json:"friends_num"`
 }
 
 func (user ResponseUserDto) String() string {
@@ -37,11 +38,28 @@ type RequestUserDto struct {
   Phone     string      `json:"phone"`
   Role      entity.Role `json:"role"`
   Password  string      `json:"password"`
+  Avatar    string      `json:"avatar_ref"`
 }
 
 func (user RequestUserDto) String() string {
   return fmt.Sprintf("User object:\n\tEmail = %s\n\tFirstName = %s\n\tLastName = %s\n\tPhone = %s\n\tPassword = %s\n",
-    user.Email, user.FirstName, user.LastName, user.Phone, user.Password)
+    user.Email, user.FirstName, user.LastName, user.Phone, "XXXXXX")
+}
+
+type ShortUser struct {
+  ID        int64   `json:"id"`
+  Email     string  `json:"email"`
+  FirstName string  `json:"first_name"`
+  Avatar    string  `json:"avatar_ref"`
+}
+
+func (user ShortUser) String() string {
+  return fmt.Sprintf("User object:\n\tID = %d\n\tFirstName = %s\n\tLastName = %s\n\tAvaterRef = %s\n",
+    user.ID, user.Email, user.FirstName, user.Avatar)
+}
+
+func UserEntityToShortUser(userDao *entity.User) ShortUser {
+  return ShortUser {userDao.ID, userDao.FirstName, userDao.LastName, userDao.AvatarRef}
 }
 
 //RequestUserDtoToEntity converts RequestUserDto to dao.User. user role is set by default if such field is empty.
@@ -57,8 +75,8 @@ func RequestUserDtoToEntity(userDto *RequestUserDto) entity.User {
     userDto.LastName,
     userDto.Phone,
     userDto.Role,
-    entity.Active,
-    "",
+    entity.InActive,
+    userDto.Avatar,
   }
 
   return userDao
@@ -72,7 +90,8 @@ func UserEntityToResponseDto(userDao *entity.User) ResponseUserDto {
     userDao.FirstName,
     userDao.LastName,
     userDao.Phone,
-    []int64 {},
+    userDao.AvatarRef,
+    0,
   }
 
   return userDto

@@ -31,6 +31,8 @@ func Authorize(next http.Handler) http.Handler {
     session, err := store.Get(r, "name")
 
     if err != nil {
+      // sometimes we can use expired session to login, in this case we will get an error
+      // we should catch this error by this block and reset session. After this we should reload the page
       session.Options.MaxAge = -1
       session.Save(r, w)
       responseError(w, err, http.StatusForbidden)
@@ -38,6 +40,7 @@ func Authorize(next http.Handler) http.Handler {
     }
 
     if session.Values["loginned"] == true && sessionIsValid(session){
+      // set context values to use them on the next wrappers (check user role and user_id)
       context.SetUserRoleToContext(r, session.Values["role"].(string))
       context.SetIdToContext(r, session.Values["user_id"].(int64))
       next.ServeHTTP(w, r)
@@ -49,6 +52,8 @@ func Authorize(next http.Handler) http.Handler {
   })
 }
 
+// Check session for its validity:
+// if session_id exists in table and belongs to definite user_id its ok
 func sessionIsValid(s *sessions.Session) bool {
     res, err := Amazon.SVCD.GetItem(&dynamodb.GetItemInput{
     Key: map[string]*dynamodb.AttributeValue{
@@ -56,6 +61,8 @@ func sessionIsValid(s *sessions.Session) bool {
         S: aws.String(s.Values["session_id"].(string)),
       },
     },
+    // To store sessions in DynamoDB we should have a table there with "UsersSessionsData" name
+    // with primary key "session_id" and enabled TTL option with name "TTL"
     TableName: aws.String("UsersSessionsData"),
   })
 
@@ -84,14 +91,11 @@ func sessionIsValid(s *sessions.Session) bool {
 
   sessInst := res.Item
 
+  // check an item for existence in DB
   if sessInst == nil {
     return false
   }
 
-  //fmt.Println(*sessInst["session_id"].S, ",", *sessInst["user_id"].N)
-
-
-  //if *sessInst["session_id"].S == s.Values["session_id"].(string) && *sessInst["user_id"].N == strconv.FormatInt(s.Values["user_id"].(int64), 10) {
   if *sessInst["user_id"].N == strconv.FormatInt(s.Values["user_id"].(int64), 10) {
     return true
   }

@@ -45,6 +45,7 @@ type AccountStatus string
 
 //AccountStatus type contains 2 types: Active and Deleted
 const (
+  InActive = "inactive"
   Active AccountStatus = "active"
   Deleted AccountStatus = "deleted"
 )

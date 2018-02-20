@@ -18,6 +18,7 @@ import (
 )
 
 func loginhandler(w http.ResponseWriter, r *http.Request) {
+  // get user struct from request body
   body, err := ioutil.ReadAll(r.Body)
 
   if err != nil {
@@ -34,6 +35,7 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  // check if user exists and his password validity
   user, err := controllers.Login(login.PhoneOrEmail, login.Password)
 
   if err != nil {
@@ -43,7 +45,9 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  // if everything ok try to get session from store or create new there
   session, err := store.Get(r, "name")
+  // set session options
   session.Options = &sessions.Options {
     MaxAge:   24*60*60,
     HttpOnly: true,
@@ -64,6 +68,7 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  // set session values to operate with them later
   session.Values["loginned"] = true
   session.Values["user_id"] = user.ID
   session.Values["role"] = string(user.Role)
