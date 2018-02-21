@@ -155,3 +155,9 @@ func GetFileFromS3(svc s3iface.S3API) http.HandlerFunc  {
     w.Write(buff.Bytes())
   }
 }
+
+func SetLike(svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+
+  }
+}

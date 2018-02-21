@@ -8,9 +8,7 @@
         </header>
         <div class="menu">
             <div class="container-2">
-                <router-link :to="{ name: 'Profile', params: {id: user_id}}">Profile</router-link>
-
-            <!-- <router-link :to="'/profile/1'">My profile</router-link> -->
+            <router-link :to="{ name: 'Profile', params: {id: user_id}}">Profile</router-link>
             <router-link :to="'/friends'">Friends</router-link>
             <router-link :to="'/messages'">Messages</router-link>
             <router-link :to="'/photos'">Photos</router-link>
@@ -21,10 +19,9 @@
 
 <script>
 export default {
-  name: 'navigation',
+  name: 'topMenu',
   data () {
     return {
-
     }
   },
   computed:{
@@ -61,6 +58,26 @@ button {
     margin-top: 10px;
     outline: none;
     cursor: pointer;
+
+     background-color: #49afcd;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+        background-color: #49afcd;
+        background-image: -moz-linear-gradient(top, #5bc0de, #2f96b4);
+        background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#5bc0de), to(#2f96b4));
+        background-image: -webkit-linear-gradient(top, #5bc0de, #2f96b4);
+        background-image: -o-linear-gradient(top, #5bc0de, #2f96b4);
+        background-image: linear-gradient(to bottom, #5bc0de, #2f96b4);
+        background-repeat: repeat-x;
+        border-color: #2f96b4 #2f96b4 #1f6377;
+        border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff5bc0de', endColorstr='#ff2f96b4', GradientType=0);
+        filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+        padding: 4px 12px;
+        margin-bottom: 0;
+        font-size: 14px;
+        line-height: 20px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+        border-radius: 4px;
 }
 .menu {
     position: fixed;

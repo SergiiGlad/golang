@@ -9,8 +9,8 @@
             </figure>
             <div class="profile-stats">
                 <ul>
-                    <li>{{ profile.first_name }} <span>{{ profile.last_name }}</span></li>
-                    <li>{{ profile.friends || 0 }} <span>Friends</span></li>
+                    <li><span>{{ profile.first_name }}  {{ profile.last_name }}</span></li>
+                    <!-- <li>{{ profile.friends || 0 }}  friends</li> -->
                 </ul>
                 <button class="follow" :class="{followed: isFollowed}" v-on:click="follow">
                     {{ friendText }}
@@ -76,7 +76,7 @@
                     return axios.get(`http://localhost:8080/api/post/user/${id}`)
                         .then(resp => {
                             postList = resp.data;
-                            // Some magic костьіли
+                            // Some magic костыль
                             return Promise.all(postList.map(p => {
                                 const i = p.user_id;
                                 axios.get(`http://localhost:8080/api/profile/${i}`)
@@ -99,11 +99,6 @@
     margin-top: 100px;
     padding: 0px;
 }
-    /* body {
-        font-family: Arial, Helvetica, sans-serif;
-        margin-bottom: 100px;
-    } */
-
     h5 {
         font-size: 30px;
     }
@@ -154,7 +149,7 @@
         bottom: 0;
         border-top: 1px solid rgba(0, 0, 0, 0.5);
         left: 0;
-        padding: 15px 15px 15px 350px;
+        padding: 15px 15px 15px 250px;
         position: absolute;
         right: 0;
         z-index: 2;
@@ -189,7 +184,6 @@
     div.profile-stats li span {
         display: block;
         font-size: 24px;
-        font-weight: bold;
     }
 
     div.profile-stats button.follow {

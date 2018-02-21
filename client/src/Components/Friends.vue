@@ -6,9 +6,7 @@
 
              <div v-for="friend in friends" :key="friend.id">
               <b-row  class="friend-list">
-                <div class="avatar">
-                  <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"/>
-                </div>
+                <div class="avatar" v-bind:style="{ 'background-image': 'url(' + friend.avatar_ref + ')' }"></div>
                 <div class="friend-data">
                     <div class="name">
                       {{friend.first_name}} {{friend.last_name}}
@@ -21,31 +19,21 @@
               </b-row>
             </div>
 
-
           </b-tab>
           <b-tab title="People" >
           </b-tab>
         </b-tabs>
       </b-card>
-     
-        <!-- {{friend}} -->
-        <!-- <div class="col-3"> -->
-          <!-- <img @v-bind={{friend.avatar_ref}}> -->
-        <!-- </div>
-        <div class="col-9">
-          <p></p>
-        </div>
-      </div> -->
+
     </div>
 </template>
 
 <script>
 const axios = require('axios');
 export default {
-  name: 'app',
+  name: 'friends',
   data () {
     return {
-
     }
   },
   asyncComputed: {
@@ -59,15 +47,12 @@ export default {
     }
   }
 }
-
 </script>
 
 <style scoped lang="less">
 .container {
   margin-top: 100px;
   padding: 0px;
-
-
 }
 .friend-list{
   padding: 15px 15px;
@@ -76,7 +61,7 @@ export default {
     color: rgb(67, 70, 81);
   .avatar{
       width: 70px;
-    > img {
+    & > img {
       width: 50px;
       height: 50px;
       border-radius: 50%;
@@ -84,7 +69,6 @@ export default {
     .friend-data {
       float: left;
     }
-
   }
 }
 

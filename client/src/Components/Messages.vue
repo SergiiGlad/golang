@@ -99,7 +99,7 @@
 <script>
 
 export default {
-  name: 'app',
+  name: 'messages',
   data () {
     return {
 
@@ -220,9 +220,6 @@ ul {
 .chat .chat-history .my-message {
     background: #86BB71;
 }
-
-
-
 
 .chat .chat-header img {
     float: left;

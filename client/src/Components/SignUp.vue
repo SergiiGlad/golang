@@ -32,7 +32,6 @@
         </div>
         <button type="submit" class="btn btn-primary">Register</button>
     </form>
-
 </template>
 
 <script>
@@ -95,7 +94,6 @@
               let that = this;
               axios.post('http://localhost:8080/api/registration', this.user, {
                 headers: {
-                  // "Access-Control-Allow-Origin": "*",
                             "accept": "application/json",
                             "Content-Type": "application/json" }
               })
@@ -114,7 +112,6 @@
 </script>
 
 <style scoped>
-
   input{
     background-color: rgb(234, 241, 234);
   }

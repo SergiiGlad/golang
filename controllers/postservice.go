@@ -28,13 +28,16 @@ type Post struct{
   PostID string `json:"post_id"`
   UserID string `json:"user_id"`
   Like string `json:"post_like"`
+  //LikeUserID []string `json:"post_like_user"`
   FileLink string `json:"file_link"`
   LastUpdate string `json:"post_last_update"`
 }
 
+
+
+
 //To CREATE new Post in DynamoDB
 func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error)  {
-
   //Request to DynamoDB to CREATE new post with KEY_ATTRIBUTE "post_id" (TimeStamp)
   input := &dynamodb.PutItemInput{
     Item: map[string]*dynamodb.AttributeValue{
