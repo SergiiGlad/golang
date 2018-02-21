@@ -13,7 +13,8 @@ func logout(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  if session.Values["loginned"] == false {
+  if session.Values["loginned"] != true {
+    fmt.Fprintf(w, "You are not loginned in!")
     return
   }
 

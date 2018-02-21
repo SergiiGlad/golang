@@ -103,6 +103,22 @@ func (md userDaoMock) UpdateUser(id int64, user *entity.User) (entity.User, erro
   return *user, errors.New("user could not be found")
 }
 
+func (md userDaoMock) GetProfile(id int64, user *entity.User) (entity.User, error) {
+  if id < 0 {
+    return *user, errors.New("Negative ID")
+  }
+
+  for indx, user := range md.DB {
+    if user.ID == id {
+      md.DB[indx] = user
+      user.ID = id
+      return user, nil
+    }
+  }
+
+  return *user, errors.New("Not found")
+}
+
 func (md userDaoMock) CountByRole(role entity.Role) (int64, error) {
 
   counter := 0
@@ -356,4 +372,46 @@ func TestUserServiceDelete(t *testing.T) {
       t.Errorf("\nExpected: %s\nGot: %s", tc.expectReturn, respDto)
     }
   }
+}
+
+func TestGetUser(t *testing.T) {
+  tests := [] struct {
+    description  string
+    db           interfaces.UserDao
+    reqUser      int64
+    expectReturn dto.ResponseUserDto
+  }{
+    {
+      description: "UpdateStatus user [Should perform successfully]",
+      db: userDaoMock{[]entity.User{
+        entity.User{
+          ID:        0,
+          Email:     "email@gmail.com",
+          FirstName: "Name",
+          LastName:  "surname",
+          Phone:     "+380509684212",
+        },
+      },
+      },
+      reqUser: 0,
+      expectReturn: dto.ResponseUserDto{
+        ID:        0,
+        Email:     "email@gmail.com",
+        FirstName: "Name",
+        LastName:  "surname",
+        Phone:     "+380509684212",
+        Friends:   0,
+      },
+    },
+  }
+
+  for _, tc := range tests {
+    userService.UserDao = tc.db
+
+    respDto, _ := userService.GetUser(0)
+    if respDto.String() != tc.expectReturn.String() {
+      t.Errorf("\nExpected: %s\nGot: %s", tc.expectReturn, respDto)
+    }
+  }
+
 }
