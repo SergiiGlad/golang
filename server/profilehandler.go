@@ -10,6 +10,7 @@ import (
   "encoding/json"
   "io"
   "strings"
+  "go-team-room/models/context"
 )
 
 func GetProfile(service controllers.UserServiceInterface) http.HandlerFunc {
@@ -64,20 +65,21 @@ func UploadAvatar (service controllers.UserServiceInterface, svc s3iface.S3API) 
 
       //UPLOAD file to S3 and GET link
       userDTO.Avatar = controllers.UploadFileToS3(svc, file, handler)
+    } else {
+      w.WriteHeader(http.StatusBadRequest)
+      return
     }
 
-    idStr := mux.Vars(r)["user_id"]
-    id, err := strconv.Atoi(idStr)
+    userID := context.GetIdFromContext(r)
+
+    respUserDto, err := service.UpdateUser(userID, &userDTO)
+
     if err != nil {
       responseError(w, err, http.StatusForbidden)
       return
     }
 
-    respUserDto, err := service.UpdateUser(int64(id), &userDTO)
-    if err != nil {
-      responseError(w, err, http.StatusForbidden)
-      return
-    }
+    log.Info("Avatar uploaded successfully")
 
     _ = json.NewEncoder(w).Encode(&respUserDto)
 
@@ -87,29 +89,29 @@ func UploadAvatar (service controllers.UserServiceInterface, svc s3iface.S3API) 
 func DeleteAvatar (service controllers.UserServiceInterface, svc s3iface.S3API) http.HandlerFunc{
   return func(w http.ResponseWriter, r *http.Request) {
 
-    idStr := mux.Vars(r)["user_id"]
-    id, err := strconv.Atoi(idStr)
+    userID := context.GetIdFromContext(r)
 
-    if err != nil {
-      log.Error(err)
+    userDTO, err :=  service.GetUser(userID)
+
+    if userDTO.Avatar == "" {
+      w.WriteHeader(http.StatusBadRequest)
       return
     }
 
-    userDTO, err :=  service.GetUser(int64(id))
-
-
     controllers.DeleteFileFromS3(userDTO.Avatar, svc)
-
     var requestUserDTO dto.RequestUserDto
 
     requestUserDTO.Avatar = "NULL"
 
-    responseUserDTO, err := service.UpdateUser(int64(id), &requestUserDTO)
+    responseUserDTO, err := service.UpdateUser(userID, &requestUserDTO)
 
     if err != nil {
       log.Error(err)
+      w.WriteHeader(http.StatusBadRequest)
       return
     }
+
+    log.Info("Avatar deleted successfully")
 
     _ = json.NewEncoder(w).Encode(&responseUserDTO)
   }

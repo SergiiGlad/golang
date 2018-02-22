@@ -238,14 +238,14 @@ var routes = Routes{
   Route{
     "UploadAvatar",
     "PUT",
-    "/profile/{user_id}/avatar",
+    "/profile/avatar",
     UploadAvatar(userService, Amazon.S3.S3API),
   },
 
   Route{
     "DeleteAvatar",
     "DELETE",
-    "/profile/{user_id}/avatar",
+    "/profile/avatar",
     DeleteAvatar(userService, Amazon.S3.S3API),
   },
 
