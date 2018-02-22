@@ -10,6 +10,7 @@ import (
   "github.com/aws/aws-sdk-go/service/s3/s3iface"
   "github.com/aws/aws-sdk-go/service/s3"
 )
+
 var SVCD *dynamodb.DynamoDB
 var SVCS *s3.S3
 
