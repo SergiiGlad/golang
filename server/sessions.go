@@ -19,7 +19,7 @@ var (
 func Authorize(next http.Handler) http.Handler {
   return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
     // add session flashes when UI will be ready
-    paths := []string{"/", "/login", "/logout", "/registration"} //paths no needed to check authorization
+    paths := []string{"/", "/api/login", "/api/logout", "/api/registration"} //paths no needed to check authorization
 
     for _, path := range paths {
       if r.URL.Path == path {
