@@ -11,9 +11,14 @@ import (
 	_ "go-team-room/humstat"
 )
 
-
 func main() {
 	r := server.NewRouter()
+	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+
+		fmt.Println("/ws")
+		server.HandlerWs(w, r)
+
+	})
 	r.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", http.FileServer(http.Dir("./swagger"))))
 	r.PathPrefix("/dist/").Handler(http.StripPrefix("/dist/", http.FileServer(http.Dir("./client/dist"))))
 	r.PathPrefix("/logs/").Handler(http.StripPrefix("/logs/", http.FileServer(http.Dir("./logs"))))
