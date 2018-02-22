@@ -336,10 +336,6 @@ paths:
            type: string
            description: Post Text
          - in: formData
-           name: user_id
-           type: string
-           description: User ID
-         - in: formData
            name: upfile
            type: file
            description: Upload File

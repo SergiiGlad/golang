@@ -8,7 +8,6 @@ import (
   "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
   "github.com/aws/aws-sdk-go/service/dynamodb/expression"
-  "os"
   "mime/multipart"
   "strings"
   "github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -170,13 +169,11 @@ func GetPost(svc dynamodbiface.DynamoDBAPI, post_id string) (Post, error){
 
 //To GET Posts by USER_ID from DynamoDB
 func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, error){
-  var post Post
+
   var outputPost []Post
 
-  post.UserID = user_id
-
   //Filter expression: Seeks all items in table with equal "user_id"
-  filt := expression.Name("user_id").Equal(expression.Value(post.UserID))
+  filt := expression.Name("user_id").Equal(expression.Value(user_id))
 
   //Make projection: displays all expression.Name with equal "user_id"
   proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"), expression.Name("last_update"))
@@ -302,9 +299,7 @@ func UpdatePost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error){
 }
 
 //To DELETE Post in DynamoDB
-func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post_id string) string{
-  //Get Post from DynamoDB
-  post, err := GetPost(svcd, post_id)
+func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post Post) string{
 
   //Check if Post has file on S3
   //if true -> Delete file from S3
@@ -359,7 +354,7 @@ func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post_id stri
     "Delete post": 1,
   }
 
-  return post_id
+  return "Deleted"
 }
 
 //To UPLOAD file to S3

@@ -10,6 +10,8 @@ import (
   "github.com/aws/aws-sdk-go/service/s3/s3iface"
   "go-team-room/controllers"
   "time"
+  "go-team-room/models/context"
+  "strings"
 )
 
 //To CREATE new post in DynamoDB Table "Post"
@@ -22,7 +24,7 @@ func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.Hand
     r.ParseMultipartForm(0)
     post.Title = r.FormValue("post_title")
     post.Text = r.FormValue("post_text")
-    post.UserID = r.FormValue("user_id")
+    post.UserID = strconv.FormatInt(context.GetIdFromContext(r), 10)
 
     //Set "post_id", "post_like", "file_link"
     post.PostID = time.Now().String()
@@ -63,12 +65,30 @@ func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.Hand
 func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
+    id := context.GetIdFromContext(r)
+    role := context.GetRoleFromContext(r)
 
-    response := controllers.DeletePost(svcd, svcs, vars["post_id"])
+    post, err := controllers.GetPost(svcd, vars["post_id"])
+
+    if err != nil {
+      w.WriteHeader(http.StatusNoContent)
+      return
+    }
+
+    userID, _ := strconv.ParseInt(post.UserID, 10, 64)
+
+    if userID != id {
+      if !strings.EqualFold(role, "admin") {
+        w.WriteHeader(http.StatusForbidden)
+        return
+      }
+    }
+
+
+    response := controllers.DeletePost(svcd, svcs, post)
 
     //Encode response JSON
     _ = json.NewEncoder(w).Encode(&response)
-
   }
 }
 
@@ -107,20 +127,30 @@ func GetPostByUserID(svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
 //To UPDATE post in DynamoDB Table "Post"
 func UpdatePost (svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
-    var post controllers.Post
-
-    //Decode request JSON
-    _ = json.NewDecoder(r.Body).Decode(&post)
-    post.LastUpdate = time.Now().String()
+    var newPost controllers.Post
+    userID := context.GetIdFromContext(r)
 
     //Gorilla tool to handle "/post/{post_id}" with method PUT
     vars := mux.Vars(r)
-    post.PostID = vars["post_id"]
+    newPost.PostID = vars["post_id"]
+    //Decode request JSON
+    _ = json.NewDecoder(r.Body).Decode(&newPost)
 
-    post, _ = controllers.UpdatePost(svc, post)
+    oldPost, err := controllers.GetPost(svc, newPost.PostID)
+    id, _ := strconv.ParseInt(oldPost.UserID, 10, 64)
+    if err != nil {
+      w.WriteHeader(http.StatusNoContent)
+      return
+    }
 
+    if userID != id {
+      w.WriteHeader(http.StatusForbidden)
+      return
+    }
+    newPost.LastUpdate = time.Now().String()
+    newPost, _ = controllers.UpdatePost(svc, newPost)
     //Encode response JSON
-    _ = json.NewEncoder(w).Encode(&post)
+    _ = json.NewEncoder(w).Encode(&newPost)
   }
 }
 

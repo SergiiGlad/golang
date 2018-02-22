@@ -199,13 +199,14 @@ func TestGetPostByUserID(t *testing.T) {
 }
 
 func TestDeletePost(t *testing.T) {
-  expectedResult := "post id"
-
+  var expectedResult Post
+  expectedResult.PostID = "post_id"
+  expectedResult.FileLink = "NULL"
   svcd := &mockDynamoDBClient{}
   svcs := &mockS3Client{}
-  result := DeletePost(svcd, svcs, "post_id")
+  result := DeletePost(svcd, svcs, expectedResult)
 
-  if !strings.EqualFold(result, expectedResult) {
+  if !strings.EqualFold(result, expectedResult.PostID) {
     fmt.Println("Error")
   }
 }
