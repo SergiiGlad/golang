@@ -1,5 +1,8 @@
+"use strict"
+
 <template>
     <div class="container">
+        <link rel=“stylesheet” href=“https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css“>
         <header>
             <figure class="profile-banner">
                 <img src="https://unsplash.it/975/300" alt="Profile banner"/>
@@ -20,7 +23,7 @@
         <body>
         <b-card>
             <b-media v-for="post in posts" :key="post.post_id">
-                <b-img slot="aside" :src="post.avatar_ref" height="64px" width="64" alt="placeholder" />
+                <!-- <b-img slot="aside" :src="post.avatar_ref" height="64px" width="64" alt="placeholder" /> -->
                 <h5 class="mt-0">{{ post.post_title }}</h5>
                 <h6>{{ post.user_name }}
                     <small>{{ post.post_last_update }}</small>
@@ -29,7 +32,12 @@
                     {{ post.post_text }}
                 </p>
                 <img v-if="post.file_link" :src="post.file_link" alt="" width="300px" height="300px" class="feed">
-                <!--<like :id="post.post_id"></like>-->
+                <!-- <div>:id="post.post_id"> -->
+                <div>
+                    <div v-show="checkLikedPost(my_id)"><i class="fas fa-heart"></i></div>
+                    <div v-show="!(checkLikedPost(my_id))"><i class="fa fa-heart"></i></div>
+                    <i class="fas fa-heart"></i>
+                </div>
             </b-media>
         </b-card>
         </body>
@@ -37,12 +45,18 @@
 </template>
 
 <script>
+
+
     const axios = require('axios');
+    axios.defaults.withCredentials = true;
+
+    const my_id = localStorage.getItem("id");
 
     export default {
         name: "profile",
         data: function () {
             return {
+                postLikes: [1, 2, 3],
                 isFollowed: false,
                 friendText: "Add Friend"
             }
@@ -58,6 +72,21 @@
                     this.friendText = "Add Friend";
                 }
                 console.log(this.friends);
+            },
+
+            checkLikedPost(myId) {
+                var arrayPostLikes = this.postLikes;
+
+                for(var i = 0; i <  arrayPostLikes.length; i++) {
+                    if (arrayPostLikes[i] === myId) {
+                         return true
+                    }
+
+                }
+                    return false
+
+
+                // arrayPostLikes.includes(myId)
             }
         },
         asyncComputed: {

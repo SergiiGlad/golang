@@ -17,7 +17,8 @@
 
 <script>
 
-import axsios from 'axios'
+  var axios = require('axios');
+axios.defaults.withCredentials = true;
 
 export default {
      data(){
@@ -41,7 +42,7 @@ export default {
            } else {
              this.success = true;
 
-             var axios = require('axios');
+
 
              var recoveryPass = 'http://localhost:8080/api/recoveryPass?email=' + this.user.email;
              let that = this;

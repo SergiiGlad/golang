@@ -30,6 +30,7 @@
 
 <script>
 const axios = require('axios');
+axios.defaults.withCredentials = true;
 export default {
   name: 'friends',
   data () {
@@ -38,8 +39,8 @@ export default {
   },
   asyncComputed: {
     friends(){
-     // const id = this.$route.params.id;
-      return axios.get(`http://localhost:8080/api/profile/2/friends`)
+      const id = this.$route.params.id;
+      return axios.get(`http://localhost:8080/api/profile/${id}/friends`)
           .then(resp => {
             console.log(resp.data);
             return resp.data
@@ -61,7 +62,7 @@ export default {
     color: rgb(67, 70, 81);
   .avatar{
       width: 70px;
-    & > img {
+      img {
       width: 50px;
       height: 50px;
       border-radius: 50%;

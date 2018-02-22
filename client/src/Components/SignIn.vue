@@ -25,6 +25,9 @@
 </template>
 
 <script>
+
+  var axios = require('axios');
+  axios.defaults.withCredentials = true;
 export default {
     name: 'sign-in',
     data(){
@@ -54,7 +57,6 @@ export default {
         }
         else {
 
-          var axios = require('axios');
           let that = this;
           axios.post('http://localhost:8080/api/login', this.user, {
             headers: {

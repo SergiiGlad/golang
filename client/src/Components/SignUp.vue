@@ -36,7 +36,8 @@
 
 <script>
 
-  import axsios from 'axios'
+  var axios = require('axios');
+  axios.defaults.withCredentials = true;
 
   export default {
       name: 'sign-up',
@@ -90,7 +91,6 @@
               this.user.first_name = this.user.first_name.charAt(0).toUpperCase() + this.user.first_name.slice(1);
               this.user.last_name = this.user.last_name.charAt(0).toUpperCase() + this.user.last_name.slice(1);
 
-              var axios = require('axios');
               let that = this;
               axios.post('http://localhost:8080/api/registration', this.user, {
                 headers: {
@@ -101,9 +101,11 @@
                   console.log(response.data);
                   that.success = true;
                 })
-                .catch(function (error){
+                .catch(function (error) {
+                  that.error = true,
+                  that.message = "Error!"
                   console.log(error.message);
-                });
+            });
             }
           },
       }
