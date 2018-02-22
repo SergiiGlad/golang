@@ -11,10 +11,10 @@
                     <div class="name">
                       {{friend.first_name}} {{friend.last_name}}
                     </div>
-                    <div class="status">
+                    <!-- <div class="status">
                       <i class="fa fa-circle online"></i> online
-                      <!-- <i class="fa fa-circle offline"></i> offline -->
-                    </div>
+                       <i class="fa fa-circle offline"></i> offline
+                    </div> -->
                 </div>
               </b-row>
             </div>
@@ -30,7 +30,6 @@
 
 <script>
 const axios = require('axios');
-axios.defaults.withCredentials = true;
 export default {
   name: 'friends',
   data () {

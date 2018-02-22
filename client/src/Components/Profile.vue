@@ -2,7 +2,7 @@
 
 <template>
     <div class="container">
-        <link rel=“stylesheet” href=“https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css“>
+        
         <header>
             <figure class="profile-banner">
                 <img src="https://unsplash.it/975/300" alt="Profile banner"/>
@@ -13,7 +13,7 @@
             <div class="profile-stats">
                 <ul>
                     <li><span>{{ profile.first_name }}  {{ profile.last_name }}</span></li>
-                    <!-- <li>{{ profile.friends || 0 }}  friends</li> -->
+                    <li>{{ profile.friends_num || 0 }}  friends</li>
                 </ul>
                 <button class="follow" :class="{followed: isFollowed}" v-on:click="follow">
                     {{ friendText }}
@@ -24,22 +24,27 @@
         <b-card>
             <b-media v-for="post in posts" :key="post.post_id">
                 <!-- <b-img slot="aside" :src="post.avatar_ref" height="64px" width="64" alt="placeholder" /> -->
+                <h4>{{ post.user_name }}</h4>
+                    <p><small>{{ post.post_last_update }}</small></p>
+        
                 <h5 class="mt-0">{{ post.post_title }}</h5>
-                <h6>{{ post.user_name }}
-                    <small>{{ post.post_last_update }}</small>
-                </h6>
                 <p>
                     {{ post.post_text }}
                 </p>
                 <img v-if="post.file_link" :src="post.file_link" alt="" width="300px" height="300px" class="feed">
                 <!-- <div>:id="post.post_id"> -->
-                <div>
-                    <div v-show="checkLikedPost(my_id)"><i class="fas fa-heart"></i></div>
-                    <div v-show="!(checkLikedPost(my_id))"><i class="fa fa-heart"></i></div>
-                    <i class="fas fa-heart"></i>
+                <div >
+                    <!-- <div> Lol {{ post.post_like}}</div> -->
+                    <div v-show="checkLikedPost(my_id, post.post_like) > 0"> <img src="../assets/heart_liked.png"/></div>
+                    <div v-show="checkLikedPost(my_id, post.post_like) == 0"> <img src="../assets/heart.png"/></div>
+                     <span>{{ post.post_like.length - 1 || 0}}</span>
                 </div>
+                <div class="hr"></div>
             </b-media>
         </b-card>
+       
+ 
+
         </body>
     </div>
 </template>
@@ -56,7 +61,6 @@
         name: "profile",
         data: function () {
             return {
-                postLikes: [1, 2, 3],
                 isFollowed: false,
                 friendText: "Add Friend"
             }
@@ -74,19 +78,31 @@
                 console.log(this.friends);
             },
 
-            checkLikedPost(myId) {
-                var arrayPostLikes = this.postLikes;
+            checkLikedPost(myId, post_like) {
+                // console.log("Post likes: " + post_like);
+                if (post_like.length == 1)
+                    return 0
+                else if  (post_like.indexOf(myId) >= 0)
+                    return 1
+                else
+                    return 0
+                // }
+                // for(var i = 0; i <  post_likes.length; i++) {
+                //     if (arrayPostLikes[i] === myId) {
+                //          return true
+                //     }
+                // }
+                //     return false
+                // console.log(post_likes.includes(myId));
+            },
+            likePost(post_id, my_id) {
+                // for(var i = 0; i <  post_likes.length; i++) {
+                //     if (arrayPostLikes[i] === myId) {
+                //          return true;
+                //     }
+                // }
+                //     return false;
 
-                for(var i = 0; i <  arrayPostLikes.length; i++) {
-                    if (arrayPostLikes[i] === myId) {
-                         return true
-                    }
-
-                }
-                    return false
-
-
-                // arrayPostLikes.includes(myId)
             }
         },
         asyncComputed: {
@@ -94,7 +110,11 @@
                 get() {
                     let id = this.$route.params.id;
                 return axios.get(`http://localhost:8080/api/profile/${id}`)
-                    .then(resp => resp.data);
+                    .then(resp => {
+                        console.log(resp.data)
+                        return resp.data
+                    });
+                    
                 },
                 default: {avatar_ref: 'https://unsplash.it/150/150'}
             },
@@ -124,6 +144,12 @@
 </script>
 
 <style scoped>
+.hr {
+    border-bottom: 1px solid black;
+    width: 100%;
+    
+}
+
 .container {
     margin-top: 100px;
     padding: 0px;

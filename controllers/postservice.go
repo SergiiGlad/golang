@@ -22,22 +22,20 @@ import (
 )
 
 //Post structure
-type Post struct{
-  Title string `json:"post_title"`
-  Text string	`json:"post_text"`
+type Post struct {
+  Title  string `json:"post_title"`
+  Text   string `json:"post_text"`
   PostID string `json:"post_id"`
-  UserID string `json:"user_id"`
-  Like string `json:"post_like"`
-  //LikeUserID []string `json:"post_like_user"`
-  FileLink string `json:"file_link"`
-  LastUpdate string `json:"post_last_update"`
+  UserID string  `json:"user_id"`
+  //Like string `json:"post_like"`
+  Like       [] *string `json:"post_like"`
+  FileLink   string   `json:"file_link"`
+  LastUpdate string   `json:"post_last_update"`
 }
 
-
-
-
 //To CREATE new Post in DynamoDB
-func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error)  {
+func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error) {
+
   //Request to DynamoDB to CREATE new post with KEY_ATTRIBUTE "post_id" (TimeStamp)
   input := &dynamodb.PutItemInput{
     Item: map[string]*dynamodb.AttributeValue{
@@ -54,7 +52,7 @@ func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error)  {
         S: &post.UserID,
       },
       "post_like": {
-        N: &post.Like,
+        SS: post.Like,
       },
       "file_link": {
         S: &post.FileLink,
@@ -96,14 +94,14 @@ func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error)  {
   }
   _ = result
   log.Info("Post created successfully")
-  humstat.SendStat <- map[string]int {
+  humstat.SendStat <- map[string]int{
     "Post created": 1,
   }
   return post, nil
 }
 
 //To GET Post by POST_ID from DynamoDB
-func GetPost(svc dynamodbiface.DynamoDBAPI, post_id string) (Post, error){
+func GetPost(svc dynamodbiface.DynamoDBAPI, post_id string) (Post, error) {
   var post Post
   post.PostID = post_id
   //Request to DynamoDB to GET post by "post_id"
@@ -157,17 +155,15 @@ func GetPost(svc dynamodbiface.DynamoDBAPI, post_id string) (Post, error){
 }
 
 //To GET Posts by USER_ID from DynamoDB
-func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, error){
-  var post Post
+func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, error) {
+
   var outputPost []Post
 
-  post.UserID = user_id
-
   //Filter expression: Seeks all items in table with equal "user_id"
-  filt := expression.Name("user_id").Equal(expression.Value(post.UserID))
+  filt := expression.Name("user_id").Equal(expression.Value(user_id))
 
   //Make projection: displays all expression.Name with equal "user_id"
-  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"), expression.Name("last_update"))
+  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"), expression.Name("post_last_update"))
 
   //Build expression with filter and projection
   expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
@@ -205,14 +201,14 @@ func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, err
   }
   _ = result
   log.Info("Get post by user id successfully")
-  humstat.SendStat <- map[string]int {
+  humstat.SendStat <- map[string]int{
     "Get post by user id": 1,
   }
   return outputPost, nil
 }
 
 //To UPDATE Post TITLE and TEXT in DynamoDB
-func UpdatePost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error){
+func UpdatePost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error) {
 
   //Request to DynamoDB to UPDATE Item in table
   input := &dynamodb.UpdateItemInput{
@@ -273,14 +269,14 @@ func UpdatePost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error){
 
   _ = result
   log.Info("Update post successfully")
-  humstat.SendStat <- map[string]int {
+  humstat.SendStat <- map[string]int{
     "Update post": 1,
   }
   return post, nil
 }
 
 //To DELETE Post in DynamoDB
-func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post_id string) string{
+func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post_id string) string {
 
   post, err := GetPost(svcd, post_id)
 
@@ -328,7 +324,7 @@ func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post_id stri
 
   _ = result
   log.Info("Delete post successfully")
-  humstat.SendStat <- map[string]int {
+  humstat.SendStat <- map[string]int{
     "Delete post": 1,
   }
 
@@ -336,7 +332,7 @@ func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post_id stri
 }
 
 //To UPLOAD file to S3
-func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl * multipart.FileHeader) string{
+func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl *multipart.FileHeader) string {
   // Create an uploader with the session and default options
   uploader := s3manager.NewUploaderWithClient(svc)
   fileType := handl.Filename[strings.LastIndexAny(handl.Filename, "."):]
@@ -344,7 +340,7 @@ func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl * multipart.FileH
 
   //Generate UUID for File
   uuid, err := NewUUID()
-  if err != nil{
+  if err != nil {
     fmt.Printf("error: %v\n", err)
   }
   // Upload the file to S3.
@@ -353,14 +349,14 @@ func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl * multipart.FileH
     Key:    aws.String(uuid + fileType),
     Body:   f,
   })
-  if err != nil{
+  if err != nil {
     fmt.Errorf("failed to upload file, %v", err)
     return "failed to upload file"
   }
 
   _ = result
   log.Info("File uploaded successfully")
-  humstat.SendStat <- map[string]int {
+  humstat.SendStat <- map[string]int{
     "File upload": 1,
   }
   link := "/uploads/" + uuid + fileType
@@ -399,13 +395,13 @@ func DeleteFileFromS3(file_link string, svc s3iface.S3API) {
   }
   _ = result
   log.Info("File deleted")
-  humstat.SendStat <- map[string]int {
+  humstat.SendStat <- map[string]int{
     "File deleted": 1,
   }
 }
 
 //To DOWNLOAD file from S3
-func DownloadFileFromS3(svc s3iface.S3API, fileName string) (*aws.WriteAtBuffer, error){
+func DownloadFileFromS3(svc s3iface.S3API, fileName string) (*aws.WriteAtBuffer, error) {
   // Create a downloader with the session and default options
   downloader := s3manager.NewDownloaderWithClient(svc)
 
@@ -422,7 +418,7 @@ func DownloadFileFromS3(svc s3iface.S3API, fileName string) (*aws.WriteAtBuffer,
     return buff, errors.New("Error")
   }
   log.Info("File downloaded, %d bytes\n", n)
-  humstat.SendStat <- map[string]int {
+  humstat.SendStat <- map[string]int{
     "File downloaded": 1,
   }
   return buff, nil
@@ -442,7 +438,3 @@ func NewUUID() (string, error) {
   log.Info("New UUID has generated")
   return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
-
-
-
-

@@ -33,7 +33,8 @@ func NewRouter() *mux.Router {
   for _, route := range routes {
     var handler http.Handler
     handler = route.HandlerFunc
-    //handler = Authorize(handler)
+    handler = Authorize(handler)
+
     //handler = middleware.Logger(handler, route.Name)
     //handler = middleware.Auth(handler)
     // ....
@@ -122,7 +123,7 @@ var routes = Routes{
   Route {
     "GetFile",
     "GET",
-    "/api/uploads/{file_link}",
+    "/uploads/{file_link}",
     GetFileFromS3(Amazon.S3.S3API),
   },
   Route{

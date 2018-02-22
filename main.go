@@ -19,7 +19,7 @@ func main() {
   	r.PathPrefix("/").HandlerFunc(server.Handl)
 	handler := cors.Default().Handler(r)
 	http.Handle("/", handler)
-	var err = http.ListenAndServe(conf.Ip+":"+conf.Port, nil)
+	var err = http.ListenAndServe(":"+conf.Port, nil)
 	if err != nil {
 		fmt.Println("Error")
 	}
