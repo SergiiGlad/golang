@@ -22,24 +22,22 @@
         </header>
         <body>
         <b-card>
-            <b-media v-for="post in posts" :key="post.post_id">
+            <b-media class="parent-post" v-for="post in posts" :key="post.post_id">
                 <!-- <b-img slot="aside" :src="post.avatar_ref" height="64px" width="64" alt="placeholder" /> -->
-                <h4>{{ post.user_name }}</h4>
-                    <p><small>{{ post.post_last_update }}</small></p>
-        
-                <h5 class="mt-0">{{ post.post_title }}</h5>
+                <h4>{{ post.post_title }}
+                    <small> {{ post.post_last_update }}</small>
+                </h4>
                 <p>
                     {{ post.post_text }}
                 </p>
-                <img v-if="post.file_link" :src="post.file_link" alt="" width="300px" height="300px" class="feed">
+                <img class="post-picture"v-if="post.file_link" :src="post.file_link">
                 <!-- <div>:id="post.post_id"> -->
-                <div >
+                <div @click="setLike(my_id, post.post_id, post.post_like)">
                     <!-- <div> Lol {{ post.post_like}}</div> -->
-                    <div v-show="checkLikedPost(my_id, post.post_like) > 0"> <img src="../assets/heart_liked.png"/></div>
-                    <div v-show="checkLikedPost(my_id, post.post_like) == 0"> <img src="../assets/heart.png"/></div>
-                     <span>{{ post.post_like.length - 1 || 0}}</span>
+                    <img class="heart" v-show="checkLikedPost(my_id, post.post_like) > 0" src="../assets/like.png"/>
+                    <img  class="heart" v-show="checkLikedPost(my_id, post.post_like) == 0" src="../assets/unlike.png"/>
+                    <span>{{ post.post_like.length - 1 || 0}}</span>
                 </div>
-                <div class="hr"></div>
             </b-media>
         </b-card>
        
@@ -75,7 +73,7 @@
                     this.friends = this.friends - 1;
                     this.friendText = "Add Friend";
                 }
-                console.log(this.friends);
+                // console.log(this.friends);
             },
 
             checkLikedPost(myId, post_like) {
@@ -86,22 +84,27 @@
                     return 1
                 else
                     return 0
-                // }
-                // for(var i = 0; i <  post_likes.length; i++) {
-                //     if (arrayPostLikes[i] === myId) {
-                //          return true
-                //     }
-                // }
-                //     return false
                 // console.log(post_likes.includes(myId));
             },
-            likePost(post_id, my_id) {
-                // for(var i = 0; i <  post_likes.length; i++) {
-                //     if (arrayPostLikes[i] === myId) {
-                //          return true;
-                //     }
-                // }
-                //     return false;
+            setLike(my_id,post_id, post_like) {
+               var i = post_like.indexOf(my_id);
+                if(i != -1) {
+                    post_like.splice(i, 1);
+                }
+                else {                  
+                    post_like.push(my_id);
+                }
+                let request = "http://localhost:8080/api/post/";
+                let appendRequest = request + p_id + "/like";
+             let p_id = post_id;
+                axios.put(appendRequest, post_like)
+                .then(function (response) {
+                  console.log(response.data);
+                })
+                .catch(function (error) {
+                  error = true,
+                  console.log(error.message);
+            });
 
             }
         },
@@ -143,12 +146,23 @@
     }
 </script>
 
-<style scoped>
-.hr {
-    border-bottom: 1px solid black;
-    width: 100%;
+<style scoped lang="less">
+.parent-post {
+    border: 1px solid lightgray;
+    padding: 10px;
+    margin-bottom: 10px;
+    .post-picture{
+        width: 150px;
+        height: 150px;
+    }
     
+    .heart{
+        width: 30px;
+        height: 30px;
+
+    }
 }
+
 
 .container {
     margin-top: 100px;
@@ -158,14 +172,15 @@
         font-size: 30px;
     }
 
-    h6 {
+    h4 {
         display: block;
         font-size: 20px;
     }
 
-    h6 > small {
+    h4 > small {
         color: #aaaaaa;
         font-size: .5em;
+        margin-left: 10px
     }
 
     header {

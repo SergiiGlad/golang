@@ -39,6 +39,8 @@ export default {
   asyncComputed: {
     friends(){
       const id = this.$route.params.id;
+               //   console.log(resp.data);
+
       return axios.get(`http://localhost:8080/api/profile/${id}/friends`)
           .then(resp => {
             console.log(resp.data);
