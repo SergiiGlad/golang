@@ -1,15 +1,19 @@
 import Vue from 'vue'
 import App from './App.vue'
+import router  from './routers'
+import BootstrapVue from 'bootstrap-vue'
+import AsyncComputed from 'vue-async-computed'
 
-import AppSignUp from './Components/SignUp.vue'
-import AppSignIn from './Components/SignIn.vue'
-import AppRecoveryPass from './Components/RecoveryPass.vue'
+// import Icon from 'vue-awesome/icons'
 
-Vue.component('AppSignUp', AppSignUp)
-Vue.component('AppSignIn', AppSignIn)
-Vue.component('AppRecoveryPass', AppRecoveryPass)
+
+Vue.use(BootstrapVue);
+Vue.use(AsyncComputed);
+//Vue.component('icon', Icon)
+
 
 new Vue({
+  router,
   el: '#app',
   render: h => h(App)
 })

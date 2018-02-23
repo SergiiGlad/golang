@@ -29,7 +29,9 @@ func CreateNewPost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API) http.Hand
     //Set "post_id", "post_like", "file_link"
     post.PostID = time.Now().String()
     post.LastUpdate = post.PostID
-    post.Like = "0"
+    post.Like = make([]*string,0)
+    likeInit := "NULL"
+    post.Like = append(post.Like, &likeInit)
     post.FileLink = "NULL"
     //Check if file exists in request
     //if exists UPLOAD to S3
@@ -115,7 +117,7 @@ func GetPostByUserID(svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     post, err := controllers.GetPostByUserID(svc, vars["user_id"])
-
+    log.Info(post)
     if err != nil {
       w.WriteHeader(http.StatusNoContent)
     }
@@ -183,5 +185,12 @@ func GetFileFromS3(svc s3iface.S3API) http.HandlerFunc  {
     w.Header().Set("Content-Length", FileSize)
 
     w.Write(buff.Bytes())
+  }
+}
+
+func SetLike(svc dynamodbiface.DynamoDBAPI) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    log.Println(r)
+
   }
 }

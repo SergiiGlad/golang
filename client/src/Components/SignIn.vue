@@ -25,8 +25,11 @@
 </template>
 
 <script>
+
+  var axios = require('axios');
+  //axios.defaults.withCredentials = true;
 export default {
-    name: 'sign in',
+    name: 'sign-in',
     data(){
         return {
             user:{
@@ -54,17 +57,18 @@ export default {
         }
         else {
 
-          var axios = require('axios');
           let that = this;
-          axios.post('http://localhost:8080/login', this.user, {
+          axios.post('http://localhost:8080/api/login', this.user, {
             headers: {
-              "Access-Control-Allow-Origin": "*",
               "accept": "application/json",
               "Content-Type": "application/json"
             }
           })
             .then(function (response) {
               console.log(response.data);
+              let id = response.data.id;
+              localStorage.setItem("id", id);
+              that.$router.push(`/profile/${id}`);
             })
             .catch(function (error) {
                 that.error = true,
@@ -78,8 +82,7 @@ export default {
 </script>
 
 <style scoped>
-
-    input{
+ input{
       background-color: rgb(234, 241, 234);
     }
     .btn {

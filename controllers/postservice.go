@@ -21,18 +21,19 @@ import (
 )
 
 //Post structure
-type Post struct{
-  Title string `json:"post_title"`
-  Text string	`json:"post_text"`
+type Post struct {
+  Title  string `json:"post_title"`
+  Text   string `json:"post_text"`
   PostID string `json:"post_id"`
-  UserID string `json:"user_id"`
-  Like string `json:"post_like"`
-  FileLink string `json:"file_link"`
-  LastUpdate string `json:"post_last_update"`
+  UserID string  `json:"user_id"`
+  //Like string `json:"post_like"`
+  Like       [] *string `json:"post_like"`
+  FileLink   string   `json:"file_link"`
+  LastUpdate string   `json:"post_last_update"`
 }
 
 //To CREATE new Post in DynamoDB
-func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error)  {
+func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error) {
 
   //Request to DynamoDB to CREATE new post with KEY_ATTRIBUTE "post_id"
   input := &dynamodb.PutItemInput{
@@ -50,7 +51,7 @@ func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error)  {
         S: &post.UserID,
       },
       "post_like": {
-        N: &post.Like,
+        SS: post.Like,
       },
       "file_link": {
         S: &post.FileLink,
@@ -104,7 +105,7 @@ func CreateNewPost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error)  {
 }
 
 //To GET Post by POST_ID from DynamoDB
-func GetPost(svc dynamodbiface.DynamoDBAPI, post_id string) (Post, error){
+func GetPost(svc dynamodbiface.DynamoDBAPI, post_id string) (Post, error) {
   var post Post
 
   post.PostID = post_id
@@ -168,7 +169,7 @@ func GetPost(svc dynamodbiface.DynamoDBAPI, post_id string) (Post, error){
 }
 
 //To GET Posts by USER_ID from DynamoDB
-func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, error){
+func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, error) {
 
   var outputPost []Post
 
@@ -176,7 +177,7 @@ func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, err
   filt := expression.Name("user_id").Equal(expression.Value(user_id))
 
   //Make projection: displays all expression.Name with equal "user_id"
-  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"), expression.Name("last_update"))
+  proj := expression.NamesList(expression.Name("post_title"), expression.Name("post_text"), expression.Name("post_id"), expression.Name("user_id"), expression.Name("post_like"), expression.Name("file_link"), expression.Name("post_last_update"))
 
   //Build expression with filter and projection
   expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
@@ -226,7 +227,7 @@ func GetPostByUserID(svc dynamodbiface.DynamoDBAPI, user_id string) ([]Post, err
 }
 
 //To UPDATE Post TITLE, TEXT, POST_LAST_UPDATE in DynamoDB
-func UpdatePost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error){
+func UpdatePost(svc dynamodbiface.DynamoDBAPI, post Post) (Post, error) {
 
   //Request to DynamoDB to UPDATE Item in table
   input := &dynamodb.UpdateItemInput{
@@ -358,7 +359,7 @@ func DeletePost(svcd dynamodbiface.DynamoDBAPI, svcs s3iface.S3API, post Post) s
 }
 
 //To UPLOAD file to S3
-func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl * multipart.FileHeader) string{
+func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl *multipart.FileHeader) string {
   // Create an uploader with the session and default options
   uploader := s3manager.NewUploaderWithClient(svc)
 
@@ -368,7 +369,7 @@ func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl * multipart.FileH
 
   //Generate UUID for File
   uuid, err := NewUUID()
-  if err != nil{
+  if err != nil {
     fmt.Printf("error: %v\n", err)
   }
 
@@ -379,7 +380,7 @@ func UploadFileToS3(svc s3iface.S3API, f multipart.File, handl * multipart.FileH
     Body:   f,
   })
 
-  if err != nil{
+  if err != nil {
     fmt.Errorf("failed to upload file, %v", err)
     return "failed to upload file"
   }
@@ -444,7 +445,7 @@ func DeleteFileFromS3(file_link string, svc s3iface.S3API) {
 }
 
 //To DOWNLOAD file from S3
-func DownloadFileFromS3(svc s3iface.S3API, fileName string) (*aws.WriteAtBuffer, error){
+func DownloadFileFromS3(svc s3iface.S3API, fileName string) (*aws.WriteAtBuffer, error) {
   // Create a downloader with the session and default options
   downloader := s3manager.NewDownloaderWithClient(svc)
 

@@ -76,6 +76,7 @@ const insertStatement = `INSERT INTO
   VALUES (?, ?, ?, ?, ?, ?, ?)`
 
 func (d *mysqlUserDao)  AddUser(user *entity.User) (entity.User, error) {
+
   r, err := execAffectingOneRow(d.insert, user.Email, user.FirstName, user.LastName, user.Phone, user.Role,
     user.AccStatus, user.AvatarRef)
 

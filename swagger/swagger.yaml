@@ -4,7 +4,7 @@ info:
   version: 1.0.1
   title: File Sharing Social Network
 host: 'localhost:8080'
-basePath: /
+basePath: /api
 schemes:
   - http
 paths:

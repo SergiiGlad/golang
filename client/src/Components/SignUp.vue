@@ -32,15 +32,15 @@
         </div>
         <button type="submit" class="btn btn-primary">Register</button>
     </form>
-
 </template>
 
 <script>
 
-  import axsios from 'axios'
+  var axios = require('axios');
+  axios.defaults.withCredentials = true;
 
   export default {
-      name: 'sign up',
+      name: 'sign-up',
       data(){
           return {
               user:{
@@ -91,10 +91,9 @@
               this.user.first_name = this.user.first_name.charAt(0).toUpperCase() + this.user.first_name.slice(1);
               this.user.last_name = this.user.last_name.charAt(0).toUpperCase() + this.user.last_name.slice(1);
 
-              var axios = require('axios');
               let that = this;
-              axios.post('http://localhost:8080/registration', this.user, {
-                headers: { "Access-Control-Allow-Origin": "*",
+              axios.post('http://localhost:8080/api/registration', this.user, {
+                headers: {
                             "accept": "application/json",
                             "Content-Type": "application/json" }
               })
@@ -102,9 +101,11 @@
                   console.log(response.data);
                   that.success = true;
                 })
-                .catch(function (error){
+                .catch(function (error) {
+                  that.error = true,
+                  that.message = "Error!"
                   console.log(error.message);
-                });
+            });
             }
           },
       }
@@ -113,7 +114,6 @@
 </script>
 
 <style scoped>
-
   input{
     background-color: rgb(234, 241, 234);
   }

@@ -48,14 +48,14 @@ func (user RequestUserDto) String() string {
 
 type ShortUser struct {
   ID        int64   `json:"id"`
-  Email     string  `json:"email"`
   FirstName string  `json:"first_name"`
+  LastName  string  `json:"last_name"`
   Avatar    string  `json:"avatar_ref"`
 }
 
 func (user ShortUser) String() string {
   return fmt.Sprintf("User object:\n\tID = %d\n\tFirstName = %s\n\tLastName = %s\n\tAvaterRef = %s\n",
-    user.ID, user.Email, user.FirstName, user.Avatar)
+    user.ID, user.FirstName, user.FirstName, user.Avatar)
 }
 
 func UserEntityToShortUser(userDao *entity.User) ShortUser {
