@@ -33,7 +33,7 @@ func NewRouter() *mux.Router {
   for _, route := range routes {
     var handler http.Handler
     handler = route.HandlerFunc
-    handler = Authorize(handler)
+   // handler = Authorize(handler)
 
     //handler = middleware.Logger(handler, route.Name)
     //handler = middleware.Auth(handler)
@@ -248,6 +248,12 @@ var routes = Routes{
     "GET",
     "/api/profile/{user_id}",
     GetProfile(userService),
+  },
+  Route{
+    "SetLike",
+    "PUT",
+    "/api/post/{postId}/like",
+    SetLike(Amazon.Dynamo.Db),
   },
 
   // and so on, just add new Route structs to this array

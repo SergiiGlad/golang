@@ -14,9 +14,13 @@
                 <ul>
                     <li><span>{{ profile.first_name }}  {{ profile.last_name }}</span></li>
                     <li>{{ profile.friends_num || 0 }}  friends</li>
+                    <!-- <li>{{ profile.online }}</li> -->
                 </ul>
-                <button class="follow" :class="{followed: isFollowed}" v-on:click="follow">
+                <!-- <button class="follow" :class="{followed: isFollowed}" v-on:click="follow">
                     {{ friendText }}
+                </button> -->
+                <button class="follow">
+                    Edit profile
                 </button>
             </div>
         </header>
