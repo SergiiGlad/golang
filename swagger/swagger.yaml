@@ -712,6 +712,8 @@ definitions:
     properties:
       post_id:
         type: string
+      user_id:
+        type: string
       body:
         allOf:
           - $ref: '#/definitions/PostBody'
@@ -729,8 +731,6 @@ definitions:
       post_title:
         type: string
       post_text:
-        type: string
-      user_id:
         type: string
       file_link:
         type: string
