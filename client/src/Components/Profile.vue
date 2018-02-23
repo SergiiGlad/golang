@@ -2,7 +2,7 @@
 
 <template>
     <div class="container">
-        
+
         <header>
             <figure class="profile-banner">
                 <img src="https://unsplash.it/975/300" alt="Profile banner"/>
@@ -45,8 +45,8 @@
                 <button type="button" class="btn">Comment post</button>
             </b-media>
         </b-card>
-       
- 
+
+
 
         </body>
     </div>
@@ -96,7 +96,7 @@
                 if(i != -1) {
                     post_like.splice(i, 1);
                 }
-                else {                  
+                else {
                     post_like.push(my_id);
                 }
                 let request = "http://localhost:8080/api/post/";
@@ -122,7 +122,7 @@
                         console.log(resp.data)
                         return resp.data
                     });
-                    
+
                 },
                 default: {avatar_ref: 'https://unsplash.it/150/150'}
             },
@@ -155,12 +155,12 @@
 .parent-post {
     border: 1px solid lightgray;
     padding: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 10px;}
     .post-picture{
         width: 150px;
         height: 150px;
     }
-    
+
     .heart{
         width: 30px;
         height: 30px;
@@ -171,7 +171,6 @@
         border: 1px solid black;
 
     }
-}
 
 
 .container {
