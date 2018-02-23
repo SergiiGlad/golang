@@ -11,10 +11,10 @@
                     <div class="name">
                       {{friend.first_name}} {{friend.last_name}}
                     </div>
-                    <!-- <div class="status">
-                      <i class="fa fa-circle online"></i> online
-                       <i class="fa fa-circle offline"></i> offline
-                    </div> -->
+                    <div class="status">
+                      <!-- <i class="fa fa-circle online"></i> online -->
+                       offline
+                    </div>
                 </div>
               </b-row>
             </div>
@@ -38,9 +38,7 @@ export default {
   },
   asyncComputed: {
     friends(){
-      const id = this.$route.params.id;
-               //   console.log(resp.data);
-
+      const id = localStorage.getItem("id");
       return axios.get(`http://localhost:8080/api/profile/${id}/friends`)
           .then(resp => {
             console.log(resp.data);
@@ -62,16 +60,23 @@ export default {
   background: #F2F5F8;
     color: rgb(67, 70, 81);
   .avatar{
-      width: 70px;
-      img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
+background-position: center center;
+        background-size: cover;
+        border: 3px #efefef solid;
+        border-radius: 50%;
+        bottom: -50px;
+        box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2), 1px 1px 4px rgba(0, 0, 0, 0.3);
+        height: 60px;
+        left: 10%;
+        // position: absolute;
+        width: 60px;
+        // z-index: 3;
+        margin-right: 10px;
     }
     .friend-data {
       float: left;
     }
   }
-}
+
 
 </style>

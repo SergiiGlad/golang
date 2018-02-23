@@ -42,6 +42,7 @@
                     <img  class="heart" v-show="checkLikedPost(my_id, post.post_like) == 0" src="../assets/unlike.png"/>
                     <span>{{ post.post_like.length - 1 || 0}}</span>
                 </div>
+                <button type="button" class="btn">Comment post</button>
             </b-media>
         </b-card>
        
@@ -163,6 +164,11 @@
     .heart{
         width: 30px;
         height: 30px;
+
+    }
+    .btn {
+        float: right;
+        border: 1px solid black;
 
     }
 }
