@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"go-team-room/conf"
 	"go-team-room/humaws"
 	"go-team-room/humstat"
+	"go-team-room/models/context"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -83,7 +85,6 @@ func HandlerOfGetMessages(writeRespon http.ResponseWriter, r *http.Request) {
 	// return
 	///DEBUG
 
-	//currentUserID := 23 //GetActionUserID(r)
 	currentUserID := GetActionUserID(r)
 
 	//fmt.Println(currentUserID)
@@ -124,38 +125,12 @@ func HandlerOfGetMessages(writeRespon http.ResponseWriter, r *http.Request) {
 
 //GetActionUserID - return ID of user who make this action
 func GetActionUserID(r *http.Request) int {
-	// TEMPORARY stub
-	//Later it will get user from session/token/cookies
-	iid := -1
-	if r.Method == "GET" {
+	currentUserID := int(context.GetIdFromContext(r))
 
-		keys, ok := r.URL.Query()["id"]
-		if !ok || len(keys) < 1 {
-			iid = -1
-		} else {
-			iiid, err := strconv.Atoi(keys[0])
-			if err != nil {
-				iid = -1
-			} else {
-				iid = iiid
-			}
-		}
-	} else if r.Method == "POST" {
-		var data HumMessage
-		fmt.Println(r.Body)
-		err := json.NewDecoder(r.Body).Decode(&data)
-		fmt.Println(r.Body)
-		if err != nil {
-			//panic(err)
-			iid = -1
-		} else {
-			iid = data.MessageUser.IdSql
-		}
-	} else {
-		iid = -1 //UNsupported method/bad ID
+	if currentUserID < 1 {
+		return -1
 	}
-	return iid
-
+	return currentUserID
 }
 
 //ValidateDataFromUser very important func
@@ -165,8 +140,7 @@ func ValidateDataFromUser(m *HumMessage) {
 	//work this out LATER
 	//for now it is stub only
 	//
-	//do nothing
-	//go home
+
 }
 
 //ReadReqBodyPOST - reads all POST request body to HumMessage
@@ -229,8 +203,13 @@ func PutMessageToDynamo(writeRespon http.ResponseWriter, m *HumMessage) {
 //HandlerOfPOSTMessages This func should process any messages end point
 func HandlerOfPOSTMessages(w http.ResponseWriter, r *http.Request) {
 
-	//DEBUG
-	//currentUserID := GetActionUserID(r)
+	currentUserID := GetActionUserID(r)
+
+	if currentUserID < 1 {
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, "401 Can't find your ID")
+		return
+	}
 	var inputMessage HumMessage
 	err := json.NewDecoder(r.Body).Decode(&inputMessage)
 	if err != nil {
@@ -267,6 +246,10 @@ func HandlerOfPOSTMessages(w http.ResponseWriter, r *http.Request) {
 	//ReadReqBodyPOST(r, &inputMessage) //Do not use it NOW.
 
 	ValidateDataFromUser(&inputMessage) //Its FAKE
+
+	//fmt.Println(m)
+	inputMessage.MessageID = time.Now().String()
+	inputMessage.MessageChatRoomID = currentUserID
 
 	//assume data validated
 	//and it is safe to put it into a Dynamo

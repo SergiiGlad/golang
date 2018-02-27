@@ -8,7 +8,7 @@ basePath: /api
 schemes:
   - http
 paths:
-  '/admin/profile':
+  /admin/profile:
     post:
       summary: Register User from admin console. Can only be done by admin.
       consumes:
@@ -95,22 +95,22 @@ paths:
           schema:
             $ref: '#/definitions/InvalidRegistrationResponse'
   /recoveryPass:
-      get:
-        summary: User forgot password
-        consumes:
-          - application/json
-        produces:
-          - application/json
-        parameters:
-          - in: query
-            name: email
-            type: string
-            required: true
-        responses:
-          '200':
-            description: Email with password was sent
-          '400':
-            description: Cant found email
+    get:
+      summary: User forgot password
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: email
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Email with password was sent
+        '400':
+          description: Cant found email
   /login:
     post:
       summary: Login User
@@ -182,7 +182,7 @@ paths:
             $ref: '#/definitions/UserDetails'
         '403':
           description: User wasnt login or dont have permission to get this profile.
-  '/profile/avatar':
+  /profile/avatar:
     put:
       summary: Put user avatar to S3 and avatar link to MySQL
       consumes:
@@ -214,11 +214,6 @@ paths:
     get:
       summary: Retrn all/'number of latest messages' of logined user.
       parameters:
-        - name: id
-          in: query
-          description: Current user id
-          required: true
-          type: integer
         - name: numberOfMessages
           in: query
           description: Number of latest messages to be returned if not present return all
@@ -256,7 +251,7 @@ paths:
           description: User wasnt login
   /messages/new:
     get:
-      summary: Return all/'number of latest messages' to logined user witha are newer than lastDate
+      summary: Return all/number of latest messages' to logined user witha are newer than lastDate
       parameters:
         - name: id
           in: query
@@ -314,19 +309,18 @@ paths:
       produces:
         - application/json
       parameters:
-         - in: formData
-           name: post_title
-           type: string
-           description: Post Title
-         - in: formData
-           name: post_text
-           type: string
-           description: Post Text
-         - in: formData
-           name: upfile
-           type: file
-           description: Upload File
-
+        - in: formData
+          name: post_title
+          type: string
+          description: Post Title
+        - in: formData
+          name: post_text
+          type: string
+          description: Post Text
+        - in: formData
+          name: upfile
+          type: file
+          description: Upload File
       summary: Create post for current logined user.
       responses:
         '200':
@@ -516,7 +510,7 @@ paths:
               $ref: '#/definitions/ShortUserDetails'
         '403':
           description: User wasnt login or dont have perrmision to get friend requests
-  '/friend':
+  /friend:
     post:
       summary: Sends a friend request to user with specified friend_user_id
       parameters:
@@ -533,7 +527,7 @@ paths:
         '403':
           description: User wasnt login or dont have perrmision to send friend request
     put:
-      summary:  Send a friend response to user with specified friend_user_id
+      summary: Send a friend response to user with specified friend_user_id
       parameters:
         - in: body
           name: Connection
@@ -566,18 +560,17 @@ paths:
     get:
       summary: Confrim email for token
       produces:
-      - application/json
+        - application/json
       parameters:
-      - in: path
-        name: token
-        type: string
-        required: true
+        - in: path
+          name: token
+          type: string
+          required: true
       responses:
         '200':
           description: If email was connfirmed
         '400':
           description: If error occurred or invalid token was provided.
-
 definitions:
   Profile:
     type: object
@@ -657,7 +650,6 @@ definitions:
         format: phone
       password:
         type: string
-
   CredentialsForm:
     type: object
     properties:
@@ -734,7 +726,6 @@ definitions:
         type: string
       file_link:
         type: string
-
   Comment:
     type: object
     properties:
