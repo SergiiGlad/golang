@@ -84,7 +84,6 @@ func HandlerOfGetMessages(writeRespon http.ResponseWriter, r *http.Request) {
 	// GetChatRoomListByUserID(23, 23)
 	// return
 	///DEBUG
-
 	currentUserID := GetActionUserID(r)
 
 	//fmt.Println(currentUserID)
@@ -136,10 +135,15 @@ func GetActionUserID(r *http.Request) int {
 //ValidateDataFromUser very important func
 //Do NOT trust any data from User!!!
 //VALIDATE EVERETHING
-func ValidateDataFromUser(m *HumMessage) {
+func ValidateDataFromUser(m *HumMessage, userId int) {
 	//work this out LATER
 	//for now it is stub only
 	//
+	m.MessageUser.IdSql = userId
+	m.MessageUser.NameSQL = ""
+	m.MessageID = time.Now().String()
+	m.MessageTimestamp = time.Now().String()
+	//m.MessageChatRoomID = "0"
 
 }
 
@@ -245,11 +249,9 @@ func HandlerOfPOSTMessages(w http.ResponseWriter, r *http.Request) {
 
 	//ReadReqBodyPOST(r, &inputMessage) //Do not use it NOW.
 
-	ValidateDataFromUser(&inputMessage) //Its FAKE
+	ValidateDataFromUser(&inputMessage, currentUserID) //Its FAKE
 
 	//fmt.Println(m)
-	inputMessage.MessageID = time.Now().String()
-	inputMessage.MessageChatRoomID = currentUserID
 
 	//assume data validated
 	//and it is safe to put it into a Dynamo
