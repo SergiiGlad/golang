@@ -249,7 +249,7 @@ func HandlerOfPOSTMessages(w http.ResponseWriter, r *http.Request) {
 
 	//fmt.Println(m)
 	inputMessage.MessageID = time.Now().String()
-	inputMessage.MessageChatRoomID = currentUserID
+	inputMessage.MessageChatRoomID = "0"
 
 	//assume data validated
 	//and it is safe to put it into a Dynamo
